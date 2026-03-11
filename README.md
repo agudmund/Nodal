@@ -6,7 +6,7 @@ Currently just a sparkling blank canvas… but oh, the adventures it’s ready f
 (We’ll fill in the magic later — for now we’re focusing on beautiful, reusable structure.)
 
 ---
-
+g
 ### ✨ What’s here right now
 
 - Clean, professional `main.py` entry point  

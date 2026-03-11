@@ -1,0 +1,23 @@
+/* Nodal Application Stylesheet */
+/* Fill in your styles below */
+
+/* Main Window */
+QMainWindow {
+    /* Background color, fonts, etc. */
+    background-color: #2e2e2e; 
+}
+
+/* Push Buttons */
+QPushButton {
+    /* Button styling */
+}
+
+QPushButton:hover {
+    /* Button hover state */
+}
+
+QPushButton:pressed {
+    /* Button pressed state */
+}
+
+/* Add more component styles as needed */

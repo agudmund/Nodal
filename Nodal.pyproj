@@ -24,17 +24,25 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="graphics\node.py" />
+    <Compile Include="graphics\scene.py" />
+    <Compile Include="graphics\__init__.py" />
     <Compile Include="main.py" />
     <Compile Include="main_window.py" />
     <Compile Include="utils\logger.py" />
+    <Compile Include="utils\stylesheet.py" />
     <Compile Include="utils\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\" />
+    <Folder Include="graphics\" />
+    <Folder Include="resources\" />
+    <Folder Include="resources\styles\" />
     <Folder Include="utils\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".github\copilot-instructions.md" />
+    <Content Include="resources\styles\nodal.qss" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
