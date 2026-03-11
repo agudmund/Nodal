@@ -30,7 +30,11 @@
     <Compile Include="utils\__init__.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include=".github\" />
     <Folder Include="utils\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".github\copilot-instructions.md" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

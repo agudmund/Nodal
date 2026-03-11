@@ -16,8 +16,7 @@ Currently just a sparkling blank canvas… but oh, the adventures it’s ready f
 ---
 
 ### ✨ What we probably should include at this point
-	- Proper app metadata, version constants, and debug mode support
-	- Some kind of sensible logging mechanism
+- Proper app metadata, version constants, and debug mode support
 
 ### 🚀 How to run
 
