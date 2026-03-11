@@ -15,7 +15,7 @@ Currently just a sparkling blank canvas… but oh, the adventures it’s ready f
 
 ---
 
-### ✨ What’s we probably should include at this point
+### ✨ What we probably should include at this point
 	- Proper app metadata, version constants, and debug mode support
 	- Some kind of sensible logging mechanism
 
