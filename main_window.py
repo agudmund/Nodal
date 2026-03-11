@@ -5,7 +5,9 @@
 # A minor UI for enjoying
 # Built using a single shared braincell by Yours Truly and some intellectual assistance
 
+from pathlib import Path
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton
+from PySide6.QtGui import QIcon
 
 
 class NodalApp(QMainWindow):
@@ -17,6 +19,11 @@ class NodalApp(QMainWindow):
         """Initialize the user interface"""
         self.setWindowTitle("Nodal - Note Organizer")
         self.setGeometry(100, 100, 800, 600)
+
+        # Set application icon
+        icon_path = Path(__file__).parent / "resources" / "icons" / "app_icon.png"
+        if icon_path.exists():
+            self.setWindowIcon(QIcon(str(icon_path)))
 
         # Create central widget and main layout
         central_widget = QWidget()
