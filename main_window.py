@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Cozy times nodal playground - main_window.py primary window definition
+# A minor UI for enjoying
+# Built using a single shared braincell by Yours Truly and some intellectual assistance
+
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton
 
 
