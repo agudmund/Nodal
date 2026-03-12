@@ -4,11 +4,17 @@ from PySide6.QtGui import QLinearGradient, QColor, QPen, QBrush, QPainter, QCurs
 from utils.theme import Theme
 
 class Node(QGraphicsItem):
+    # Node dimensions
+    DEFAULT_WIDTH = 140
+    DEFAULT_HEIGHT = 90
+    BORDER_RADIUS = 10
+
     def __init__(self, x: float, y: float, title: str = "Node"):
         super().__init__()
         self.title = title
-        self.width, self.height = 140, 90
-        self.border_radius = 10
+        self.width = self.DEFAULT_WIDTH
+        self.height = self.DEFAULT_HEIGHT
+        self.border_radius = self.BORDER_RADIUS
         self.setPos(x, y)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
