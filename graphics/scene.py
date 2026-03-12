@@ -1,45 +1,37 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
-# Cozy times nodal playground - scene.py graphics scene for nodes
-# Manages the canvas and all node items
-
+import ctypes
 from PySide6.QtWidgets import QGraphicsScene
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor
-from graphics.node import Node
+from PySide6.QtGui import QColor, QPainter
+from utils.theme import Theme
 
+def enable_blur(hwnd):
+    class WindowCompositionAttributeData(ctypes.Structure):
+        _fields_ = [("Attribute", ctypes.c_int), ("Data", ctypes.c_void_p), ("SizeOfData", ctypes.c_size_t)]
+    class AccentPolicy(ctypes.Structure):
+        _fields_ = [("AccentState", ctypes.c_int), ("AccentFlags", ctypes.c_int), 
+                    ("GradientColor", ctypes.c_int), ("AnimationId", ctypes.c_int)]
+
+    accent = AccentPolicy()
+    accent.AccentState = 3 
+    data = WindowCompositionAttributeData()
+    data.Attribute = 19 
+    data.SizeOfData = ctypes.sizeof(accent)
+    data.Data = ctypes.cast(ctypes.pointer(accent), ctypes.c_void_p)
+    ctypes.windll.user32.SetWindowCompositionAttribute(hwnd, ctypes.pointer(data))
 
 class NodeScene(QGraphicsScene):
-    """
-    Custom graphics scene with grid background and node management.
-    """
-
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        # Scene settings
         self.setSceneRect(0, 0, 2000, 2000)
-        self.grid_size = 20
-        self.grid_color = QColor(200, 200, 200, 50)
 
-        # Add some example nodes to start
-        self.add_node(100, 100, "Input")
-        self.add_node(400, 100, "Process")
-        self.add_node(250, 300, "Output")
-
-    def add_node(self, x: float, y: float, title: str = "Node") -> Node:
-        """
-        Add a new node to the scene.
-
-        Args:
-            x: X position
-            y: Y position
-            title: Node title/label
-
-        Returns:
-            Node: The created node
-        """
+    def add_node(self, x: float, y: float, title: str = "Node") -> 'Node':
+        from graphics.node import Node 
         node = Node(x, y, title)
+        node.setZValue(10) 
         self.addItem(node)
         return node
+
+    def drawBackground(self, painter, rect):
+        painter.setBrush(Theme.FROST_COLOR) 
+        painter.setPen(Qt.NoPen)
+        painter.drawRect(rect)

@@ -8,7 +8,6 @@
 import sys
 from PySide6.QtWidgets import QApplication
 from utils.logger import setup_logger
-from utils.stylesheet import load_stylesheet
 from main_window import NodalApp
 
 
@@ -20,9 +19,6 @@ def main():
     try:
         app = QApplication(sys.argv)
         logger.debug("QApplication created successfully")
-
-        # Load stylesheet
-        load_stylesheet(app)
 
         window = NodalApp()
         logger.info("Main window initialized and displayed")
