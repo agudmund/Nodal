@@ -21,13 +21,26 @@ class NodeGraphicsView(QGraphicsView):
         super().__init__(scene)
         self.middle_mouse_pressed = False
         self.last_pan_pos = None
+        self.alt_right_pressed = False
+        self.last_zoom_pos = None
+        self.zoom_speed = 0.002  # Sensitivity for zoom (adjust as needed)
+        self.min_zoom = 0.1
+        self.max_zoom = 5.0
+        self.current_zoom = 1.0
         self.viewport().setAttribute(Qt.WA_TranslucentBackground)
         self.setStyleSheet("background: transparent; border: none;")
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
         self.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.MiddleButton:
+        # Alt + Right Mouse Button = Zoom mode
+        if event.modifiers() == Qt.KeyboardModifier.AltModifier and event.button() == Qt.MouseButton.RightButton:
+            self.alt_right_pressed = True
+            self.last_zoom_pos = event.pos()
+            self.setCursor(Qt.SizeVerCursor)
+            event.accept()
+        # Middle Mouse Button = Pan mode
+        elif event.button() == Qt.MouseButton.MiddleButton:
             self.middle_mouse_pressed = True
             self.last_pan_pos = event.pos()
             self.setCursor(Qt.SizeAllCursor)
@@ -35,7 +48,20 @@ class NodeGraphicsView(QGraphicsView):
             super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if self.middle_mouse_pressed and self.last_pan_pos:
+        # Zoom mode: Alt + Right Mouse drag
+        if self.alt_right_pressed and self.last_zoom_pos:
+            delta_y = event.pos().y() - self.last_zoom_pos.y()
+            # Drag up = positive delta = zoom in
+            # Drag down = negative delta = zoom out
+            zoom_factor = 1.0 + (delta_y * self.zoom_speed)
+            zoom_factor = max(self.min_zoom / self.current_zoom, min(self.max_zoom / self.current_zoom, zoom_factor))
+
+            self.scale(zoom_factor, zoom_factor)
+            self.current_zoom *= zoom_factor
+            self.last_zoom_pos = event.pos()
+            event.accept()
+        # Pan mode: Middle Mouse drag
+        elif self.middle_mouse_pressed and self.last_pan_pos:
             delta = event.pos() - self.last_pan_pos
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
@@ -44,8 +70,14 @@ class NodeGraphicsView(QGraphicsView):
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        self.middle_mouse_pressed = False
-        self.setCursor(Qt.ArrowCursor)
+        if self.alt_right_pressed:
+            self.alt_right_pressed = False
+            self.last_zoom_pos = None
+            self.setCursor(Qt.ArrowCursor)
+            event.accept()
+        elif self.middle_mouse_pressed:
+            self.middle_mouse_pressed = False
+            self.setCursor(Qt.ArrowCursor)
         super().mouseReleaseEvent(event)
 
 class NodalApp(QMainWindow):
