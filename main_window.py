@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# Cozy times nodal playground - main_window.py main application window
-# Frameless window with draggable toolbar and node graphics view
+"""
+-Cozy times nodal playground - main_window.py main application window
+-Frameless window with draggable toolbar and node graphics view
+-Built using a single shared braincell by Yours Truly, and various intelligences
+"""
 
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QGraphicsView
 from PySide6.QtGui import QPainter

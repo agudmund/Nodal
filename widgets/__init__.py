@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# Cozy times nodal playground - widgets custom UI components
-# Reusable themed widgets for the application
+"""
+-Cozy times nodal playground - widgets custom UI components
+-Reusable themed widgets for the application
+-Built using a single shared braincell by Yours Truly, and various intelligences
+"""
 
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtGui import QFont, QColor
