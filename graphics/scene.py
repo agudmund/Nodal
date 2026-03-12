@@ -34,6 +34,22 @@ class NodeScene(QGraphicsScene):
         self.setSceneRect(0, 0, 2000, 2000)
 
     def add_node(self, x: float, y: float, title: str = "Node") -> Node:
+        """
+        Add a node to the scene at the specified coordinates.
+        Coordinates are clamped to the scene bounds (0-2000).
+
+        Args:
+            x: X coordinate (will be clamped to 0-2000)
+            y: Y coordinate (will be clamped to 0-2000)
+            title: Node title label
+
+        Returns:
+            Node: The created and added node
+        """
+        # Clamp coordinates to scene bounds
+        x = max(0, min(2000, x))
+        y = max(0, min(2000, y))
+
         node = Node(x, y, title)
         node.setZValue(10) 
         self.addItem(node)
