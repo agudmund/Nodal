@@ -100,14 +100,25 @@ class NodalApp(QMainWindow):
         self.setWindowTitle("Nodal")
         self.setGeometry(100, 100, 1200, 800)
 
+        # Main central widget with outer layout
         central_widget = QWidget()
-        central_widget.setStyleSheet(f"""
-            background-color: {Theme.WINDOW_BG.name()};
-        """)
         self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(15, 0, 15, 0)
-        main_layout.setSpacing(0)
+        outer_layout = QHBoxLayout(central_widget)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        outer_layout.setSpacing(0)
+
+        # Left spacer with background color
+        left_spacer = QWidget()
+        left_spacer.setFixedWidth(15)
+        left_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
+        outer_layout.addWidget(left_spacer)
+
+        # Center container for all content (transparent for canvas)
+        center_container = QWidget()
+        center_container.setStyleSheet("background-color: transparent;")
+        center_layout = QVBoxLayout(center_container)
+        center_layout.setContentsMargins(0, 0, 0, 0)
+        center_layout.setSpacing(0)
 
         # Draggable Toolbar Container (Top)
         self.toolbar_container = QWidget()
@@ -121,12 +132,12 @@ class NodalApp(QMainWindow):
         toolbar_layout.setContentsMargins(15, 0, 15, 0)
         toolbar_layout.addStretch()
 
-        main_layout.addWidget(self.toolbar_container)
+        center_layout.addWidget(self.toolbar_container)
 
         self.scene = NodeScene()
         self.view = NodeGraphicsView(self.scene)
         self.view.centerOn(1000, 1000)
-        main_layout.addWidget(self.view)
+        center_layout.addWidget(self.view)
 
         # Bottom Toolbar Container
         self.bottom_toolbar_container = QWidget()
@@ -152,7 +163,15 @@ class NodalApp(QMainWindow):
         exit_btn.clicked.connect(self.close)
         bottom_toolbar_layout.addWidget(exit_btn)
 
-        main_layout.addWidget(self.bottom_toolbar_container)
+        center_layout.addWidget(self.bottom_toolbar_container)
+
+        outer_layout.addWidget(center_container)
+
+        # Right spacer with background color
+        right_spacer = QWidget()
+        right_spacer.setFixedWidth(15)
+        right_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
+        outer_layout.addWidget(right_spacer)
 
         self.show()
 
