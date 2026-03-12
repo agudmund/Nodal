@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# Cozy times nodal playground - resource_monitor.py resource tracking
-# Monitor memory and CPU usage during app operations
+"""
+-Cozy times nodal playground - resource_monitor.py resource tracking
+-Monitor memory and CPU usage during app operations
+-Built using a single shared braincell by Yours Truly and various Intelligences
+"""
 
 import tracemalloc
 import psutil

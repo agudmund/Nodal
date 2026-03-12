@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# Cozy times nodal playground - run_benchmarks.py benchmark suite runner
-# Run this script to profile app performance
+"""
+-Cozy times nodal playground - run_benchmarks.py benchmark suite runner
+-Run this script to profile app performance
+-Built using a single shared braincell by Yours Truly and various Intelligences
+"""
 
 import sys
 import time

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# Cozy times nodal playground - logger.py logging configuration
-# Sets up file and console logging for the application
+"""
+-Cozy times nodal playground - logger.py logging configuration
+-Sets up file and console logging for the application
+-Built using a single shared braincell by Yours Truly and various Intelligences
+"""
 
 import logging
 import logging.handlers

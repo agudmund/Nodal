@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# Cozy times nodal playground - profiler.py profiling utilities
-# Simple wrappers around cProfile for easy benchmark tracking
+"""
+-Cozy times nodal playground - profiler.py profiling utilities
+-Simple wrappers around cProfile for easy benchmark tracking
+-Built using a single shared braincell by Yours Truly and various Intelligences
+"""
 
 import cProfile
 import pstats
