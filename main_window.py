@@ -112,6 +112,10 @@ class NodalApp(QMainWindow):
         self.view.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         self.view.setFocus()
 
+        # Hide scrollbars for cleaner visuals
+        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
         # Fit view to show all nodes with padding
         self.view.fitInView(self.scene.itemsBoundingRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
@@ -120,9 +124,17 @@ class NodalApp(QMainWindow):
         self.show()
 
     def create_new_node(self):
-        """Create a new node at a default position."""
-        # Get scene center or use a default offset
-        center_x = 500
-        center_y = 500
-        self.scene.add_node(center_x, center_y, "New Node")
-        logger.info("New node created")
+        """Create a new node at the center of the current view."""
+        logger.info("create_new_node() called")
+
+        # Get the center of the viewport in scene coordinates
+        view_center = self.view.mapToScene(
+            self.view.viewport().width() // 2,
+            self.view.viewport().height() // 2
+        )
+
+        center_x = view_center.x()
+        center_y = view_center.y()
+
+        new_node = self.scene.add_node(center_x, center_y, "New Node")
+        logger.info(f"New node created at ({center_x}, {center_y})")

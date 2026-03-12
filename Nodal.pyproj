@@ -24,12 +24,16 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="benchmarks\profiler.py" />
+    <Compile Include="benchmarks\run_benchmarks.py" />
+    <Compile Include="benchmarks\__init__.py" />
     <Compile Include="graphics\node.py" />
     <Compile Include="graphics\scene.py" />
     <Compile Include="graphics\__init__.py" />
     <Compile Include="main.py" />
     <Compile Include="main_window.py" />
     <Compile Include="utils\logger.py" />
+    <Compile Include="utils\resource_monitor.py" />
     <Compile Include="utils\stylesheet.py" />
     <Compile Include="utils\__init__.py" />
     <Compile Include="widgets\buttons.py" />
@@ -37,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\" />
+    <Folder Include="benchmarks\" />
     <Folder Include="graphics\" />
     <Folder Include="resources\" />
     <Folder Include="resources\styles\" />
