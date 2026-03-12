@@ -1,7 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Cozy times nodal playground - main_window.py main application window
+# Frameless window with draggable toolbar and node graphics view
+
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QGraphicsView
 from PySide6.QtGui import QPainter
 from PySide6.QtCore import Qt
-from graphics.scene import NodeScene, enable_blur 
+from graphics.scene import NodeScene, enable_blur
 from widgets import CozyButton
 from utils.theme import Theme
 from utils.logger import setup_logger

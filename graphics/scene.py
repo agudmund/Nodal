@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Cozy times nodal playground - scene.py graphics scene management
+# Handles node scene, blur effects, and background rendering
+
 import ctypes
 import sys
 from PySide6.QtWidgets import QGraphicsScene

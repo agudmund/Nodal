@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Cozy times nodal playground - theme.py color and styling system
+# Centralized theme management for consistent UI appearance
+
 from PySide6.QtGui import QColor
 
 class Theme:

@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Cozy times nodal playground - node.py node graphics item
+# Defines individual node appearance, behavior, and rendering
+
 from PySide6.QtWidgets import QGraphicsItem
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QLinearGradient, QColor, QPen, QBrush, QPainter, QCursor, QFont
