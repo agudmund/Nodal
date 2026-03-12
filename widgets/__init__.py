@@ -8,6 +8,7 @@
 
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtGui import QFont, QColor
+from PySide6.QtCore import Qt
 from utils.theme import Theme
 
 class CozyButton(QPushButton):
@@ -25,29 +26,47 @@ class CozyButton(QPushButton):
         self.update_style()
 
         font = self.font()
-        font.setFamily("Lato")
-        font.setPointSize(11)
-        font.setBold(True)
+        font.setFamily(Theme.BUTTON_FONT_FAMILY)
+        font.setPointSize(Theme.BUTTON_FONT_SIZE)
+        font.setBold(Theme.BUTTON_FONT_BOLD)
         self.setFont(font)
 
     def update_style(self):
         # We use HexArgb for the gradient stop to ensure transparency works
+        # Calculate vertical padding - offset top and bottom asymmetrically for text movement
+        base_padding = 5
+        top_padding = base_padding + Theme.BUTTON_TEXT_VERTICAL_OFFSET
+        bottom_padding = base_padding - Theme.BUTTON_TEXT_VERTICAL_OFFSET
+
+        # Ensure padding doesn't go negative
+        top_padding = max(0, top_padding)
+        bottom_padding = max(0, bottom_padding)
+
+        # Conditionally apply border based on theme setting
+        border_width = Theme.BUTTON_BORDER_WIDTH if Theme.BUTTON_BORDER_ENABLED else 0
+        border_color = Theme.BUTTON_BORDER.name() if Theme.BUTTON_BORDER_ENABLED else "transparent"
+        border_color_hover = Theme.BUTTON_BORDER_HOVER.name() if Theme.BUTTON_BORDER_ENABLED else "transparent"
+        border_color_inactive = Theme.BUTTON_BORDER_INACTIVE.name() if Theme.BUTTON_BORDER_ENABLED else "transparent"
+
         self.setStyleSheet(f"""
             QPushButton {{
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                            stop:0 {Theme.get_alpha(Theme.ACCENT_NORMAL, 100).name(QColor.HexArgb)}, 
-                            stop:1 {Theme.TOOLBAR_BG.name()});
-                border: 1px solid {Theme.TOOLBAR_BORDER.name()};
+                background-color: {Theme.BUTTON_BG.name()};
+                border: {border_width}px solid {border_color};
                 border-radius: 6px;
                 color: {Theme.TEXT_PRIMARY.name()};
-                padding: 5px 15px;
+                padding: {top_padding}px 15px {bottom_padding}px 15px;
             }}
             QPushButton:hover {{
-                background: {Theme.get_alpha(Theme.ACCENT_SELECTED, 60).name(QColor.HexArgb)};
-                border-color: {Theme.ACCENT_SELECTED.name()};
+                background-color: {Theme.BUTTON_BG_HOVER.name()};
+                border-color: {border_color_hover};
             }}
             QPushButton:pressed {{
-                background: {Theme.ACCENT_SELECTED.name()};
-                color: #000000;
+                background-color: {Theme.BUTTON_BG_HOVER.name()};
+                color: {Theme.TEXT_PRIMARY.name()};
+            }}
+            QPushButton:disabled {{
+                background-color: {Theme.BUTTON_BG_INACTIVE.name()};
+                border-color: {border_color_inactive};
+                color: {Theme.get_alpha(Theme.TEXT_PRIMARY, 120).name()};
             }}
         """)

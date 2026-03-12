@@ -118,7 +118,7 @@ class NodalApp(QMainWindow):
         self.toolbar_container.setFixedHeight(self.handle_height)
         self.toolbar_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
-            border-bottom: 1px solid {Theme.TOOLBAR_BORDER.name()};
+            border-bottom: {Theme.BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
 
         toolbar_layout = QHBoxLayout(self.toolbar_container)
@@ -138,7 +138,7 @@ class NodalApp(QMainWindow):
         left_spacer.setFixedWidth(15)
         left_spacer.setStyleSheet(f"""
             background-color: {Theme.WINDOW_BG.name()};
-            border-right: 1px solid {Theme.TOOLBAR_BORDER.name()};
+            border-right: {Theme.BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
         grid_layout.addWidget(left_spacer, 1, 0)
 
@@ -153,7 +153,7 @@ class NodalApp(QMainWindow):
         right_spacer.setFixedWidth(15)
         right_spacer.setStyleSheet(f"""
             background-color: {Theme.WINDOW_BG.name()};
-            border-left: 1px solid {Theme.TOOLBAR_BORDER.name()};
+            border-left: {Theme.BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
         grid_layout.addWidget(right_spacer, 1, 2)
 
@@ -168,7 +168,7 @@ class NodalApp(QMainWindow):
         self.bottom_toolbar_container.setFixedHeight(self.handle_height)
         self.bottom_toolbar_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
-            border-top: 1px solid {Theme.TOOLBAR_BORDER.name()};
+            border-top: {Theme.BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
 
         bottom_toolbar_layout = QHBoxLayout(self.bottom_toolbar_container)

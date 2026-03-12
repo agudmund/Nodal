@@ -9,6 +9,25 @@
 from PySide6.QtGui import QColor
 
 class Theme:
+    # --- Sizing & Spacing ---
+    BORDER_WIDTH = 2  # Border width in pixels (toolbar and canvas edges)
+    
+    # --- Button Styling ---
+    BUTTON_FONT_FAMILY = "Segoe UI"
+    BUTTON_FONT_SIZE = 10  # Point size
+    BUTTON_FONT_BOLD = False
+    BUTTON_TEXT_VERTICAL_OFFSET = -2  # Vertical offset in pixels (positive = down, negative = up)
+    BUTTON_BORDER_WIDTH = 2  # Border width for all UI buttons
+    BUTTON_BORDER_ENABLED = True  # Toggle to show/hide button borders
+
+    # --- Button Colors ---
+    BUTTON_BG = QColor("#3a3a3a")
+    BUTTON_BORDER = QColor("#1e1e1e")
+    BUTTON_BG_HOVER = QColor("#1e1e1e")
+    BUTTON_BORDER_HOVER = QColor("#6b5a47")
+    BUTTON_BG_INACTIVE = QColor("#1f1f1f")
+    BUTTON_BORDER_INACTIVE = QColor("#4a4a4a")
+
     # --- Primary Branding ---
     ACCENT_NORMAL = QColor("#3498db")
     ACCENT_SELECTED = QColor("#00d2ff")
@@ -17,7 +36,7 @@ class Theme:
     # --- Window & Toolbar ---
     WINDOW_BG = QColor("#1e1e1e")
     TOOLBAR_BG = QColor("#1e1e1e")
-    TOOLBAR_BORDER = QColor("#3a3a3f")
+    TOOLBAR_BORDER = QColor("#6b5a47")
     
     # --- Scene Background ---
     FROST_COLOR = QColor(30, 30, 35, 150)
