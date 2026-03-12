@@ -24,6 +24,7 @@ class NodeGraphicsView(QGraphicsView):
         self.viewport().setAttribute(Qt.WA_TranslucentBackground)
         self.setStyleSheet("background: transparent; border: none;")
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
+        self.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
@@ -90,7 +91,6 @@ class NodalApp(QMainWindow):
 
         self.scene = NodeScene()
         self.view = NodeGraphicsView(self.scene)
-        self.view.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         self.view.centerOn(1000, 1000)
         main_layout.addWidget(self.view)
         
