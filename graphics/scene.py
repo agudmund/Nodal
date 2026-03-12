@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QGraphicsScene
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPainter
 from utils.theme import Theme
+from graphics.node import Node
 
 def enable_blur(hwnd):
     """Enable Windows blur effect on the window (Windows only)."""
@@ -32,8 +33,7 @@ class NodeScene(QGraphicsScene):
         super().__init__(parent)
         self.setSceneRect(0, 0, 2000, 2000)
 
-    def add_node(self, x: float, y: float, title: str = "Node") -> 'Node':
-        from graphics.node import Node 
+    def add_node(self, x: float, y: float, title: str = "Node") -> Node:
         node = Node(x, y, title)
         node.setZValue(10) 
         self.addItem(node)
