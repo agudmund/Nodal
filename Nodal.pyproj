@@ -32,6 +32,8 @@
     <Compile Include="utils\logger.py" />
     <Compile Include="utils\stylesheet.py" />
     <Compile Include="utils\__init__.py" />
+    <Compile Include="widgets\buttons.py" />
+    <Compile Include="widgets\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\" />
@@ -39,6 +41,7 @@
     <Folder Include="resources\" />
     <Folder Include="resources\styles\" />
     <Folder Include="utils\" />
+    <Folder Include="widgets\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".github\copilot-instructions.md" />
