@@ -101,6 +101,9 @@ class NodalApp(QMainWindow):
         self.setGeometry(100, 100, 1200, 800)
 
         central_widget = QWidget()
+        central_widget.setStyleSheet(f"""
+            background-color: {Theme.WINDOW_BG.name()};
+        """)
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(15, 0, 15, 0)
