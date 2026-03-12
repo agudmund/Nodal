@@ -116,8 +116,8 @@ class NodalApp(QMainWindow):
         self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        # Fit view to show all nodes with padding
-        self.view.fitInView(self.scene.itemsBoundingRect(), Qt.AspectRatioMode.KeepAspectRatio)
+        # Center view on canvas (2000x2000 canvas, center at 1000,1000)
+        self.view.centerOn(1000, 1000)
 
         main_layout.addWidget(self.view)
 

@@ -6,7 +6,7 @@
 
 from PySide6.QtWidgets import QGraphicsScene
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter, QColor, QPen
+from PySide6.QtGui import QColor
 from graphics.node import Node
 
 
@@ -27,26 +27,6 @@ class NodeScene(QGraphicsScene):
         self.add_node(100, 100, "Input")
         self.add_node(400, 100, "Process")
         self.add_node(250, 300, "Output")
-
-    def drawBackground(self, painter: QPainter, rect):
-        """Draw grid background."""
-        super().drawBackground(painter, rect)
-
-        # Draw grid
-        painter.setPen(QPen(self.grid_color))
-
-        left = int(rect.left()) - (int(rect.left()) % self.grid_size)
-        top = int(rect.top()) - (int(rect.top()) % self.grid_size)
-
-        x = left
-        while x < rect.right():
-            painter.drawLine(x, int(rect.top()), x, int(rect.bottom()))
-            x += self.grid_size
-
-        y = top
-        while y < rect.bottom():
-            painter.drawLine(int(rect.left()), y, int(rect.right()), y)
-            y += self.grid_size
 
     def add_node(self, x: float, y: float, title: str = "Node") -> Node:
         """
