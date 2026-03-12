@@ -3,7 +3,7 @@
 """
 -Cozy times nodal playground - scene.py graphics scene management
 -Handles node scene, blur effects, and background rendering
--Built using a single shared braincell by Yours Truly, and various intelligences
+-Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
 import ctypes

@@ -3,7 +3,7 @@
 """
 -Cozy times nodal playground - main_window.py main application window
 -Frameless window with draggable toolbar and node graphics view
--Built using a single shared braincell by Yours Truly, and various intelligences
+-Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QGraphicsView

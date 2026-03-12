@@ -3,7 +3,7 @@
 """
 -Cozy times nodal playground - node.py node graphics item
 -Defines individual node appearance, behavior, and rendering
--Built using a single shared braincell by Yours Truly, and various intelligences
+-Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
 from PySide6.QtWidgets import QGraphicsItem

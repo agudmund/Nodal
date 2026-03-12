@@ -3,7 +3,7 @@
 """
 -Cozy times nodal playground - widgets custom UI components
 -Reusable themed widgets for the application
--Built using a single shared braincell by Yours Truly, and various intelligences
+-Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
 from PySide6.QtWidgets import QPushButton

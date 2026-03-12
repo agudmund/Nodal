@@ -3,7 +3,7 @@
 """
 -Cozy times nodal playground - theme.py color and styling system
 -Centralized theme management for consistent UI appearance
--Built using a single shared braincell by Yours Truly, and various intelligences
+-Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
 from PySide6.QtGui import QColor
