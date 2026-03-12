@@ -32,8 +32,8 @@ class NodeGraphicsView(QGraphicsView):
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
         self.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         # Hide scrollbars
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarNever)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarNever)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def mousePressEvent(self, event):
         # Alt + Right Mouse Button = Zoom mode
@@ -103,7 +103,7 @@ class NodalApp(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setContentsMargins(15, 0, 15, 0)
         main_layout.setSpacing(0)
 
         # Draggable Toolbar Container (Top)
