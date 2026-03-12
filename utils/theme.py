@@ -16,7 +16,7 @@ class Theme:
     
     # --- Window & Toolbar ---
     WINDOW_BG = QColor("#1e1e1e")
-    TOOLBAR_BG = QColor("#1a1a1c")
+    TOOLBAR_BG = QColor("#1e1e1e")
     TOOLBAR_BORDER = QColor("#3a3a3f")
     
     # --- Scene Background ---
