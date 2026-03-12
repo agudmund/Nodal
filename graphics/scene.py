@@ -5,7 +5,7 @@
 # Manages the canvas and all node items
 
 from PySide6.QtWidgets import QGraphicsScene
-from PySide6.QtCore import Qt, QRect
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QColor, QPen
 from graphics.node import Node
 

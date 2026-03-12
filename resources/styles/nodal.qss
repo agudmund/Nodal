@@ -1,9 +1,14 @@
 /* Nodal Application Stylesheet */
-/* Fill in your styles below */
+
+/* Color Definitions */
+:root {
+    --node-normal: #3498db;
+    --node-selected: #2980b9;
+    --node-text: #ffffff;
+}
 
 /* Main Window */
 QMainWindow {
-    /* Background color, fonts, etc. */
     background-color: #2e2e2e; 
 }
 

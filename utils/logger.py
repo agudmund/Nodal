@@ -20,6 +20,11 @@ def setup_logger(name: str = "nodal") -> logging.Logger:
         logging.Logger: Configured logger instance
     """
     logger = logging.getLogger(name)
+
+    # Only configure if handlers don't already exist (avoid duplicates)
+    if logger.hasHandlers():
+        return logger
+
     logger.setLevel(logging.DEBUG)
 
     # Create logs directory if it doesn't exist

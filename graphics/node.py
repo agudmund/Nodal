@@ -4,9 +4,14 @@
 # Cozy times nodal playground - node.py node item for graphics scene
 # Defines the visual representation and behavior of a single node
 
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
+from PySide6.QtWidgets import QGraphicsItem
 from PySide6.QtCore import Qt, QRectF
-from PySide6.QtGui import QPainter, QBrush, QPen, QColor, QFont
+from PySide6.QtGui import QPainter, QBrush, QPen, QColor, QFont, QCursor
+
+# Node color constants (defined in nodal.qss)
+NODE_COLOR_NORMAL = QColor(52, 152, 219)      # --node-normal: #3498db
+NODE_COLOR_SELECTED = QColor(41, 128, 185)    # --node-selected: #2980b9
+NODE_COLOR_TEXT = QColor(255, 255, 255)       # --node-text: #ffffff
 
 
 class Node(QGraphicsItem):
@@ -29,11 +34,7 @@ class Node(QGraphicsItem):
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
-
-        # Colors
-        self.normal_color = QColor(52, 152, 219)  # Blue
-        self.selected_color = QColor(41, 128, 185)  # Darker blue
-        self.text_color = QColor(255, 255, 255)  # White
+        self.setAcceptHoverEvents(True)
 
     def boundingRect(self) -> QRectF:
         """Define the bounding rectangle of the node."""
@@ -42,7 +43,7 @@ class Node(QGraphicsItem):
     def paint(self, painter: QPainter, option, widget=None):
         """Paint the node."""
         # Choose color based on selection state
-        brush_color = self.selected_color if self.isSelected() else self.normal_color
+        brush_color = NODE_COLOR_SELECTED if self.isSelected() else NODE_COLOR_NORMAL
 
         # Draw rounded rectangle background
         painter.setBrush(QBrush(brush_color))
@@ -50,7 +51,7 @@ class Node(QGraphicsItem):
         painter.drawRoundedRect(0, 0, self.width, self.height, self.border_radius, self.border_radius)
 
         # Draw title text
-        painter.setPen(QPen(self.text_color))
+        painter.setPen(QPen(NODE_COLOR_TEXT))
         font = QFont()
         font.setPointSize(10)
         font.setBold(True)
@@ -58,11 +59,21 @@ class Node(QGraphicsItem):
         painter.drawText(0, 0, self.width, self.height, Qt.AlignCenter, self.title)
 
     def mousePressEvent(self, event):
-        """Handle mouse press."""
-        self.setCursor(Qt.ClosedHandCursor)
+        """Handle mouse press - show closed hand cursor when dragging."""
+        self.setCursor(QCursor(Qt.CursorShape.ClosedHandCursor))
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-        """Handle mouse release."""
-        self.setCursor(Qt.OpenHandCursor)
+        """Handle mouse release - show open hand cursor."""
+        self.setCursor(QCursor(Qt.CursorShape.OpenHandCursor))
         super().mouseReleaseEvent(event)
+
+    def hoverEnterEvent(self, event):
+        """Handle hover enter - show open hand cursor."""
+        self.setCursor(QCursor(Qt.CursorShape.OpenHandCursor))
+        super().hoverEnterEvent(event)
+
+    def hoverLeaveEvent(self, event):
+        """Handle hover leave - reset to default cursor."""
+        self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        super().hoverLeaveEvent(event)

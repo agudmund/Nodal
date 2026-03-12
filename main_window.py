@@ -6,10 +6,53 @@
 # Built using a single shared braincell by Yours Truly and some intellectual assistance
 
 from pathlib import Path
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QGraphicsView, QHBoxLayout
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QGraphicsView
 from PySide6.QtGui import QIcon, QPainter
 from PySide6.QtCore import Qt
 from graphics.scene import NodeScene
+from utils.logger import setup_logger
+
+logger = setup_logger()
+
+
+class NodeGraphicsView(QGraphicsView):
+    """Custom graphics view with middle-mouse button panning."""
+
+    def __init__(self, scene):
+        super().__init__(scene)
+        self.middle_mouse_pressed = False
+        self.last_pan_pos = None
+
+    def mousePressEvent(self, event):
+        """Handle mouse press - enable panning on middle button."""
+        if event.button() == Qt.MouseButton.MiddleButton:
+            self.middle_mouse_pressed = True
+            self.last_pan_pos = event.pos()
+        else:
+            super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        """Handle mouse move - pan canvas when middle button is held."""
+        if self.middle_mouse_pressed and self.last_pan_pos:
+            delta = event.pos() - self.last_pan_pos
+
+            # Pan using scroll bars (standard Qt method)
+            hbar = self.horizontalScrollBar()
+            vbar = self.verticalScrollBar()
+            hbar.setValue(hbar.value() - delta.x())
+            vbar.setValue(vbar.value() - delta.y())
+
+            self.last_pan_pos = event.pos()
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """Handle mouse release - disable panning."""
+        if event.button() == Qt.MouseButton.MiddleButton:
+            logger.info("Middle mouse button released - panning disabled")
+            self.middle_mouse_pressed = False
+            self.last_pan_pos = None
+        super().mouseReleaseEvent(event)
 
 
 class NodalApp(QMainWindow):
@@ -35,12 +78,12 @@ class NodalApp(QMainWindow):
 
         # Create graphics scene and view
         self.scene = NodeScene()
-        self.view = QGraphicsView(self.scene)
+        self.view = NodeGraphicsView(self.scene)
         self.view.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-        self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+
+        # Fit view to show all nodes with padding
+        self.view.fitInView(self.scene.itemsBoundingRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
         layout.addWidget(self.view)
-
-        self.show()
 
         self.show()

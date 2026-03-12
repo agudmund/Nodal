@@ -4,8 +4,11 @@
 # Cozy times nodal playground - stylesheet.py stylesheet loader
 # Loads and applies QSS stylesheets to the application
 
+import logging
 from pathlib import Path
 from PySide6.QtWidgets import QApplication
+
+logger = logging.getLogger("nodal")
 
 
 def load_stylesheet(app: QApplication) -> bool:
@@ -21,7 +24,7 @@ def load_stylesheet(app: QApplication) -> bool:
     stylesheet_path = Path(__file__).parent.parent / "resources" / "styles" / "nodal.qss"
 
     if not stylesheet_path.exists():
-        print(f"Warning: Stylesheet not found at {stylesheet_path}")
+        logger.warning(f"Stylesheet not found at {stylesheet_path}")
         return False
 
     try:
@@ -29,9 +32,9 @@ def load_stylesheet(app: QApplication) -> bool:
             stylesheet = f.read()
 
         app.setStyleSheet(stylesheet)
-        print(f"Stylesheet loaded successfully from {stylesheet_path}")
+        logger.info(f"Stylesheet loaded successfully from {stylesheet_path}")
         return True
 
     except Exception as e:
-        print(f"Error loading stylesheet: {e}")
+        logger.error(f"Error loading stylesheet: {e}")
         return False
