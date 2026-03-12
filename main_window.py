@@ -6,7 +6,7 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QGraphicsView
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget, QGraphicsView
 from PySide6.QtGui import QPainter
 from PySide6.QtCore import Qt
 from graphics.scene import NodeScene, enable_blur
@@ -100,27 +100,20 @@ class NodalApp(QMainWindow):
         self.setWindowTitle("Nodal")
         self.setGeometry(100, 100, 1200, 800)
 
-        # Main central widget with outer layout
+        # Main central widget with grid layout
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        outer_layout = QHBoxLayout(central_widget)
-        outer_layout.setContentsMargins(0, 0, 0, 0)
-        outer_layout.setSpacing(0)
+        grid_layout = QGridLayout(central_widget)
+        grid_layout.setContentsMargins(0, 0, 0, 0)
+        grid_layout.setSpacing(0)
 
-        # Left spacer with background color
-        left_spacer = QWidget()
-        left_spacer.setFixedWidth(15)
-        left_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
-        outer_layout.addWidget(left_spacer)
+        # Row 0, Col 0: Top left spacer (empty, no border)
+        top_left_spacer = QWidget()
+        top_left_spacer.setFixedWidth(15)
+        top_left_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
+        grid_layout.addWidget(top_left_spacer, 0, 0)
 
-        # Center container for all content (transparent for canvas)
-        center_container = QWidget()
-        center_container.setStyleSheet("background-color: transparent;")
-        center_layout = QVBoxLayout(center_container)
-        center_layout.setContentsMargins(0, 0, 0, 0)
-        center_layout.setSpacing(0)
-
-        # Draggable Toolbar Container (Top)
+        # Row 0, Col 1: Top toolbar with border-bottom
         self.toolbar_container = QWidget()
         self.toolbar_container.setFixedHeight(self.handle_height)
         self.toolbar_container.setStyleSheet(f"""
@@ -132,14 +125,45 @@ class NodalApp(QMainWindow):
         toolbar_layout.setContentsMargins(15, 0, 15, 0)
         toolbar_layout.addStretch()
 
-        center_layout.addWidget(self.toolbar_container)
+        grid_layout.addWidget(self.toolbar_container, 0, 1)
 
+        # Row 0, Col 2: Top right spacer (empty, no border)
+        top_right_spacer = QWidget()
+        top_right_spacer.setFixedWidth(15)
+        top_right_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
+        grid_layout.addWidget(top_right_spacer, 0, 2)
+
+        # Row 1, Col 0: Left spacer with right border
+        left_spacer = QWidget()
+        left_spacer.setFixedWidth(15)
+        left_spacer.setStyleSheet(f"""
+            background-color: {Theme.WINDOW_BG.name()};
+            border-right: 1px solid {Theme.TOOLBAR_BORDER.name()};
+        """)
+        grid_layout.addWidget(left_spacer, 1, 0)
+
+        # Row 1, Col 1: Canvas (expands)
         self.scene = NodeScene()
         self.view = NodeGraphicsView(self.scene)
         self.view.centerOn(1000, 1000)
-        center_layout.addWidget(self.view)
+        grid_layout.addWidget(self.view, 1, 1)
 
-        # Bottom Toolbar Container
+        # Row 1, Col 2: Right spacer with left border
+        right_spacer = QWidget()
+        right_spacer.setFixedWidth(15)
+        right_spacer.setStyleSheet(f"""
+            background-color: {Theme.WINDOW_BG.name()};
+            border-left: 1px solid {Theme.TOOLBAR_BORDER.name()};
+        """)
+        grid_layout.addWidget(right_spacer, 1, 2)
+
+        # Row 2, Col 0: Bottom left spacer (empty, no border)
+        bottom_left_spacer = QWidget()
+        bottom_left_spacer.setFixedWidth(15)
+        bottom_left_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
+        grid_layout.addWidget(bottom_left_spacer, 2, 0)
+
+        # Row 2, Col 1: Bottom toolbar with border-top
         self.bottom_toolbar_container = QWidget()
         self.bottom_toolbar_container.setFixedHeight(self.handle_height)
         self.bottom_toolbar_container.setStyleSheet(f"""
@@ -163,15 +187,17 @@ class NodalApp(QMainWindow):
         exit_btn.clicked.connect(self.close)
         bottom_toolbar_layout.addWidget(exit_btn)
 
-        center_layout.addWidget(self.bottom_toolbar_container)
+        grid_layout.addWidget(self.bottom_toolbar_container, 2, 1)
 
-        outer_layout.addWidget(center_container)
+        # Row 2, Col 2: Bottom right spacer (empty, no border)
+        bottom_right_spacer = QWidget()
+        bottom_right_spacer.setFixedWidth(15)
+        bottom_right_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
+        grid_layout.addWidget(bottom_right_spacer, 2, 2)
 
-        # Right spacer with background color
-        right_spacer = QWidget()
-        right_spacer.setFixedWidth(15)
-        right_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
-        outer_layout.addWidget(right_spacer)
+        # Set row/column stretch to make canvas expandable
+        grid_layout.setRowStretch(1, 1)
+        grid_layout.setColumnStretch(1, 1)
 
         self.show()
 
