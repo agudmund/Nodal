@@ -1,8 +1,20 @@
 # Copilot Instructions
 
 ## Project Guidelines
-- User prefers markdown list formatting without tabs/indentation - use simple dashes at line start (e.g., "- item") rather than tabbed bullets for cleaner, more standard markdown
+- User prefers markdown list formatting without tabs/indentation - use simple dashes at line start (e.g., "- item") rather than tabbed bullets for cleaner, more standard markdown.
 - This is a Python project (Nodal - a node-based UI application using PySide6). It does not require compilation. Do not ask about or suggest running build commands, compilation steps, or language-specific build tools. Python syntax can be verified with `python -m py_compile` if needed, but this is a runtime language, not a compiled one.
+- For all new Python files in the Nodal project, use the following file header format in docstring style:
+  ```
+  #!/usr/bin/env python3
+  # -*- coding: utf-8 -*-
+  \"""
+  -Cozy times nodal playground - [filename] [primary utility]
+  -[Extended description of what the module does]
+  -Built using a single shared braincell by Yours Truly and various Intelligences
+  \"""
+  ```
+  The three lines in the docstring are: file/purpose, extended description, and static credit line (with "Intelligences" capitalized, no comma before "and").
 
 ## Git Integration
 - User has GitHub repository set up and linked to their Visual Studio project with Git integration working. For future sessions, remember that Git is already configured and working - no need to ask about initialization or remote setup. Just proceed with git commands via terminal.
+- Git workflow: Commit changes locally automatically after implementation, but ONLY push to remote GitHub when user explicitly asks. This preserves GitHub as a stable revert point. Do not auto-push - wait for user approval.
