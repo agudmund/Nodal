@@ -113,10 +113,6 @@ class NodalApp(QMainWindow):
 
         toolbar_layout = QHBoxLayout(self.toolbar_container)
         toolbar_layout.setContentsMargins(15, 0, 15, 0)
-
-        new_node_btn = CozyButton("New Node")
-        new_node_btn.clicked.connect(self.create_new_node)
-        toolbar_layout.addWidget(new_node_btn)
         toolbar_layout.addStretch()
 
         main_layout.addWidget(self.toolbar_container)
@@ -137,8 +133,18 @@ class NodalApp(QMainWindow):
         bottom_toolbar_layout = QHBoxLayout(self.bottom_toolbar_container)
         bottom_toolbar_layout.setContentsMargins(15, 0, 15, 0)
 
-        # Add placeholder for bottom bar widgets
+        # New Node button (left-aligned)
+        new_node_btn = CozyButton("New Node")
+        new_node_btn.clicked.connect(self.create_new_node)
+        bottom_toolbar_layout.addWidget(new_node_btn)
+
+        # Stretch to push exit button to the right
         bottom_toolbar_layout.addStretch()
+
+        # Exit button (right-aligned)
+        exit_btn = CozyButton("Exit")
+        exit_btn.clicked.connect(self.close)
+        bottom_toolbar_layout.addWidget(exit_btn)
 
         main_layout.addWidget(self.bottom_toolbar_container)
 
