@@ -103,17 +103,17 @@ class NodalApp(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Draggable Toolbar Container
+        # Draggable Toolbar Container (Top)
         self.toolbar_container = QWidget()
         self.toolbar_container.setFixedHeight(self.handle_height)
         self.toolbar_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
             border-bottom: 1px solid {Theme.TOOLBAR_BORDER.name()};
         """)
-        
+
         toolbar_layout = QHBoxLayout(self.toolbar_container)
         toolbar_layout.setContentsMargins(15, 0, 15, 0)
-        
+
         new_node_btn = CozyButton("New Node")
         new_node_btn.clicked.connect(self.create_new_node)
         toolbar_layout.addWidget(new_node_btn)
@@ -125,7 +125,23 @@ class NodalApp(QMainWindow):
         self.view = NodeGraphicsView(self.scene)
         self.view.centerOn(1000, 1000)
         main_layout.addWidget(self.view)
-        
+
+        # Bottom Toolbar Container
+        self.bottom_toolbar_container = QWidget()
+        self.bottom_toolbar_container.setFixedHeight(self.handle_height)
+        self.bottom_toolbar_container.setStyleSheet(f"""
+            background-color: {Theme.TOOLBAR_BG.name()};
+            border-top: 1px solid {Theme.TOOLBAR_BORDER.name()};
+        """)
+
+        bottom_toolbar_layout = QHBoxLayout(self.bottom_toolbar_container)
+        bottom_toolbar_layout.setContentsMargins(15, 0, 15, 0)
+
+        # Add placeholder for bottom bar widgets
+        bottom_toolbar_layout.addStretch()
+
+        main_layout.addWidget(self.bottom_toolbar_container)
+
         self.show()
 
     def create_new_node(self):
