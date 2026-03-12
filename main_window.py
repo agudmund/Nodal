@@ -31,6 +31,9 @@ class NodeGraphicsView(QGraphicsView):
         self.setStyleSheet("background: transparent; border: none;")
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
         self.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        # Hide scrollbars
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarNever)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarNever)
 
     def mousePressEvent(self, event):
         # Alt + Right Mouse Button = Zoom mode
