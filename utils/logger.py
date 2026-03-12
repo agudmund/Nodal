@@ -5,13 +5,14 @@
 # Sets up file and console logging for the application
 
 import logging
+import logging.handlers
 from pathlib import Path
-from datetime import datetime
 
 
 def setup_logger(name: str = "nodal") -> logging.Logger:
     """
     Configure and return a logger that writes to both console and file.
+    Log files rotate daily at midnight and append to the same day's log.
 
     Args:
         name: Logger name (default: "nodal")
@@ -31,9 +32,8 @@ def setup_logger(name: str = "nodal") -> logging.Logger:
     logs_dir = Path(__file__).parent.parent / "logs"
     logs_dir.mkdir(exist_ok=True)
 
-    # Create timestamped log file
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = logs_dir / f"nodal_{timestamp}.log"
+    # Log file path (same file name, rotates daily)
+    log_file = logs_dir / "nodal.log"
 
     # Formatter for consistent output
     formatter = logging.Formatter(
@@ -41,10 +41,16 @@ def setup_logger(name: str = "nodal") -> logging.Logger:
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-    # File handler (writes to file)
-    file_handler = logging.FileHandler(log_file)
+    # Timed rotating file handler (rotates daily at midnight)
+    file_handler = logging.handlers.TimedRotatingFileHandler(
+        log_file,
+        when="midnight",
+        interval=1,
+        backupCount=30  # Keep 30 days of logs
+    )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
+    file_handler.suffix = "%Y%m%d"  # Add date suffix to rotated files
     logger.addHandler(file_handler)
 
     # Console handler (writes to console)
