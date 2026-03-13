@@ -64,6 +64,12 @@ class Theme:
     BUTTON_BORDER_WIDTH = 2
     BUTTON_BORDER_ENABLED = True
 
+    # --- Node Typography ---
+    NODE_TITLE_FONT_FAMILY = "Chandler42"
+    NODE_TITLE_FONT_SIZE = 13
+    NODE_BODY_FONT_FAMILY = "Segoe UI"
+    NODE_BODY_FONT_SIZE = 9
+
     # --- Button Colors ---
     BUTTON_BG = QColor("#3a3a3a")
     BUTTON_BORDER = QColor("#1e1e1e")

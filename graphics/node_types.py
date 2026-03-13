@@ -362,8 +362,8 @@ class WarmNode(NodeBase):
         if inner_width <= 0 or inner_height <= 0:
             return
 
-        # Render title (bold, larger font)
-        title_font = QFont(Theme.BUTTON_FONT_FAMILY, 11, QFont.Bold)
+        # Render title (bold, larger font with Chandler42)
+        title_font = QFont(Theme.NODE_TITLE_FONT_FAMILY, Theme.NODE_TITLE_FONT_SIZE, QFont.Bold)
         painter.setFont(title_font)
 
         # Title shadow
@@ -385,7 +385,7 @@ class WarmNode(NodeBase):
 
         # Render full text if available
         if self.full_text and self.full_text.strip():
-            body_font = QFont(Theme.BUTTON_FONT_FAMILY, 9, QFont.Normal)
+            body_font = QFont(Theme.NODE_BODY_FONT_FAMILY, Theme.NODE_BODY_FONT_SIZE, QFont.Normal)
             painter.setFont(body_font)
             painter.setPen(QColor(200, 200, 200, 210))
 
