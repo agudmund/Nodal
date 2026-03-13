@@ -34,8 +34,9 @@ class NodeGraphicsView(QGraphicsView):
         # 1. This tells the widget itself to be see-through
         self.viewport().setAttribute(Qt.WA_TranslucentBackground)
 
-        # 2. This removes the default gray Qt background and borders
-        self.setStyleSheet("background: transparent; border: none;")
+        # 2. Remove frame and set transparent background
+        self.setFrameShape(QGraphicsView.NoFrame)
+        self.setStyleSheet("background: transparent;")
 
         # 3. Optimization: Force full updates so the blur doesn't leave 'ghosts'
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
@@ -192,28 +193,23 @@ class NodalApp(QMainWindow):
         top_right_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
         grid_layout.addWidget(top_right_spacer, 0, 2)
 
-        # Row 1, Col 0: Left spacer with right border
+        # Row 1, Col 0: Left spacer (padding only)
         left_spacer = QWidget()
         left_spacer.setFixedWidth(15)
-        left_spacer.setStyleSheet(f"""
-            background-color: {Theme.WINDOW_BG.name()};
-            border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
-        """)
+        left_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
         grid_layout.addWidget(left_spacer, 1, 0)
 
-        # Row 1, Col 1: Canvas (expands)
+        # Row 1, Col 1: Canvas (expands) with border
         self.scene = NodeScene()
         self.view = NodeGraphicsView(self.scene)
         self.view.centerOn(1000, 1000)
+        self.view.setStyleSheet(f"border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};")
         grid_layout.addWidget(self.view, 1, 1)
 
-        # Row 1, Col 2: Right spacer with left border
+        # Row 1, Col 2: Right spacer (padding only)
         right_spacer = QWidget()
         right_spacer.setFixedWidth(15)
-        right_spacer.setStyleSheet(f"""
-            background-color: {Theme.WINDOW_BG.name()};
-            border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
-        """)
+        right_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
         grid_layout.addWidget(right_spacer, 1, 2)
 
         # Row 2, Col 0: Bottom left spacer (empty, no border)
