@@ -133,7 +133,7 @@ class NodeGraphicsView(QGraphicsView):
 class NodalApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.handle_height = 70
+        self.handle_height = Theme.HANDLE_HEIGHT
         self._dragging_window = False
         self._drag_pos = None
 
@@ -154,6 +154,17 @@ class NodalApp(QMainWindow):
         grid_layout.setContentsMargins(0, 0, 0, 0)
         grid_layout.setSpacing(0)
 
+        self.setStyleSheet(f"""
+            QMainWindow {{
+                background-color: {Theme.WINDOW_BG.name()};
+                border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            }}
+            #Toolbar {{
+                background-color: {Theme.TOOLBAR_BG.name()};
+                border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            }}
+        """)
+
         # Row 0, Col 0: Top left spacer (empty, no border)
         top_left_spacer = QWidget()
         top_left_spacer.setFixedWidth(15)
@@ -165,7 +176,7 @@ class NodalApp(QMainWindow):
         self.toolbar_container.setFixedHeight(self.handle_height)
         self.toolbar_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
-            border-bottom: {Theme.BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
 
         toolbar_layout = QHBoxLayout(self.toolbar_container)
@@ -185,7 +196,7 @@ class NodalApp(QMainWindow):
         left_spacer.setFixedWidth(15)
         left_spacer.setStyleSheet(f"""
             background-color: {Theme.WINDOW_BG.name()};
-            border-right: {Theme.BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
         grid_layout.addWidget(left_spacer, 1, 0)
 
@@ -200,7 +211,7 @@ class NodalApp(QMainWindow):
         right_spacer.setFixedWidth(15)
         right_spacer.setStyleSheet(f"""
             background-color: {Theme.WINDOW_BG.name()};
-            border-left: {Theme.BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
         grid_layout.addWidget(right_spacer, 1, 2)
 
@@ -215,7 +226,7 @@ class NodalApp(QMainWindow):
         self.bottom_toolbar_container.setFixedHeight(self.handle_height)
         self.bottom_toolbar_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
-            border-top: {Theme.BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
 
         bottom_toolbar_layout = QHBoxLayout(self.bottom_toolbar_container)
@@ -305,3 +316,10 @@ class NodalApp(QMainWindow):
     def mouseReleaseEvent(self, event):
         self._dragging_window = False
         super().mouseReleaseEvent(event)
+
+    def showEvent(self, event):
+        """Triggered when the window is first shown to the user."""
+        super().showEvent(event)
+        # Force a 'First Sync' of the blur layer so it's not 
+        # trying to blur the infinite void on frame one.
+        self.update_blur_intensity(self.blur_slider.value())
