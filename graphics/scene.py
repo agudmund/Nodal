@@ -10,7 +10,7 @@ import ctypes
 import sys
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsScene
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QPainter
+from PySide6.QtGui import QColor, QPainter, QTransform
 from utils.theme import Theme
 from graphics.node import Node
 
@@ -49,6 +49,7 @@ def enable_blur(hwnd):
 class NodeScene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.temp_conn = None
         self.setSceneRect(-5000, -5000, 10000, 10000) # Give yourself room to roam
 
         # 1. THE FOG LAYER (The Blur Container)
@@ -104,3 +105,48 @@ class NodeScene(QGraphicsScene):
         painter.setBrush(bg_color) 
         painter.setPen(Qt.NoPen)
         painter.drawRect(rect)
+
+    def mousePressEvent(self, event):
+        item = self.itemAt(event.scenePos(), QTransform())
+        if isinstance(item, Node):
+            socket = item.get_socket_at(item.mapFromScene(event.scenePos()))
+            if socket == "output":
+                from graphics.connection import Connection
+                self.temp_conn = Connection(item)
+                self.addItem(self.temp_conn)
+                event.accept()
+                return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.temp_conn:
+            # We call update_path directly with the new mouse position
+            self.temp_conn.update_path(event.scenePos())
+            self.update() 
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if self.temp_conn:
+            item = self.itemAt(event.scenePos(), QTransform())
+            
+            if isinstance(item, Node) and item != self.temp_conn.start_node:
+                # 1. Finalize the connection
+                self.temp_conn.end_node = item
+                
+                # 2. THE LINK: Tell both nodes they now own this wire
+                # This ensures the wire follows BOTH nodes when they move
+                if self.temp_conn not in self.temp_conn.start_node.connections:
+                    self.temp_conn.start_node.connections.append(self.temp_conn)
+                
+                if self.temp_conn not in item.connections:
+                    item.connections.append(self.temp_conn)
+                
+                # 3. Final path update to snap to the target socket
+                self.temp_conn.update_path()
+            else:
+                # If we didn't hit a node, delete the ghost wire
+                self.removeItem(self.temp_conn)
+            
+            self.temp_conn = None
+            
+        super().mouseReleaseEvent(event)

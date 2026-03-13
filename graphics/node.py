@@ -29,6 +29,9 @@ class Node(QGraphicsItem):
         # Movement tracking for future 'rubbery' wires
         self.connections = []
 
+        # IMPORTANT: This flag allows itemChange to catch movement
+        self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
+
     def boundingRect(self) -> QRectF:
         # Extra 2px margin to prevent 'anti-aliasing' clipping at the edges
         return QRectF(-2, -2, self.width + 4, self.height + 4)
@@ -71,9 +74,37 @@ class Node(QGraphicsItem):
         painter.setPen(Theme.TEXT_PRIMARY)
         painter.drawText(0, Theme.BUTTON_TEXT_VERTICAL_OFFSET, self.width, self.height, Qt.AlignCenter, self.title)
 
+        # 5. THE PORTS (The interface points)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Output Port (Right side - Copper Core)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(Theme.WIRE_CORE)
+        painter.drawEllipse(QPointF(self.width, self.height/2), 
+                            Theme.SOCKET_RADIUS, Theme.SOCKET_RADIUS)
+        
+        # Input Port (Left side - Subtle indentation/socket)
+        painter.setBrush(QColor(0, 0, 0, 120))
+        painter.drawEllipse(QPointF(0, self.height/2), 
+                            Theme.SOCKET_RADIUS, Theme.SOCKET_RADIUS)
+
     def itemChange(self, change, value):
-        """Notify connections to repaint when the node moves."""
+        """This runs every time the node moves or changes state."""
         if change == QGraphicsItem.ItemPositionHasChanged:
-            for conn in self.connections:
-                conn.update_path()
+            # Tell every wire attached to us to redraw itself
+            for connection in self.connections:
+                connection.update_path()
+                
         return super().itemChange(change, value)
+
+    def get_socket_at(self, local_pos: QPointF):
+        """Returns 'input', 'output', or None based on click location."""
+        margin = Theme.SOCKET_GRAB_MARGIN
+        
+        # Output Socket (Right side)
+        if local_pos.x() > self.width - margin:
+            return "output"
+        # Input Socket (Left side)
+        elif local_pos.x() < margin:
+            return "input"
+        return None

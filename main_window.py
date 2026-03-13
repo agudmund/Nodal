@@ -305,6 +305,7 @@ class NodalApp(QMainWindow):
             super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
+        super().mouseMoveEvent(event)
         if self._dragging_window:
             new_pos = event.globalPosition().toPoint()
             self.move(self.pos() + (new_pos - self._drag_pos))

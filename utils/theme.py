@@ -59,6 +59,12 @@ class Theme:
     BUTTON_BG_INACTIVE = QColor("#1f1f1f")
     BUTTON_BORDER_INACTIVE = QColor("#4a4a4a")
 
+    # --- Colors: The Nerve System (Electrical Copper) ---
+    # A broad, faint glow to simulate light scattering on the 'Mica' surface
+    WIRE_GLOW = QColor(155, 126, 94, 60) 
+    # The sharp, energetic signal core
+    WIRE_CORE = QColor(155, 126, 94, 255)
+
     @staticmethod
     def lerp(color1: QColor, color2: QColor, t: float) -> QColor:
         """Linear interpolation between two colors."""
