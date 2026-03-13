@@ -14,12 +14,12 @@ class Theme:
     WINDOW_BORDER_WIDTH = 1
     HANDLE_HEIGHT = 120  # Toolbar height
     WINDOW_ANIMATION_DURATION = 500  # Milliseconds for minimize animation
-    WINDOW_RESTORE_ANIMATION_DURATION = 250  # Milliseconds for restore animation (half of minimize)
+    WINDOW_RESTORE_ANIMATION_DURATION = 200  # Milliseconds for restore animation (half of minimize)
 
     # --- Branding (The Soul) ---
     ACCENT_NORMAL = QColor("#3498db")   # Primary Action Blue
     ACCENT_SELECTED = QColor("#00d2ff") # Glowing Signal Blue
-    TEXT_PRIMARY = QColor("#ffffff")
+    TEXT_PRIMARY = QColor("#d2d1cf")
     
     # --- UI Scaffolding ---
     WINDOW_BG = QColor("#1e1e1e")
@@ -60,7 +60,7 @@ class Theme:
 
     # --- Button Styling ---
     BUTTON_FONT_FAMILY = "Reey"
-    BUTTON_FONT_SIZE = 20
+    BUTTON_FONT_SIZE = 22
     BUTTON_FONT_BOLD = False
     BUTTON_TEXT_VERTICAL_OFFSET = -2
     BUTTON_BORDER_WIDTH = 2
@@ -78,7 +78,7 @@ class Theme:
     BUTTON_BG = QColor("#1e1e1e")
     BUTTON_BORDER = QColor("#1e1e1e")
     BUTTON_BG_HOVER = QColor("#1e1e1e")
-    BUTTON_BORDER_HOVER = QColor("#6b5a47")
+    BUTTON_BORDER_HOVER = QColor("#1e1e1e")
     BUTTON_BG_INACTIVE = QColor("#1f1f1f")
     BUTTON_BORDER_INACTIVE = QColor("#4a4a4a")
 
