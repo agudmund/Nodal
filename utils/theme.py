@@ -43,9 +43,9 @@ class Theme:
     GRID_COLOR = QColor(200, 200, 200, 30)
 
     # --- Node Specifics ---
-    NODE_GRADIENT_TOP = QColor(50, 50, 55, 160)
-    NODE_GRADIENT_BOTTOM = QColor(20, 20, 25, 210)
-    NODE_BORDER_NORMAL = QColor(100, 100, 110, 150)
+    NODE_GRADIENT_TOP = QColor(55, 55, 60, 255)    # Solid Slate
+    NODE_GRADIENT_BOTTOM = QColor(25, 25, 30, 255) # Solid Obsidian
+    NODE_BORDER_NORMAL = QColor(255, 255, 255, 40) # Subtle white rim light
     
     @staticmethod
     def get_alpha(color: QColor, alpha: int):

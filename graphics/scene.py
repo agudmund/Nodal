@@ -8,7 +8,7 @@
 
 import ctypes
 import sys
-from PySide6.QtWidgets import QGraphicsScene
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsScene
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPainter
 from utils.theme import Theme
@@ -27,11 +27,21 @@ def enable_blur(hwnd):
                         ("GradientColor", ctypes.c_int), ("AnimationId", ctypes.c_int)]
 
         accent = AccentPolicy()
-        accent.AccentState = 3 
+        # Change the AccentState to 5 for Mica
+        # And we need to add a "Flag" to tell Windows we want to use our own tint
+        # In scene.py -> enable_blur
+        accent.AccentState = 5  # Keep Mica
+        accent.AccentFlags = 0  # Tell Windows to stay out of the tinting business
+        accent.GradientColor = 0x00000000 # Fully transparent
         data = WindowCompositionAttributeData()
         data.Attribute = 19 
         data.SizeOfData = ctypes.sizeof(accent)
         data.Data = ctypes.cast(ctypes.pointer(accent), ctypes.c_void_p)
+        # Convert QColor to a Windows-friendly Hex (ABGR format)
+        tint = Theme.FROST_COLOR
+        # Windows expects: 0x AABBGGRR
+        windows_color = (tint.alpha() << 24) | (tint.blue() << 16) | (tint.green() << 8) | tint.red()
+        accent.GradientColor = windows_color
         ctypes.windll.user32.SetWindowCompositionAttribute(hwnd, ctypes.pointer(data))
     except Exception as e:
         print(f"Warning: Could not enable blur effect: {e}")
@@ -39,7 +49,34 @@ def enable_blur(hwnd):
 class NodeScene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setSceneRect(-5000, -5000, 10000, 10000) # Give yourself room to roam
+
+        # 1. THE FOG LAYER (The Blur Container)
+        # This is a transparent rectangle that holds the blur effect
+        self.fog_layer = QGraphicsRectItem(self.sceneRect())
+        self.fog_layer.setBrush(Qt.NoBrush)
+        self.fog_layer.setPen(Qt.NoPen)
+        self.fog_layer.setZValue(-100) # Deep in the background
+        
+        self.blur_effect = QGraphicsBlurEffect()
+        self.blur_effect.setBlurHints(QGraphicsBlurEffect.PerformanceHint) # Faster for slider-dragging
+        self.fog_layer.setGraphicsEffect(self.blur_effect)
+        
+        self.addItem(self.fog_layer)
+
+        # Apply the effect to the LAYER, not the view
+        self.blur_effect = QGraphicsBlurEffect()
+        self.fog_layer.setGraphicsEffect(self.blur_effect)
+        self.addItem(self.fog_layer)
         self.setSceneRect(0, 0, 2000, 2000)
+
+    def add_connection(self, node_a, node_b):
+        from graphics.connection import Connection
+        conn = Connection(node_a, node_b)
+        self.addItem(conn)
+        node_a.connections.append(conn)
+        node_b.connections.append(conn)
+        return conn
 
     def add_node(self, x: float, y: float, title: str = "Node") -> Node:
         """
@@ -64,6 +101,7 @@ class NodeScene(QGraphicsScene):
         return node
 
     def drawBackground(self, painter, rect):
-        painter.setBrush(Theme.FROST_COLOR) 
+        bg_color = Theme.get_alpha(Theme.FROST_COLOR, Theme.CANVAS_OPACITY)
+        painter.setBrush(bg_color) 
         painter.setPen(Qt.NoPen)
         painter.drawRect(rect)

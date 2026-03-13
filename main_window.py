@@ -6,8 +6,8 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget, QGraphicsView
-from PySide6.QtGui import QPainter
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QGraphicsBlurEffect
+from PySide6.QtGui import QBrush, QColor, QPen, QPainter
 from PySide6.QtCore import Qt
 from graphics.scene import NodeScene, enable_blur
 from widgets import CozyButton
@@ -19,21 +19,68 @@ logger = setup_logger()
 class NodeGraphicsView(QGraphicsView):
     def __init__(self, scene):
         super().__init__(scene)
+        
+        # --- Internal Navigation State ---
         self.middle_mouse_pressed = False
         self.last_pan_pos = None
         self.alt_right_pressed = False
         self.last_zoom_pos = None
-        self.zoom_speed = 0.002  # Sensitivity for zoom (adjust as needed)
+        self.zoom_speed = 0.002
         self.min_zoom = 0.1
         self.max_zoom = 5.0
         self.current_zoom = 1.0
+
+        # --- Transparency & Rendering ---
+        # 1. This tells the widget itself to be see-through
         self.viewport().setAttribute(Qt.WA_TranslucentBackground)
+        
+        # 2. This removes the default gray Qt background and borders
         self.setStyleSheet("background: transparent; border: none;")
+        
+        # 3. Optimization: Force full updates so the blur doesn't leave 'ghosts'
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
         self.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+        # --- The "Gaussian Cheat" Layer ---
+        # We apply the blur to the VIEWPORT. 
+        # This blurs the Mica background + Grid without blurring the Nodes themselves.
+        self.blur_effect = QGraphicsBlurEffect()
+        self.blur_effect.setBlurRadius(0) # Controlled by the slider
+        self.blur_effect.setBlurHints(QGraphicsBlurEffect.PerformanceHint)
+        self.viewport().setGraphicsEffect(self.blur_effect)
+        
         # Hide scrollbars
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+    def drawBackground(self, painter, rect):
+        """
+        The physical 'Glass' layer. 
+        It draws the tint and the grain texture OVER the Mica blur.
+        """
+        painter.save()
+        
+        # Keep the grain/tint static relative to the window (don't move when panning)
+        painter.setWorldTransform(painter.worldTransform().inverted()[0] * painter.worldTransform())
+        
+        # 1. THE OBSIDIAN TINT
+        # Responsive to Theme.FROST_COLOR.alpha() (The Slider!)
+        painter.fillRect(self.viewport().rect(), Theme.FROST_COLOR)
+        
+        # 2. THE DIFFUSER GRAIN
+        # This provides the 'fixed focal point' that makes the blur look professional
+        alpha = Theme.FROST_COLOR.alpha()
+        if alpha > 10:
+            # Subtle white 'sandblasted' grain
+            painter.setBrush(QBrush(QColor(255, 255, 255, 5), Qt.Dense7Pattern))
+            painter.setPen(Qt.NoPen)
+            painter.drawRect(self.viewport().rect())
+            
+            # Subtle black depth grain
+            painter.setBrush(QBrush(QColor(0, 0, 0, 3), Qt.Dense7Pattern))
+            painter.drawRect(self.viewport().rect())
+        
+        painter.restore()
 
     def mousePressEvent(self, event):
         # Alt + Right Mouse Button = Zoom mode
@@ -182,6 +229,24 @@ class NodalApp(QMainWindow):
         # Stretch to push exit button to the right
         bottom_toolbar_layout.addStretch()
 
+        # The Blur Intensity Slider
+        self.blur_slider = QSlider(Qt.Horizontal)
+        self.blur_slider.setRange(0, 255)
+        self.blur_slider.setValue(Theme.FROST_COLOR.alpha())
+        self.blur_slider.setFixedWidth(150)
+        self.blur_slider.setToolTip("Adjust Background Abstraction")
+        self.blur_slider.setStyleSheet("""
+            QSlider::handle:horizontal {
+                background: #00d2ff;
+                width: 12px;
+                border-radius: 6px;
+            }
+        """)
+        self.blur_slider.valueChanged.connect(self.update_blur_intensity)
+
+        # Add it to your layout (between the buttons)
+        bottom_toolbar_layout.insertWidget(1, self.blur_slider)
+
         # Exit button (right-aligned)
         exit_btn = CozyButton("Exit")
         exit_btn.clicked.connect(self.close)
@@ -200,6 +265,21 @@ class NodalApp(QMainWindow):
         grid_layout.setColumnStretch(1, 1)
 
         self.show()
+
+    def update_blur_intensity(self, value):
+        Theme.FROST_COLOR.setAlpha(value)
+        
+        # 1. Map the blur (Sane range 0-30 for performance)
+        blur_radius = (value / 255) * 30
+        self.scene.blur_effect.setBlurRadius(blur_radius)
+        
+        # 2. THE PERFORMANCE HACK: 
+        # Only resize the fog layer to what the user actually sees!
+        visible_rect = self.view.mapToScene(self.view.viewport().rect()).boundingRect()
+        self.scene.fog_layer.setRect(visible_rect)
+        
+        self.blur_slider.setToolTip(f"Optimized Smudge: {int(blur_radius)}px")
+        self.view.viewport().update()
 
     def create_new_node(self):
         view_center = self.view.mapToScene(self.view.viewport().width() // 2, self.view.viewport().height() // 2)
