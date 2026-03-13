@@ -141,9 +141,36 @@ class NodalApp(QMainWindow):
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        
+
         self.init_ui()
         enable_blur(int(self.winId()))
+
+    def _create_toolbar(self, border_position="bottom"):
+        """
+        Create a toolbar container with consistent styling.
+
+        Args:
+            border_position: "top", "bottom", or None for no border
+
+        Returns:
+            tuple: (container QWidget, layout QHBoxLayout)
+        """
+        container = QWidget()
+        container.setFixedHeight(self.handle_height)
+
+        border_style = ""
+        if border_position:
+            border_style = f"border-{border_position}: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+
+        container.setStyleSheet(f"""
+            background-color: {Theme.TOOLBAR_BG.name()};
+            {border_style}
+        """)
+
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(15, 0, 15, 0)
+
+        return container, layout
 
     def init_ui(self):
         self.setWindowTitle("Nodal")
@@ -174,17 +201,8 @@ class NodalApp(QMainWindow):
         grid_layout.addWidget(top_left_spacer, 0, 0)
 
         # Row 0, Col 1: Top toolbar with border-bottom
-        self.toolbar_container = QWidget()
-        self.toolbar_container.setFixedHeight(self.handle_height)
-        self.toolbar_container.setStyleSheet(f"""
-            background-color: {Theme.TOOLBAR_BG.name()};
-            border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
-        """)
-
-        toolbar_layout = QHBoxLayout(self.toolbar_container)
-        toolbar_layout.setContentsMargins(15, 0, 15, 0)
+        self.toolbar_container, toolbar_layout = self._create_toolbar(border_position="bottom")
         toolbar_layout.addStretch()
-
         grid_layout.addWidget(self.toolbar_container, 0, 1)
 
         # Row 0, Col 2: Top right spacer (empty, no border)
@@ -219,15 +237,7 @@ class NodalApp(QMainWindow):
         grid_layout.addWidget(bottom_left_spacer, 2, 0)
 
         # Row 2, Col 1: Bottom toolbar with border-top
-        self.bottom_toolbar_container = QWidget()
-        self.bottom_toolbar_container.setFixedHeight(self.handle_height)
-        self.bottom_toolbar_container.setStyleSheet(f"""
-            background-color: {Theme.TOOLBAR_BG.name()};
-            border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
-        """)
-
-        bottom_toolbar_layout = QHBoxLayout(self.bottom_toolbar_container)
-        bottom_toolbar_layout.setContentsMargins(15, 0, 15, 0)
+        self.bottom_toolbar_container, bottom_toolbar_layout = self._create_toolbar(border_position="top")
 
         # New Node button (left-aligned)
         self.btn_new_node = CozyButton("New Node")
