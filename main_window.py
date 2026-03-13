@@ -651,21 +651,12 @@ class NodalApp(QMainWindow):
 
     def closeEvent(self, event):
         """Triggered when the window is about to close - fade out first."""
+        event.accept()  # Accept immediately to let Qt know we're handling it
+
         if not self._first_show:  # Only fade out if we've already faded in
             self.anim = QPropertyAnimation(self, b"windowOpacity")
             self.anim.setDuration(300)
             self.anim.setStartValue(self.windowOpacity())
             self.anim.setEndValue(0.0)
             self.anim.setEasingCurve(QEasingCurve.InCubic)
-
-            def on_fade_finished():
-                try:
-                    event.accept()
-                except RuntimeError:
-                    pass  # Event object already deleted, ignore
-
-            self.anim.finished.connect(on_fade_finished)
             self.anim.start()
-            event.ignore()
-        else:
-            event.accept()
