@@ -6,7 +6,7 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QGraphicsBlurEffect
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter
 from PySide6.QtCore import Qt
 from graphics.scene import NodeScene, enable_blur
@@ -33,22 +33,14 @@ class NodeGraphicsView(QGraphicsView):
         # --- Transparency & Rendering ---
         # 1. This tells the widget itself to be see-through
         self.viewport().setAttribute(Qt.WA_TranslucentBackground)
-        
+
         # 2. This removes the default gray Qt background and borders
         self.setStyleSheet("background: transparent; border: none;")
-        
+
         # 3. Optimization: Force full updates so the blur doesn't leave 'ghosts'
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
         self.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
-        # --- The "Gaussian Cheat" Layer ---
-        # We apply the blur to the VIEWPORT. 
-        # This blurs the Mica background + Grid without blurring the Nodes themselves.
-        self.blur_effect = QGraphicsBlurEffect()
-        self.blur_effect.setBlurRadius(0) # Controlled by the slider
-        self.blur_effect.setBlurHints(QGraphicsBlurEffect.PerformanceHint)
-        self.viewport().setGraphicsEffect(self.blur_effect)
-        
         # Hide scrollbars
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -279,16 +271,14 @@ class NodalApp(QMainWindow):
 
     def update_blur_intensity(self, value):
         Theme.FROST_COLOR.setAlpha(value)
-        
-        # 1. Map the blur (Sane range 0-30 for performance)
+
+        # Map the blur (Sane range 0-30 for performance)
         blur_radius = (value / 255) * 30
-        self.scene.blur_effect.setBlurRadius(blur_radius)
-        
-        # 2. THE PERFORMANCE HACK: 
-        # Only resize the fog layer to what the user actually sees!
+
+        # Update the fog layer to what the user actually sees
         visible_rect = self.view.mapToScene(self.view.viewport().rect()).boundingRect()
         self.scene.fog_layer.setRect(visible_rect)
-        
+
         self.blur_slider.setToolTip(f"Optimized Smudge: {int(blur_radius)}px")
         self.view.viewport().update()
 
