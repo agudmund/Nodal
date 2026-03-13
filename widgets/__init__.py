@@ -19,8 +19,8 @@ class CozyButton(QPushButton):
     def __init__(self, text: str = "Click me", parent=None):
         super().__init__(text, parent)
 
-        self.setMinimumWidth(100)
-        self.setMinimumHeight(36)
+        self.setMinimumWidth(Theme.BUTTON_MIN_WIDTH)
+        self.setMinimumHeight(Theme.BUTTON_MIN_HEIGHT)
 
         # Apply our Python-driven styles
         self.update_style()

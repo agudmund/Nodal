@@ -57,12 +57,14 @@ class Theme:
     NODE_BORDER_SELECTED = ACCENT_NORMAL
 
     # --- Button Styling ---
-    BUTTON_FONT_FAMILY = "Segoe UI"
+    BUTTON_FONT_FAMILY = "Reey"
     BUTTON_FONT_SIZE = 10
     BUTTON_FONT_BOLD = False
     BUTTON_TEXT_VERTICAL_OFFSET = -2
     BUTTON_BORDER_WIDTH = 2
     BUTTON_BORDER_ENABLED = True
+    BUTTON_MIN_WIDTH = 200
+    BUTTON_MIN_HEIGHT = 150
 
     # --- Node Typography ---
     NODE_TITLE_FONT_FAMILY = "Chandler42"
