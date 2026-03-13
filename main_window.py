@@ -172,6 +172,30 @@ class NodalApp(QMainWindow):
 
         return container, layout
 
+    def _create_spacer(self):
+        """Create a standard padding spacer widget."""
+        spacer = QWidget()
+        spacer.setFixedWidth(15)
+        spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
+        return spacer
+
+    def _create_blur_slider(self):
+        """Create the blur intensity slider with consistent styling and connections."""
+        slider = QSlider(Qt.Horizontal)
+        slider.setRange(0, 255)
+        slider.setValue(Theme.FROST_COLOR.alpha())
+        slider.setFixedWidth(150)
+        slider.setToolTip("Adjust Background Abstraction")
+        slider.setStyleSheet("""
+            QSlider::handle:horizontal {
+                background: #00d2ff;
+                width: 12px;
+                border-radius: 6px;
+            }
+        """)
+        slider.valueChanged.connect(self.update_blur_intensity)
+        return slider
+
     def init_ui(self):
         self.setWindowTitle("Nodal")
         self.setGeometry(100, 100, 1200, 800)
@@ -188,34 +212,21 @@ class NodalApp(QMainWindow):
                 background-color: {Theme.WINDOW_BG.name()};
                 border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
             }}
-            #Toolbar {{
-                background-color: {Theme.TOOLBAR_BG.name()};
-                border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
-            }}
         """)
 
-        # Row 0, Col 0: Top left spacer (empty, no border)
-        top_left_spacer = QWidget()
-        top_left_spacer.setFixedWidth(15)
-        top_left_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
-        grid_layout.addWidget(top_left_spacer, 0, 0)
+        # Row 0, Col 0: Top left spacer
+        grid_layout.addWidget(self._create_spacer(), 0, 0)
 
         # Row 0, Col 1: Top toolbar with border-bottom
         self.toolbar_container, toolbar_layout = self._create_toolbar(border_position="bottom")
         toolbar_layout.addStretch()
         grid_layout.addWidget(self.toolbar_container, 0, 1)
 
-        # Row 0, Col 2: Top right spacer (empty, no border)
-        top_right_spacer = QWidget()
-        top_right_spacer.setFixedWidth(15)
-        top_right_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
-        grid_layout.addWidget(top_right_spacer, 0, 2)
+        # Row 0, Col 2: Top right spacer
+        grid_layout.addWidget(self._create_spacer(), 0, 2)
 
-        # Row 1, Col 0: Left spacer (padding only)
-        left_spacer = QWidget()
-        left_spacer.setFixedWidth(15)
-        left_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
-        grid_layout.addWidget(left_spacer, 1, 0)
+        # Row 1, Col 0: Left spacer
+        grid_layout.addWidget(self._create_spacer(), 1, 0)
 
         # Row 1, Col 1: Canvas (expands) with border
         self.scene = NodeScene()
@@ -224,17 +235,11 @@ class NodalApp(QMainWindow):
         self.view.setStyleSheet(f"border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};")
         grid_layout.addWidget(self.view, 1, 1)
 
-        # Row 1, Col 2: Right spacer (padding only)
-        right_spacer = QWidget()
-        right_spacer.setFixedWidth(15)
-        right_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
-        grid_layout.addWidget(right_spacer, 1, 2)
+        # Row 1, Col 2: Right spacer
+        grid_layout.addWidget(self._create_spacer(), 1, 2)
 
-        # Row 2, Col 0: Bottom left spacer (empty, no border)
-        bottom_left_spacer = QWidget()
-        bottom_left_spacer.setFixedWidth(15)
-        bottom_left_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
-        grid_layout.addWidget(bottom_left_spacer, 2, 0)
+        # Row 2, Col 0: Bottom left spacer
+        grid_layout.addWidget(self._create_spacer(), 2, 0)
 
         # Row 2, Col 1: Bottom toolbar with border-top
         self.bottom_toolbar_container, bottom_toolbar_layout = self._create_toolbar(border_position="top")
@@ -248,21 +253,7 @@ class NodalApp(QMainWindow):
         bottom_toolbar_layout.addStretch()
 
         # The Blur Intensity Slider
-        self.blur_slider = QSlider(Qt.Horizontal)
-        self.blur_slider.setRange(0, 255)
-        self.blur_slider.setValue(Theme.FROST_COLOR.alpha())
-        self.blur_slider.setFixedWidth(150)
-        self.blur_slider.setToolTip("Adjust Background Abstraction")
-        self.blur_slider.setStyleSheet("""
-            QSlider::handle:horizontal {
-                background: #00d2ff;
-                width: 12px;
-                border-radius: 6px;
-            }
-        """)
-        self.blur_slider.valueChanged.connect(self.update_blur_intensity)
-
-        # Add it to your layout (between the buttons)
+        self.blur_slider = self._create_blur_slider()
         bottom_toolbar_layout.insertWidget(1, self.blur_slider)
 
         # Exit button (right-aligned)
@@ -272,11 +263,8 @@ class NodalApp(QMainWindow):
 
         grid_layout.addWidget(self.bottom_toolbar_container, 2, 1)
 
-        # Row 2, Col 2: Bottom right spacer (empty, no border)
-        bottom_right_spacer = QWidget()
-        bottom_right_spacer.setFixedWidth(15)
-        bottom_right_spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
-        grid_layout.addWidget(bottom_right_spacer, 2, 2)
+        # Row 2, Col 2: Bottom right spacer
+        grid_layout.addWidget(self._create_spacer(), 2, 2)
 
         # Set row/column stretch to make canvas expandable
         grid_layout.setRowStretch(1, 1)
