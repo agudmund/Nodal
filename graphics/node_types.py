@@ -351,7 +351,7 @@ class WarmNode(NodeBase):
 
         super().__init__(node_id, title, full_text, pos, width, height, uuid)
         self.node_type = "warm"
-        self.setBrush(QColor(30, 30, 30, 200))
+        self.setBrush(Theme.WARM_NODE_BG)
 
     def paint_content(self, painter):
         """Render title and full text with proper wrapping and layout."""
@@ -419,7 +419,7 @@ class AboutNode(NodeBase):
         super().__init__(node_id, title, full_text, pos, width, height, uuid)
         self.node_type = "about"
         # Darker, more muted styling
-        self.setBrush(QColor(40, 40, 50, 200))
+        self.setBrush(Theme.ABOUT_NODE_BG)
 
     def paint_content(self, painter):
         """Simple text rendering for about nodes."""

@@ -48,6 +48,11 @@ class Theme:
     # --- Colors: Node Aesthetics ---
     NODE_GRADIENT_TOP = QColor(55, 55, 60, 255)
     NODE_GRADIENT_BOTTOM = QColor(25, 25, 30, 255)
+
+    # --- Node Type Colors ---
+    WARM_NODE_BG = QColor("#2a2a3a")               # Primary thought/text nodes
+    ABOUT_NODE_BG = QColor(40, 40, 50, 200)        # Meta/info nodes (darker)
+    IMAGE_NODE_BG = QColor(30, 30, 30, 200)        # Image display nodes
     NODE_BORDER_NORMAL = QColor(255, 255, 255, 40)
     NODE_BORDER_SELECTED = ACCENT_NORMAL
 
