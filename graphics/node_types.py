@@ -356,8 +356,8 @@ class WarmNode(NodeBase):
     def paint_content(self, painter):
         """Render title and full text with proper wrapping and layout."""
         padding = 12
-        inner_width = self.width() - (padding * 2)
-        inner_height = self.height() - (padding * 2)
+        inner_width = self.rect().width() - (padding * 2)
+        inner_height = self.rect().height() - (padding * 2)
 
         if inner_width <= 0 or inner_height <= 0:
             return
@@ -428,7 +428,7 @@ class AboutNode(NodeBase):
         painter.setFont(QFont(Theme.BUTTON_FONT_FAMILY, 10, QFont.Bold))
         painter.drawText(
             padding, padding, 
-            self.width() - (padding * 2), self.height() - (padding * 2),
+            self.rect().width() - (padding * 2), self.rect().height() - (padding * 2),
             Qt.TextWordWrap | Qt.AlignCenter, 
             self.title
         )
@@ -468,7 +468,7 @@ class ImageNode(NodeBase):
         if self.title and len(self.title) > 0:
             painter.setFont(QFont(Theme.BUTTON_FONT_FAMILY, 8))
             painter.setPen(QColor(200, 200, 200, 150))
-            painter.drawText(0, self.height() - 15, self.width(), 15, 
+            painter.drawText(0, self.rect().height() - 15, self.rect().width(), 15, 
                            Qt.AlignCenter, self.title)
 
     @staticmethod
