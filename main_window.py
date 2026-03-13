@@ -6,7 +6,7 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter
 from PySide6.QtCore import Qt
 from graphics.scene import NodeScene, enable_blur
@@ -219,6 +219,49 @@ class NodalApp(QMainWindow):
 
         # Row 0, Col 1: Top toolbar with border-bottom
         self.toolbar_container, toolbar_layout = self._create_toolbar(border_position="bottom")
+        toolbar_layout.addStretch()
+
+        # Graph selector combobox (centered)
+        self.combo_graphs = QComboBox()
+        self.combo_graphs.setObjectName("project_selector")
+        self.combo_graphs.addItems([
+            "Graph 1",
+            "Graph 2",
+            "Graph 3",
+            "Graph 4",
+            "Graph 5",
+            "Development"
+        ])
+        self.combo_graphs.setMinimumWidth(Theme.COMBOBOX_MIN_WIDTH)
+
+        # Apply theme-driven stylesheet
+        self.combo_graphs.setStyleSheet(f"""
+            QComboBox#project_selector {{
+                background-color: {Theme.COMBOBOX_BG.name()};
+                color: {Theme.COMBOBOX_TEXT.name()};
+                border: 1px solid {Theme.COMBOBOX_BORDER.name()};
+                border-radius: {Theme.COMBOBOX_BORDER_RADIUS}px;
+                padding: {Theme.COMBOBOX_PADDING};
+                font-family: {Theme.COMBOBOX_FONT_FAMILY};
+                font-size: {Theme.COMBOBOX_FONT_SIZE}pt;
+                font-weight: {Theme.COMBOBOX_FONT_WEIGHT};
+            }}
+            QComboBox#project_selector::drop-down {{
+                border: none;
+                width: {Theme.COMBOBOX_DROPDOWN_WIDTH}px;
+            }}
+            QComboBox#project_selector QAbstractItemView {{
+                background-color: {Theme.COMBOBOX_BG_OPEN.name()};
+                color: {Theme.COMBOBOX_TEXT.name()};
+                border: 1px solid {Theme.COMBOBOX_BORDER.name()};
+                selection-background-color: {Theme.ACCENT_SELECTED.name()};
+                font-family: {Theme.COMBOBOX_FONT_FAMILY};
+                font-size: {Theme.COMBOBOX_FONT_SIZE}pt;
+            }}
+        """)
+
+        toolbar_layout.addWidget(self.combo_graphs)
+
         toolbar_layout.addStretch()
         grid_layout.addWidget(self.toolbar_container, 0, 1)
 

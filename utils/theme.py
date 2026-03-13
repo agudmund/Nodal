@@ -59,6 +59,19 @@ class Theme:
     BUTTON_BG_INACTIVE = QColor("#1f1f1f")
     BUTTON_BORDER_INACTIVE = QColor("#4a4a4a")
 
+    # --- ComboBox Styling ---
+    COMBOBOX_BG = QColor("#1e1e1e")
+    COMBOBOX_BG_OPEN = QColor("#2a2d5a")
+    COMBOBOX_TEXT = QColor("#e0e0ff")
+    COMBOBOX_BORDER = QColor("#6b5a47")
+    COMBOBOX_BORDER_RADIUS = 8
+    COMBOBOX_PADDING = "6px 10px"
+    COMBOBOX_FONT_FAMILY = "Segoe UI"
+    COMBOBOX_FONT_SIZE = 12
+    COMBOBOX_FONT_WEIGHT = "normal"
+    COMBOBOX_DROPDOWN_WIDTH = 30
+    COMBOBOX_MIN_WIDTH = 200
+
     # --- Colors: The Nerve System (Electrical Copper) ---
     # A broad, faint glow to simulate light scattering on the 'Mica' surface
     WIRE_GLOW = QColor(155, 126, 94, 60) 
