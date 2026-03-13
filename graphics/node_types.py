@@ -147,15 +147,15 @@ class NodeBase(QGraphicsRectItem):
     def mouseDoubleClickEvent(self, event):
         """
         Handle double-click events:
-        - Double LEFT-click: toggle ports visibility
-        - Double RIGHT-click: open note editor
+        - Double LEFT-click: open note editor
+        - Double RIGHT-click: toggle ports visibility
         """
         if event.button() == Qt.LeftButton:
-            # Toggle ports on double left-click
-            self.toggle_ports()
-        elif event.button() == Qt.RightButton:
             # Open the note editor for this node
             self.open_editor()
+        elif event.button() == Qt.RightButton:
+            # Toggle ports on double right-click
+            self.toggle_ports()
 
         super().mouseDoubleClickEvent(event)
 
