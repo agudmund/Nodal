@@ -648,3 +648,17 @@ class NodalApp(QMainWindow):
         # Force a 'First Sync' of the blur layer so it's not 
         # trying to blur the infinite void on frame one.
         self.update_blur_intensity(self.blur_slider.value())
+
+    def closeEvent(self, event):
+        """Triggered when the window is about to close - fade out first."""
+        if not self._first_show:  # Only fade out if we've already faded in
+            self.anim = QPropertyAnimation(self, b"windowOpacity")
+            self.anim.setDuration(300)
+            self.anim.setStartValue(self.windowOpacity())
+            self.anim.setEndValue(0.0)
+            self.anim.setEasingCurve(QEasingCurve.InCubic)
+            self.anim.finished.connect(lambda: event.accept())
+            self.anim.start()
+            event.ignore()
+        else:
+            event.accept()
