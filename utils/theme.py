@@ -13,7 +13,7 @@ class Theme:
     # --- Sizing & Spacing ---
     WINDOW_BORDER_WIDTH = 1
     HANDLE_HEIGHT = 120  # Toolbar height
-    WINDOW_ANIMATION_DURATION = 500  # Milliseconds for minimize/restore animations
+    WINDOW_ANIMATION_DURATION = 200  # Milliseconds for minimize/restore animations
 
     # --- Branding (The Soul) ---
     ACCENT_NORMAL = QColor("#3498db")   # Primary Action Blue

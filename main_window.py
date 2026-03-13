@@ -450,13 +450,25 @@ class NodalApp(QMainWindow):
             50
         )
 
-        # Add intermediate keyframes for smoother animation
+        # Add intermediate keyframes for smoother animation (9 total frames)
         geom_anim.setKeyValueAt(0.0, start_geom)
+        geom_anim.setKeyValueAt(0.125, QRect(
+            start_geom.x() + (start_geom.width() * 0.015),
+            start_geom.y() + (start_geom.height() * 0.015),
+            start_geom.width() * 0.97,
+            start_geom.height() * 0.97
+        ))
         geom_anim.setKeyValueAt(0.25, QRect(
             start_geom.x() + (start_geom.width() * 0.06),
             start_geom.y() + (start_geom.height() * 0.06),
             start_geom.width() * 0.88,
             start_geom.height() * 0.88
+        ))
+        geom_anim.setKeyValueAt(0.375, QRect(
+            start_geom.right() - 175,
+            start_geom.bottom() - 175,
+            125,
+            125
         ))
         geom_anim.setKeyValueAt(0.5, QRect(
             start_geom.right() - 150,
@@ -464,11 +476,23 @@ class NodalApp(QMainWindow):
             100,
             100
         ))
+        geom_anim.setKeyValueAt(0.625, QRect(
+            start_geom.right() - 137,
+            start_geom.bottom() - 137,
+            87,
+            87
+        ))
         geom_anim.setKeyValueAt(0.75, QRect(
             start_geom.right() - 125,
             start_geom.bottom() - 125,
             75,
             75
+        ))
+        geom_anim.setKeyValueAt(0.875, QRect(
+            start_geom.right() - 112,
+            start_geom.bottom() - 112,
+            62,
+            62
         ))
         geom_anim.setKeyValueAt(1.0, end_geom)
 
@@ -477,11 +501,15 @@ class NodalApp(QMainWindow):
         opacity_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
         opacity_anim.setEasingCurve(QEasingCurve.InCubic)
 
-        # Add intermediate keyframes for smoother fade
+        # Add intermediate keyframes for smoother fade (9 total frames)
         opacity_anim.setKeyValueAt(0.0, 1.0)
+        opacity_anim.setKeyValueAt(0.125, 0.875)
         opacity_anim.setKeyValueAt(0.25, 0.75)
+        opacity_anim.setKeyValueAt(0.375, 0.625)
         opacity_anim.setKeyValueAt(0.5, 0.5)
+        opacity_anim.setKeyValueAt(0.625, 0.375)
         opacity_anim.setKeyValueAt(0.75, 0.25)
+        opacity_anim.setKeyValueAt(0.875, 0.125)
         opacity_anim.setKeyValueAt(1.0, 0.0)
 
         self._minimize_animation.addAnimation(geom_anim)
@@ -532,13 +560,25 @@ class NodalApp(QMainWindow):
         current_geom = self.geometry()
         target_geom = self._pre_minimize_geometry
 
-        # Add intermediate keyframes for smoother animation
+        # Add intermediate keyframes for smoother animation (9 total frames)
         geom_anim.setKeyValueAt(0.0, current_geom)
+        geom_anim.setKeyValueAt(0.125, QRect(
+            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.125),
+            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.125),
+            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.125),
+            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.125)
+        ))
         geom_anim.setKeyValueAt(0.25, QRect(
             current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.25),
             current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.25),
             current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.25),
             current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.25)
+        ))
+        geom_anim.setKeyValueAt(0.375, QRect(
+            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.375),
+            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.375),
+            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.375),
+            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.375)
         ))
         geom_anim.setKeyValueAt(0.5, QRect(
             current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.5),
@@ -546,11 +586,23 @@ class NodalApp(QMainWindow):
             current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.5),
             current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.5)
         ))
+        geom_anim.setKeyValueAt(0.625, QRect(
+            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.625),
+            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.625),
+            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.625),
+            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.625)
+        ))
         geom_anim.setKeyValueAt(0.75, QRect(
             current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.75),
             current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.75),
             current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.75),
             current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.75)
+        ))
+        geom_anim.setKeyValueAt(0.875, QRect(
+            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.875),
+            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.875),
+            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.875),
+            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.875)
         ))
         geom_anim.setKeyValueAt(1.0, target_geom)
 
@@ -559,11 +611,15 @@ class NodalApp(QMainWindow):
         opacity_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
         opacity_anim.setEasingCurve(QEasingCurve.OutCubic)
 
-        # Add intermediate keyframes for smoother fade
+        # Add intermediate keyframes for smoother fade (9 total frames)
         opacity_anim.setKeyValueAt(0.0, 0.0)
+        opacity_anim.setKeyValueAt(0.125, 0.125)
         opacity_anim.setKeyValueAt(0.25, 0.25)
+        opacity_anim.setKeyValueAt(0.375, 0.375)
         opacity_anim.setKeyValueAt(0.5, 0.5)
+        opacity_anim.setKeyValueAt(0.625, 0.625)
         opacity_anim.setKeyValueAt(0.75, 0.75)
+        opacity_anim.setKeyValueAt(0.875, 0.875)
         opacity_anim.setKeyValueAt(1.0, 1.0)
 
         self._restore_animation.addAnimation(geom_anim)
