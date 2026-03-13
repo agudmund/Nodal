@@ -13,17 +13,22 @@ from PySide6.QtGui import QLinearGradient, QColor, QPen, QBrush, QPainter, QFont
 from utils.theme import Theme
 
 class Node(QGraphicsItem):
-    def __init__(self, x: float, y: float, title: str = "Node", node_uuid: str = None):
+    def __init__(self, x: float, y: float, title: str = "Node", node_uuid: str = None, 
+                 node_type: str = "node", full_text: str = "", width: float = None, height: float = None, ports_visible: bool = True):
         super().__init__()
 
         # Unique identifier for serialization and connections
         self.uuid = node_uuid if node_uuid else str(uuid.uuid4())
 
+        # Node type and content
+        self.node_type = node_type
         self.title = title
+        self.full_text = full_text
+        self.ports_visible = ports_visible
 
-        # Pull dimensions directly from DNA (Theme)
-        self.width = Theme.NODE_WIDTH
-        self.height = Theme.NODE_HEIGHT
+        # Dimensions - allow override from session, otherwise use theme defaults
+        self.width = width if width is not None else Theme.NODE_WIDTH
+        self.height = height if height is not None else Theme.NODE_HEIGHT
         self.border_radius = Theme.NODE_RADIUS
 
         self.setPos(x, y)
@@ -118,22 +123,29 @@ class Node(QGraphicsItem):
         """Serialize node data to dictionary for JSON storage."""
         pos = self.pos()
         return {
-            "type": "node",
+            "type": self.node_type,
             "uuid": self.uuid,
             "title": self.title,
+            "full_text": self.full_text,
             "pos_x": pos.x(),
             "pos_y": pos.y(),
             "width": self.width,
             "height": self.height,
+            "ports_visible": self.ports_visible,
         }
 
     @staticmethod
     def from_dict(data: dict) -> 'Node':
-        """Deserialize node data from dictionary."""
+        """Deserialize node data from dictionary, preserving all properties."""
         node = Node(
             x=data.get("pos_x", 0),
             y=data.get("pos_y", 0),
             title=data.get("title", "Node"),
-            node_uuid=data.get("uuid")
+            node_uuid=data.get("uuid"),
+            node_type=data.get("type", "node"),
+            full_text=data.get("full_text", ""),
+            width=data.get("width"),
+            height=data.get("height"),
+            ports_visible=data.get("ports_visible", True),
         )
         return node
