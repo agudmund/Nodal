@@ -305,8 +305,14 @@ class WarmNode(NodeBase):
 
     def __init__(self, node_id=0, title="", full_text="", pos=QPointF(0, 0), 
                  width=None, height=None, uuid=None):
+        # Calculate minimum width based on title text if width not provided
         if width is None:
-            width = Theme.NODE_WIDTH
+            title_font = QFont(Theme.NODE_TITLE_FONT_FAMILY, Theme.NODE_TITLE_FONT_SIZE, QFont.Bold)
+            metrics = QFontMetrics(title_font)
+            # Title width + emoji (50px) + padding (20px each side) + some breathing room (20px)
+            title_width = metrics.horizontalAdvance(title) if title else 0
+            width = max(Theme.NODE_WIDTH, title_width + 90)  # 50 emoji + 40 padding/margins
+
         if height is None:
             height = Theme.NODE_HEIGHT
 
