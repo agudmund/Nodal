@@ -382,10 +382,12 @@ class WarmNode(NodeBase):
         self.update()
 
     def paint_content(self, painter):
-        """Draw emoji and handle title display."""
-        painter.setFont(QFont("Segoe UI Emoji", 24))
+        """Draw emoji in top-left corner."""
+        # Draw emoji with proper font and antialiasing
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setFont(QFont("Segoe UI Emoji", 28))
         painter.setPen(Qt.NoPen)
-        painter.drawText(QRectF(5, 5, 50, 50), Qt.AlignCenter, self.emoji)
+        painter.drawText(QRectF(5, 3, 50, 50), Qt.AlignLeft | Qt.AlignTop, self.emoji)
 
     def open_editor(self):
         """Open the sophisticated note editor."""
