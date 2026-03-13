@@ -7,78 +7,73 @@
 """
 
 from PySide6.QtWidgets import QGraphicsItem
-from PySide6.QtCore import Qt, QRectF
-from PySide6.QtGui import QLinearGradient, QColor, QPen, QBrush, QPainter, QCursor, QFont
+from PySide6.QtCore import Qt, QRectF, QPointF
+from PySide6.QtGui import QLinearGradient, QColor, QPen, QBrush, QPainter, QFont
 from utils.theme import Theme
 
 class Node(QGraphicsItem):
-    # Node dimensions
-    DEFAULT_WIDTH = 140
-    DEFAULT_HEIGHT = 90
-    BORDER_RADIUS = 10
-
     def __init__(self, x: float, y: float, title: str = "Node"):
         super().__init__()
         self.title = title
-        self.width = self.DEFAULT_WIDTH
-        self.height = self.DEFAULT_HEIGHT
-        self.border_radius = self.BORDER_RADIUS
+        
+        # Pull dimensions directly from DNA (Theme)
+        self.width = Theme.NODE_WIDTH
+        self.height = Theme.NODE_HEIGHT
+        self.border_radius = Theme.NODE_RADIUS
+        
         self.setPos(x, y)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
+        
+        # Movement tracking for future 'rubbery' wires
+        self.connections = []
 
     def boundingRect(self) -> QRectF:
-        return QRectF(-1, -1, self.width + 2, self.height + 2)
+        # Extra 2px margin to prevent 'anti-aliasing' clipping at the edges
+        return QRectF(-2, -2, self.width + 4, self.height + 4)
 
-    def paint(self, painter, option, widget):
-        # 1. PUNCH THE HOLE
-        painter.setCompositionMode(QPainter.CompositionMode_Clear)
-        painter.setBrush(Qt.transparent)
-        painter.setPen(Qt.NoPen)
-        painter.drawRoundedRect(0, 0, self.width, self.height, self.border_radius, self.border_radius)
-
-        # 2. DRAW THE BODY
-        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
-        
-        is_sel = self.isSelected()
-        accent = Theme.ACCENT_SELECTED if is_sel else Theme.ACCENT_NORMAL
-        
+    def paint(self, painter: QPainter, option, widget):
+        # 1. SETUP GRADIENTS
         body_grad = QLinearGradient(0, 0, 0, self.height)
-        if is_sel:
-            body_grad.setColorAt(0, Theme.get_alpha(accent, 180))
-            body_grad.setColorAt(1, QColor(10, 20, 30, 230))
-            pen = QPen(accent, 2.5)
+        
+        if self.isSelected():
+            # Glowing Selection State
+            body_grad.setColorAt(0, Theme.adjust_brightness(Theme.ACCENT_SELECTED, 0.4))
+            body_grad.setColorAt(1, Theme.NODE_GRADIENT_BOTTOM)
+            pen = QPen(Theme.ACCENT_SELECTED, 2)
         else:
+            # Solid Obsidian State
             body_grad.setColorAt(0, Theme.NODE_GRADIENT_TOP)
             body_grad.setColorAt(1, Theme.NODE_GRADIENT_BOTTOM)
             pen = QPen(Theme.NODE_BORDER_NORMAL, 1)
 
+        # 2. DRAW BODY
+        painter.setRenderHint(QPainter.Antialiasing)
         painter.setBrush(body_grad)
         painter.setPen(pen)
-        painter.setRenderHint(QPainter.Antialiasing)
         painter.drawRoundedRect(0, 0, self.width, self.height, self.border_radius, self.border_radius)
 
-        # 3. RIM LIGHT & TEXT
-        painter.setPen(QPen(QColor(255, 255, 255, 50), 1))
+        # 3. THE RIM LIGHT (The 'Cushion' effect)
+        # A 1px subtle highlight on the top edge to give it depth
+        painter.setPen(QPen(QColor(255, 255, 255, 30), 1))
         painter.drawLine(self.border_radius, 1, self.width - self.border_radius, 1)
 
-        painter.setFont(QFont("Lato", 11, QFont.Bold))
-        # Shadow
-        painter.setPen(QColor(0, 0, 0, 180))
-        painter.drawText(1, 1, self.width, self.height, Qt.AlignCenter, self.title)
-        # Main
+        # 4. TEXT RENDERING
+        # Using the vertical offset from Theme to handle font-specific baseline shifts
+        painter.setFont(QFont(Theme.BUTTON_FONT_FAMILY, 11, QFont.Bold))
+        
+        # Shadow/Drop-tint for readability
+        painter.setPen(QColor(0, 0, 0, 150))
+        painter.drawText(0, Theme.BUTTON_TEXT_VERTICAL_OFFSET + 1, self.width, self.height, Qt.AlignCenter, self.title)
+        
+        # Main Text
         painter.setPen(Theme.TEXT_PRIMARY)
-        painter.drawText(0, 0, self.width, self.height, Qt.AlignCenter, self.title)
+        painter.drawText(0, Theme.BUTTON_TEXT_VERTICAL_OFFSET, self.width, self.height, Qt.AlignCenter, self.title)
 
-    def mousePressEvent(self, event):
-        self.setCursor(QCursor(Qt.ClosedHandCursor))
-        super().mousePressEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        self.setCursor(QCursor(Qt.OpenHandCursor))
-        super().mouseReleaseEvent(event)
-
-    def hoverEnterEvent(self, event):
-        self.setCursor(QCursor(Qt.OpenHandCursor))
-        super().hoverEnterEvent(event)
+    def itemChange(self, change, value):
+        """Notify connections to repaint when the node moves."""
+        if change == QGraphicsItem.ItemPositionHasChanged:
+            for conn in self.connections:
+                conn.update_path()
+        return super().itemChange(change, value)

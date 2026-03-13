@@ -4,8 +4,6 @@ Location:  C:\Users\thisg\Desktop\Cozy Times\Nodal
 Mode:      with cozy emojis
 ────────────────────────────────────────────────────────────
 
-├── 📁 .github/
-│   └── 📄 copilot-instructions.md
 ├── 📁 benchmarks/
 │   ├── 📄 __init__.py
 │   ├── 📄 profiler.py
@@ -14,22 +12,14 @@ Mode:      with cozy emojis
 │   ├── 📄 __init__.py
 │   ├── 📄 connection.py
 │   ├── 📄 node.py
-│   └── 📄 scene.py
 ├── 📁 resources/
 │   └── 📁 icons/
 │       └── 📄 app_icon.png
 ├── 📁 utils/
 │   ├── 📄 __init__.py
-│   ├── 📄 logger.py
 │   ├── 📄 resource_monitor.py
-│   └── 📄 theme.py
 ├── 📁 widgets/
 │   └── 📄 __init__.py
-├── 📄 .gitattributes
-├── 📄 .gitignore
-├── 📄 LICENSE.txt
-├── 📄 main - Shortcut.lnk
-├── 📄 main.py
 ├── 📄 main_window.py
 
 

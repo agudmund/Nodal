@@ -12,7 +12,7 @@ class Theme:
 
     # --- Sizing & Spacing ---
     WINDOW_BORDER_WIDTH = 2
-    HANDLE_HEIGHT = 200  # Toolbar height
+    HANDLE_HEIGHT = 70  # Toolbar height
 
     # --- Branding (The Soul) ---
     ACCENT_NORMAL = QColor("#3498db")   # Primary Action Blue
