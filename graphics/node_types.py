@@ -391,21 +391,20 @@ class WarmNode(NodeBase):
         """Open the sophisticated note editor."""
         from graphics.note_editor import CozyNoteEditor
 
-        # Get the main window to set window priority
+        # Get the main window
         main_window = None
         for view in self.scene().views():
             main_window = view.window()
             break
 
-        # Create editor dialog
+        # Create editor dialog (parented to main window for proper cleanup)
         self._editor = CozyNoteEditor(self.node_id, self.title, self.full_text, parent=main_window)
 
-        # Set note editor to be on top while main window loses that flag
-        if main_window:
-            self._editor.setWindowFlags(self._editor.windowFlags() | Qt.WindowStaysOnTopHint)
-            # Remove always-on-top from main window
-            main_window.setWindowFlags(main_window.windowFlags() & ~Qt.WindowStaysOnTopHint)
-            main_window.show()
+        # Make editor appear on top without flickering - use raise() and activateWindow()
+        # This avoids the expensive setWindowFlags() call that causes screen flicker
+        self._editor.show()
+        self._editor.raise_()
+        self._editor.activateWindow()
 
         # Connect signals
         self._editor.accepted.connect(self._on_editor_accepted)
@@ -413,7 +412,6 @@ class WarmNode(NodeBase):
 
         # Show modeless dialog
         self._editor.setModal(False)
-        self._editor.show()
 
     def _on_editor_accepted(self):
         """User clicked Save → apply changes."""
@@ -432,14 +430,8 @@ class WarmNode(NodeBase):
         self._close_editor()
 
     def _close_editor(self):
-        """Clean up editor and restore main window priority."""
+        """Clean up editor reference."""
         if self._editor:
-            # Restore main window always-on-top flag
-            main_window = self._editor.parent()
-            if main_window:
-                main_window.setWindowFlags(main_window.windowFlags() | Qt.WindowStaysOnTopHint)
-                main_window.show()
-
             del self._editor
             self._editor = None
 
