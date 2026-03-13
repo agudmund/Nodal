@@ -108,10 +108,7 @@ class NodeGraphicsView(QGraphicsView):
             # Drag up = positive delta = zoom in
             # Drag down = negative delta = zoom out
             zoom_factor = 1.0 + (delta_y * self.zoom_speed)
-            zoom_factor = max(self.min_zoom / self.current_zoom, min(self.max_zoom / self.current_zoom, zoom_factor))
-
-            self.scale(zoom_factor, zoom_factor)
-            self.current_zoom *= zoom_factor
+            self.apply_zoom(zoom_factor)
             self.last_zoom_pos = event.pos()
             event.accept()
         # Pan mode: Middle Mouse drag
