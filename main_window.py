@@ -6,7 +6,7 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QGraphicsBlurEffect
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QGraphicsBlurEffect
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter
 from PySide6.QtCore import Qt
 from graphics.scene import NodeScene, enable_blur
