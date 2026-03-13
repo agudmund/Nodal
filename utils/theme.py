@@ -61,7 +61,7 @@ class Theme:
 
     # --- ComboBox Styling ---
     COMBOBOX_BG = QColor("#1e1e1e")
-    COMBOBOX_BG_OPEN = QColor("#2a2d5a")
+    COMBOBOX_BG_OPEN = QColor("#2a2a3a")
     COMBOBOX_TEXT = QColor("#e0e0ff")
     COMBOBOX_BORDER = QColor("#6b5a47")
     COMBOBOX_BORDER_RADIUS = 8

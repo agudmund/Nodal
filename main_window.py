@@ -6,6 +6,7 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
+from pathlib import Path
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter
 from PySide6.QtCore import Qt
@@ -13,6 +14,7 @@ from graphics.scene import NodeScene, enable_blur
 from widgets import CozyButton
 from utils.theme import Theme
 from utils.logger import setup_logger
+from utils.session_manager import SessionManager
 
 logger = setup_logger()
 
@@ -138,6 +140,7 @@ class NodalApp(QMainWindow):
         self.handle_height = Theme.HANDLE_HEIGHT
         self._dragging_window = False
         self._drag_pos = None
+        self._current_session = None  # Track current loaded session
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -196,6 +199,18 @@ class NodalApp(QMainWindow):
         slider.valueChanged.connect(self.update_blur_intensity)
         return slider
 
+    def _load_session_names(self):
+        """Load session JSON filenames from the sessions directory."""
+        sessions_dir = Path("sessions")
+        if not sessions_dir.exists():
+            logger.warning("Sessions directory not found")
+            return []
+
+        # Find all .json files in sessions directory
+        session_files = sorted(sessions_dir.glob("*.json"))
+        # Return just the filenames without extension
+        return [f.stem for f in session_files]
+
     def init_ui(self):
         self.setWindowTitle("Nodal")
         self.setGeometry(100, 100, 1200, 800)
@@ -224,14 +239,14 @@ class NodalApp(QMainWindow):
         # Graph selector combobox (centered)
         self.combo_graphs = QComboBox()
         self.combo_graphs.setObjectName("project_selector")
-        self.combo_graphs.addItems([
-            "Graph 1",
-            "Graph 2",
-            "Graph 3",
-            "Graph 4",
-            "Graph 5",
-            "Development"
-        ])
+
+        # Populate with session names from sessions/ directory
+        session_names = self._load_session_names()
+        if session_names:
+            self.combo_graphs.addItems(session_names)
+        else:
+            self.combo_graphs.addItem("No sessions found")
+
         self.combo_graphs.setMinimumWidth(Theme.COMBOBOX_MIN_WIDTH)
 
         # Apply theme-driven stylesheet
@@ -260,7 +275,15 @@ class NodalApp(QMainWindow):
             }}
         """)
 
+        # Connect combobox selection change to load session
+        self.combo_graphs.currentIndexChanged.connect(self.on_session_changed)
+
         toolbar_layout.addWidget(self.combo_graphs)
+
+        # Save button (right after combobox)
+        self.btn_save_session = CozyButton("Save")
+        self.btn_save_session.clicked.connect(self.save_session)
+        toolbar_layout.addWidget(self.btn_save_session)
 
         toolbar_layout.addStretch()
         grid_layout.addWidget(self.toolbar_container, 0, 1)
@@ -301,7 +324,7 @@ class NodalApp(QMainWindow):
 
         # Exit button (right-aligned)
         self.btn_exit = CozyButton("Exit")
-        self.btn_exit.clicked.connect(self.close)
+        self.btn_exit.clicked.connect(lambda: (self.save_session(), self.close()))
         bottom_toolbar_layout.addWidget(self.btn_exit)
 
         grid_layout.addWidget(self.bottom_toolbar_container, 2, 1)
@@ -331,6 +354,33 @@ class NodalApp(QMainWindow):
     def create_new_node(self):
         view_center = self.view.mapToScene(self.view.viewport().width() // 2, self.view.viewport().height() // 2)
         self.scene.add_node(view_center.x(), view_center.y(), "New Node")
+
+    def load_session(self, session_name: str):
+        """Load a session by name from the sessions directory."""
+        if not session_name:
+            return
+
+        filepath = SessionManager.get_session_filename(session_name)
+        SessionManager.load_session(self.scene, filepath, self.view)
+        self._current_session = session_name
+        logger.info(f"Loaded session: {session_name}")
+
+    def save_session(self):
+        """Save the current session to its file."""
+        if not self._current_session:
+            logger.warning("No session loaded - nothing to save")
+            return
+
+        filepath = SessionManager.get_session_filename(self._current_session)
+        SessionManager.save_session(self.scene, filepath, self.view)
+        logger.info(f"Saved session: {self._current_session}")
+
+    def on_session_changed(self, index: int):
+        """Handle combobox selection change."""
+        if index < 0:
+            return
+        session_name = self.combo_graphs.currentText()
+        self.load_session(session_name)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and event.position().y() < self.handle_height:

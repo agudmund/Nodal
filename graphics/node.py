@@ -6,26 +6,31 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
+import uuid
 from PySide6.QtWidgets import QGraphicsItem
 from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QLinearGradient, QColor, QPen, QBrush, QPainter, QFont
 from utils.theme import Theme
 
 class Node(QGraphicsItem):
-    def __init__(self, x: float, y: float, title: str = "Node"):
+    def __init__(self, x: float, y: float, title: str = "Node", node_uuid: str = None):
         super().__init__()
+
+        # Unique identifier for serialization and connections
+        self.uuid = node_uuid if node_uuid else str(uuid.uuid4())
+
         self.title = title
-        
+
         # Pull dimensions directly from DNA (Theme)
         self.width = Theme.NODE_WIDTH
         self.height = Theme.NODE_HEIGHT
         self.border_radius = Theme.NODE_RADIUS
-        
+
         self.setPos(x, y)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
-        
+
         # Movement tracking for future 'rubbery' wires
         self.connections = []
 
@@ -100,7 +105,7 @@ class Node(QGraphicsItem):
     def get_socket_at(self, local_pos: QPointF):
         """Returns 'input', 'output', or None based on click location."""
         margin = Theme.SOCKET_GRAB_MARGIN
-        
+
         # Output Socket (Right side)
         if local_pos.x() > self.width - margin:
             return "output"
@@ -108,3 +113,27 @@ class Node(QGraphicsItem):
         elif local_pos.x() < margin:
             return "input"
         return None
+
+    def to_dict(self) -> dict:
+        """Serialize node data to dictionary for JSON storage."""
+        pos = self.pos()
+        return {
+            "type": "node",
+            "uuid": self.uuid,
+            "title": self.title,
+            "pos_x": pos.x(),
+            "pos_y": pos.y(),
+            "width": self.width,
+            "height": self.height,
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'Node':
+        """Deserialize node data from dictionary."""
+        node = Node(
+            x=data.get("pos_x", 0),
+            y=data.get("pos_y", 0),
+            title=data.get("title", "Node"),
+            node_uuid=data.get("uuid")
+        )
+        return node
