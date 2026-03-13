@@ -1,89 +1,66 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
--Cozy times nodal playground - run_benchmarks.py benchmark suite runner
--Run this script to profile app performance
--Built using a single shared braincell by Yours Truly and various Intelligences
-"""
+# In benchmarks/run_benchmarks.py
 
 import sys
 import time
 from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Fix the path so we can see the root modules
+root_dir = Path(__file__).parent.parent
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
 
-from benchmarks.profiler import time_function, benchmark_suite, profile_function
+from benchmarks.profiler import time_function, benchmark_suite
 from graphics.scene import NodeScene
-from graphics.node import Node
 from utils.logger import setup_logger
 
+from PySide6.QtWidgets import QApplication
+
+# Initialize a silent logger for benchmarks to keep the console clean
 logger = setup_logger()
 
-
 @time_function
-def benchmark_scene_creation():
-    """Benchmark creating a new scene."""
+def benchmark_complex_graph(count: int = 50):
+    """Stress test: Creating nodes AND rubbery connections."""
     scene = NodeScene()
-    return scene
-
-
-@time_function
-def benchmark_node_creation(count: int = 100):
-    """Benchmark creating N nodes."""
-    scene = NodeScene()
+    nodes = []
+    
+    # 1. Node Creation
     for i in range(count):
-        scene.add_node(i * 150, i * 100, f"Node {i}")
+        node = scene.add_node(i * 10, i * 10, f"Node {i}")
+        nodes.append(node)
+    
+    # 2. Nerve Connection (The real heavy lifting)
+    for i in range(len(nodes) - 1):
+        scene.add_connection(nodes[i], nodes[i+1])
+    
     return scene
-
-
-@time_function
-def benchmark_node_selection(count: int = 50):
-    """Benchmark selecting/deselecting nodes."""
-    scene = NodeScene()
-    nodes = [scene.add_node(i * 150, i * 100, f"Node {i}") for i in range(count)]
-
-    # Toggle selection
-    for node in nodes:
-        node.setSelected(True)
-        node.setSelected(False)
-
-    return nodes
-
 
 def run_all_benchmarks():
-    """Run the complete benchmark suite."""
-    print("\n" + "="*60)
-    print("🔍 NODAL APP BENCHMARKS")
-    print("="*60 + "\n")
+    # START HERE: Create a dummy app so Qt doesn't panic
+    app = QApplication.instance() or QApplication(sys.argv)
+    
+    print("\n" + "═"*60)
+    print(" 🔍 NODAL ENGINE: STRESS TEST ")
+    print("═"*60)
 
-    logger.info("Starting benchmark suite")
+    try:
+        print(f"🚀 Initializing Scene...")
+        start = time.perf_counter()
+        scene = NodeScene()
+        print(f" ✅ Scene Ready ({time.perf_counter() - start:.4f}s)")
 
-    # Scene creation
-    print("📈 Scene Creation:")
-    benchmark_scene_creation()
+        print(f"\n🚀 Running Complex Graph Test (100 Nodes + 99 Rubbery Wires)...")
+        with benchmark_suite("Heavy Nerve Stress Test", iterations=1):
+            benchmark_complex_graph(100)
+            
+    except Exception as e:
+        print(f"\n❌ BENCHMARK CRASHED: {str(e)}")
+        import traceback
+        traceback.print_exc()
 
-    # Node creation (varying counts)
-    print("\n📈 Node Creation:")
-    with benchmark_suite("Creating 50 nodes", iterations=1):
-        benchmark_node_creation(50)
-
-    with benchmark_suite("Creating 100 nodes", iterations=1):
-        benchmark_node_creation(100)
-
-    with benchmark_suite("Creating 500 nodes", iterations=1):
-        benchmark_node_creation(500)
-
-    # Node selection
-    print("\n📈 Node Selection (50 nodes):")
-    benchmark_node_selection(50)
-
-    print("\n" + "="*60)
-    print("✅ Benchmark suite complete!")
-    print("="*60 + "\n")
-
-    logger.info("Benchmark suite completed")
-
+    print("\n" + "═"*60)
+    print(" ✨ STRESS TEST COMPLETE ")
+    print("═"*60 + "\n")
 
 if __name__ == "__main__":
     run_all_benchmarks()

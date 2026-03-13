@@ -28,13 +28,14 @@ class BenchmarkResult:
 
 
 def time_function(func):
-    """Decorator to time a function's execution."""
+    """Decorator to time a function's execution with a 'Cozy' output."""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         start = time.perf_counter()
         result = func(*args, **kwargs)
         elapsed = time.perf_counter() - start
-        print(f"⏱️  {func.__name__} took {elapsed:.4f}s")
+        # Updated phrasing to match the app's personality
+        print(f"⏱️  {func.__name__} completed in {elapsed:.4f}s")
         return result
     return wrapper
 
@@ -75,7 +76,7 @@ def benchmark_suite(name: str, iterations: int = 1):
             elapsed = time.perf_counter() - self.start_time
             avg_time = elapsed / iterations
             print(f"📊 {name}")
-            print(f"   Total: {elapsed:.4f}s | Average: {avg_time:.6f}s ({iterations} iterations)")
+            print(f"   Total: {elapsed:.4f}s | Avg: {avg_time:.6f}s")
 
     return BenchmarkContext()
 

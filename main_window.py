@@ -14,6 +14,8 @@ from widgets import CozyButton
 from utils.theme import Theme
 from utils.logger import setup_logger
 
+from utils.resource_monitor import ResourceMonitor
+
 logger = setup_logger()
 
 class NodeGraphicsView(QGraphicsView):
@@ -324,3 +326,31 @@ class NodalApp(QMainWindow):
         # Force a 'First Sync' of the blur layer so it's not 
         # trying to blur the infinite void on frame one.
         self.update_blur_intensity(self.blur_slider.value())
+
+    def test_performance_burst(self):
+        """Creates 50 nodes and 49 wires with guaranteed connections."""
+        from graphics.node import Node 
+        
+        monitor = ResourceMonitor()
+        monitor.start()
+        
+        created_nodes = [] # Local list to ensure we track the right objects
+        
+        # We'll spawn them in a nice diagonal cascade
+        for i in range(50):
+            x_pos = 100 + (i * 40)
+            y_pos = 100 + (i * 20)
+            
+            new_node = self.scene.add_node(x_pos, y_pos, f"Stress Node {i}")
+            
+            # If we have a previous node in our local list, connect them
+            if created_nodes:
+                prev_node = created_nodes[-1]
+                self.scene.add_connection(prev_node, new_node)
+            
+            created_nodes.append(new_node)
+        
+        monitor.stop("50 Node Burst with Wires")
+        
+        # Optional: Tell the view to look at the new cluster
+        self.view.centerOn(created_nodes[25])

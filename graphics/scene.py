@@ -16,8 +16,11 @@ from graphics.node import Node
 
 def enable_blur(hwnd):
     """Enable Windows blur effect on the window (Windows only)."""
-    if sys.platform != "win32":
-        return  # Silently skip on non-Windows platforms
+    # if sys.platform != "win32":
+    #     return  # Silently skip on non-Windows platforms
+
+    if not hwnd or sys.platform != "win32":
+        return
 
     try:
         class WindowCompositionAttributeData(ctypes.Structure):
@@ -49,6 +52,11 @@ def enable_blur(hwnd):
 class NodeScene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        # Only try to enable blur if we actually have a parent window
+        if parent and hasattr(parent, 'winId'):
+             enable_blur(parent.winId())
+
         self.temp_conn = None
         self.setSceneRect(-5000, -5000, 10000, 10000) # Give yourself room to roam
 
