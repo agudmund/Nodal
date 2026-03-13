@@ -45,6 +45,18 @@ class NodeGraphicsView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
+    def wheelEvent(self, event):
+        """Mouse wheel zoom - scroll up to zoom in, scroll down to zoom out."""
+        zoom_factor = 1.25 if event.angleDelta().y() > 0 else 0.8
+        self.apply_zoom(zoom_factor)
+
+    def apply_zoom(self, factor):
+        """Apply zoom with bounds checking."""
+        new_zoom = self.current_zoom * factor
+        if self.min_zoom <= new_zoom <= self.max_zoom:
+            self.scale(factor, factor)
+            self.current_zoom = new_zoom
+
     def drawBackground(self, painter, rect):
         """
         The physical 'Glass' layer. 
