@@ -10,7 +10,7 @@ from pathlib import Path
 import ctypes
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QEvent, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect
 from graphics.scene import NodeScene, enable_blur
 from widgets import CozyButton
 from utils.theme import Theme
@@ -146,6 +146,10 @@ class NodalApp(QMainWindow):
         self._dragging_window = False
         self._drag_pos = None
         self._current_session = None  # Track current loaded session
+        self._minimize_animation = None  # Store animation group for minimize
+        self._restore_animation = None   # Store animation group for restore
+        self._pre_minimize_geometry = None  # Store geometry before minimizing
+        self._animating = False  # Flag to prevent double animations
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -329,7 +333,7 @@ class NodalApp(QMainWindow):
 
         # Wait button (minimize - left of exit)
         self.btn_wait = CozyButton("Wait")
-        self.btn_wait.clicked.connect(self.minimize_with_aero)
+        self.btn_wait.clicked.connect(self.minimize_with_animation)
         bottom_toolbar_layout.addWidget(self.btn_wait)
 
         # Exit button (right-aligned)
@@ -413,26 +417,107 @@ class NodalApp(QMainWindow):
         self._dragging_window = False
         super().mouseReleaseEvent(event)
 
-    def minimize_with_aero(self):
-        """Minimize window with native Windows Aero animation."""
-        try:
-            ctypes.windll.user32.ShowWindow(int(self.winId()), SW_MINIMIZE)
-        except Exception as e:
-            logger.warning(f"Failed to minimize with Aero: {e}, falling back to standard minimize")
-            self.showMinimized()
+    def minimize_with_animation(self):
+        """Minimize window with custom shrink + fade animation."""
+        if self._animating:
+            return
+
+        self._animating = True
+        self._pre_minimize_geometry = self.geometry()
+
+        logger.info("Starting custom minimize animation")
+
+        # Stop any ongoing restore animation
+        if self._restore_animation:
+            self._restore_animation.stop()
+
+        # Create parallel animation group (shrink + fade happen simultaneously)
+        self._minimize_animation = QParallelAnimationGroup()
+
+        # Animate geometry shrink (to bottom-right area, like taskbar)
+        geom_anim = QPropertyAnimation(self, b"geometry")
+        geom_anim.setDuration(300)  # 300ms duration
+        geom_anim.setEasingCurve(QEasingCurve.InCubic)
+
+        # Start from current geometry
+        start_geom = self.geometry()
+
+        # End at a small size in the bottom-right corner
+        end_geom = QRect(
+            start_geom.right() - 100,
+            start_geom.bottom() - 100,
+            50,
+            50
+        )
+        geom_anim.setStartValue(start_geom)
+        geom_anim.setEndValue(end_geom)
+
+        # Animate opacity fade
+        opacity_anim = QPropertyAnimation(self, b"windowOpacity")
+        opacity_anim.setDuration(300)
+        opacity_anim.setEasingCurve(QEasingCurve.InCubic)
+        opacity_anim.setStartValue(1.0)
+        opacity_anim.setEndValue(0.0)
+
+        self._minimize_animation.addAnimation(geom_anim)
+        self._minimize_animation.addAnimation(opacity_anim)
+        self._minimize_animation.finished.connect(self._on_minimize_animation_finished)
+
+        self._minimize_animation.start()
+
+    def _on_minimize_animation_finished(self):
+        """Called when minimize animation completes."""
+        logger.info("Minimize animation finished, calling showMinimized()")
+        self.showMinimized()
+        self._animating = False
 
     def changeEvent(self, event):
-        """Handle window state changes to restore with Aero animation."""
-        from PySide6.QtGui import QGuiApplication
-        if event.type() == event.WindowStateChange:
-            if self.windowState() & Qt.WindowMinimized:
-                pass
-            elif self.isVisible():
-                try:
-                    ctypes.windll.user32.ShowWindow(int(self.winId()), SW_RESTORE)
-                except Exception as e:
-                    logger.warning(f"Failed to restore with Aero: {e}")
+        """Handle window state changes to animate restore."""
+        if event.type() == QEvent.WindowStateChange:
+            if not (self.windowState() & Qt.WindowMinimized) and self._pre_minimize_geometry:
+                # Window is being restored from minimized state
+                logger.info("Window restored, starting restore animation")
+                self._animate_restore()
         super().changeEvent(event)
+
+    def _animate_restore(self):
+        """Animate window expanding and fading back in."""
+        if self._animating:
+            return
+
+        self._animating = True
+
+        # Stop any ongoing minimize animation
+        if self._minimize_animation:
+            self._minimize_animation.stop()
+
+        # Reset opacity to 0 before animating back in
+        self.setWindowOpacity(0.0)
+
+        logger.info("Starting custom restore animation")
+
+        # Create parallel animation group (expand + fade in)
+        self._restore_animation = QParallelAnimationGroup()
+
+        # Animate geometry expand back to original
+        geom_anim = QPropertyAnimation(self, b"geometry")
+        geom_anim.setDuration(300)
+        geom_anim.setEasingCurve(QEasingCurve.OutCubic)
+        geom_anim.setStartValue(self.geometry())
+        geom_anim.setEndValue(self._pre_minimize_geometry)
+
+        # Animate opacity fade in
+        opacity_anim = QPropertyAnimation(self, b"windowOpacity")
+        opacity_anim.setDuration(300)
+        opacity_anim.setEasingCurve(QEasingCurve.OutCubic)
+        opacity_anim.setStartValue(0.0)
+        opacity_anim.setEndValue(1.0)
+
+        self._restore_animation.addAnimation(geom_anim)
+        self._restore_animation.addAnimation(opacity_anim)
+        self._restore_animation.finished.connect(lambda: setattr(self, '_animating', False))
+
+        self._restore_animation.start()
 
     def showEvent(self, event):
         """Triggered when the window is first shown to the user."""
