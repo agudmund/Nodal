@@ -31,9 +31,7 @@ Mode:      with cozy emojis
 ├── 📄 main - Shortcut.lnk
 ├── 📄 main.py
 ├── 📄 main_window.py
-├── 📄 Nodal.pyproj
-├── 📄 Nodal.slnx
-└── 📄 README.md
+
 
 ────────────────────────────────────────────────────────────
 Saved by cozy-snapshot.py  •  gentle sibling to cozy-tree.py

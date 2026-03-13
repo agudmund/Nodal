@@ -62,7 +62,6 @@ class NodeScene(QGraphicsScene):
         self.blur_effect.setBlurHints(QGraphicsBlurEffect.PerformanceHint) # Faster for slider-dragging
         self.fog_layer.setGraphicsEffect(self.blur_effect)
         
-        self.addItem(self.fog_layer)
 
         # Apply the effect to the LAYER, not the view
         self.blur_effect = QGraphicsBlurEffect()

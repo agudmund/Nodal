@@ -6,21 +6,15 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
+import sys
 import logging
 import logging.handlers
 from pathlib import Path
-
 
 def setup_logger(name: str = "nodal") -> logging.Logger:
     """
     Configure and return a logger that writes to both console and file.
     Log files rotate daily at midnight and append to the same day's log.
-
-    Args:
-        name: Logger name (default: "nodal")
-
-    Returns:
-        logging.Logger: Configured logger instance
     """
     logger = logging.getLogger(name)
 
@@ -30,37 +24,38 @@ def setup_logger(name: str = "nodal") -> logging.Logger:
 
     logger.setLevel(logging.DEBUG)
 
-    # Create logs directory if it doesn't exist
+    # 1. Setup Paths
     logs_dir = Path(__file__).parent.parent / "logs"
     logs_dir.mkdir(exist_ok=True)
-
-    # Log file path (same file name, rotates daily)
     log_file = logs_dir / "nodal.log"
 
-    # Formatter for consistent output
+    # 2. Formatter
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-    # Timed rotating file handler (rotates daily at midnight)
+    # 3. Stream Handler (Console)
+    # We explicitly set the stream and terminator to handle Windows encoding better
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.INFO)
+
+    # 4. File Handler (Rotating)
+    # This is the 'One True' file handler for the app
     file_handler = logging.handlers.TimedRotatingFileHandler(
         log_file,
         when="midnight",
         interval=1,
-        backupCount=30  # Keep 30 days of logs
+        backupCount=30,
+        encoding='utf-8' # Ensures the Sparkle ✨ is saved correctly to disk
     )
-    file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
-    file_handler.suffix = "%Y%m%d"  # Add date suffix to rotated files
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.suffix = "%Y%m%d"
+
+    # 5. Add Handlers to Logger
     logger.addHandler(file_handler)
-
-    # Console handler (writes to console)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-
-    logger.info(f"Logger initialized - Log file: {log_file}")
+    logger.addHandler(stream_handler)
 
     return logger
