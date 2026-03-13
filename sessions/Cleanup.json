@@ -1,7 +1,21 @@
 {
   "version": "1.0",
-  "nodes": [],
-  "node_order": [],
+  "nodes": [
+    {
+      "type": "warm",
+      "uuid": "4e542afa-b651-482b-b5e4-4fed55a3f4c8",
+      "title": "New Node",
+      "full_text": "",
+      "pos_x": 570.0898086684889,
+      "pos_y": 321.16360796563845,
+      "width": 140,
+      "height": 90,
+      "ports_visible": false
+    }
+  ],
+  "node_order": [
+    "4e542afa-b651-482b-b5e4-4fed55a3f4c8"
+  ],
   "viewport": {
     "scale": 1.0244,
     "center_x": 569.11,

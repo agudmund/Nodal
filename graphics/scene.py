@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsS
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPainter, QTransform
 from utils.theme import Theme
-from graphics.node_types import WarmNode
+from graphics.node_types import WarmNode, NodeBase
 
 def enable_blur(hwnd):
     """Enable Windows blur effect on the window (Windows only)."""
@@ -116,7 +116,7 @@ class NodeScene(QGraphicsScene):
 
     def mousePressEvent(self, event):
         item = self.itemAt(event.scenePos(), QTransform())
-        if isinstance(item, Node):
+        if isinstance(item, NodeBase):
             socket = item.get_socket_at(item.mapFromScene(event.scenePos()))
             if socket == "output":
                 from graphics.connection import Connection
