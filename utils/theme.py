@@ -67,7 +67,7 @@ class Theme:
     # --- Node Typography ---
     NODE_TITLE_FONT_FAMILY = "Chandler42"
     NODE_TITLE_FONT_SIZE = 13
-    NODE_BODY_FONT_FAMILY = "Segoe UI"
+    NODE_BODY_FONT_FAMILY = "Lato"
     NODE_BODY_FONT_SIZE = 9
 
     # --- Button Colors ---

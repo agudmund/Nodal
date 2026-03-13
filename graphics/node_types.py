@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - node_types.py specialized node implementations
--Type-specific node classes with resizable rects, ports, animations, and custom rendering
+-Type-specific node classes with QGraphicsTextItem, emoji, resizing, and rich rendering
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
 import uuid as _uuid
 import random
-from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsDropShadowEffect, QDialog, QVBoxLayout, QLabel
-from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation
-from PySide6.QtGui import QColor, QPen, QFont, QPainter, QBrush
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsTextItem, QGraphicsDropShadowEffect
+from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTextDocument, QTimer
+from PySide6.QtGui import QColor, QPen, QFont, QPainter, QBrush, QFontMetrics
 from utils.theme import Theme
 from graphics.port import Port
 
@@ -27,7 +27,7 @@ class NodeBase(QGraphicsRectItem):
         self.title = title
         self.full_text = full_text
         self.uuid = uuid or _uuid.uuid4().hex
-        self.node_type = "node"  # Override in subclasses
+        self.node_type = "node"
 
         # Resize handling
         self._resize_handle_size = 12
@@ -35,7 +35,7 @@ class NodeBase(QGraphicsRectItem):
         self._resize_start_pos = QPointF()
         self._resize_start_rect = QRectF()
 
-        # Drag tracking for proper invalidation
+        # Drag tracking
         self._last_scene_pos = pos
 
         # Port management
@@ -45,7 +45,7 @@ class NodeBase(QGraphicsRectItem):
         self._port_anim = None
         self._create_ports()
 
-        # Hover animation (smooth scale pulse with variable duration per node)
+        # Hover animation
         self.pulse_anim = QVariantAnimation()
         pulse_duration = random.randint(400, 600)
         self.pulse_anim.setDuration(pulse_duration)
@@ -54,7 +54,7 @@ class NodeBase(QGraphicsRectItem):
         self.pulse_anim.setEasingCurve(QEasingCurve.OutQuad)
         self.pulse_anim.valueChanged.connect(self.setScale)
 
-        # Pen colors for hover
+        # Pen styling
         self.normal_pen = QPen(QColor("#444444"), 2)
         self.hover_pen = QPen(self.normal_pen.color().lighter(125), 2)
         self.current_pen = self.normal_pen
@@ -68,11 +68,9 @@ class NodeBase(QGraphicsRectItem):
         )
         self.setAcceptHoverEvents(True)
 
-        # Visuals - Centralizing the "Cozy" look
+        # Visuals
         self.setBrush(QColor(30, 30, 30, 200))
         self.round_radius = 18
-
-        # Set initial pen
         self.setPen(self.current_pen)
 
         # Drop shadow effect
@@ -93,42 +91,30 @@ class NodeBase(QGraphicsRectItem):
         self.output_port.hide()
 
     def itemChange(self, change, value):
-        """
-        Handle item changes like position, selection, visibility.
-        Ensures the scene properly invalidates both old and new regions during drag.
-        """
+        """Handle item changes like position, selection, visibility."""
         if change == QGraphicsRectItem.ItemPositionChange:
-            # BEFORE position changes: invalidate the OLD position
             if self.scene() and self._last_scene_pos != value:
-                # Calculate the bounding rect at the OLD position
                 old_rect = self.rect().translated(self._last_scene_pos)
                 shadow_margin = 22
                 old_bounds = old_rect.adjusted(-shadow_margin, -shadow_margin, shadow_margin, shadow_margin)
                 self.scene().update(old_bounds)
 
         elif change == QGraphicsRectItem.ItemPositionHasChanged:
-            # AFTER position changed: invalidate the NEW position
             if self.scene():
                 self._last_scene_pos = self.scenePos()
-                # Invalidate new position (includes shadow margins)
                 self.scene().update(self.sceneBoundingRect())
 
         return super().itemChange(change, value)
 
     def _update_port_positions(self):
-        """Update port positions to be outside the node, centered vertically on rect center."""
+        """Update port positions to be outside the node, centered vertically."""
         rect = self.rect()
-        # Center the ports vertically on the rect's midpoint
         center_y = int(rect.height() - 25)
-
-        # Input port on the left, outside the node
         self.input_port.setPos(-3, center_y)
-
-        # Output port on the right, outside the node
         self.output_port.setPos(int(rect.width()) + 3, center_y)
 
     def toggle_ports(self):
-        """Toggle port visibility with smooth fade animation."""
+        """Toggle port visibility."""
         self.ports_visible = not self.ports_visible
         self._animate_ports()
 
@@ -145,37 +131,20 @@ class NodeBase(QGraphicsRectItem):
             self.output_port.hide()
 
     def mouseDoubleClickEvent(self, event):
-        """
-        Handle double-click events:
-        - Double LEFT-click: open note editor
-        - Double RIGHT-click: toggle ports visibility
-        """
+        """Handle double-click events."""
         if event.button() == Qt.LeftButton:
-            # Open the note editor for this node
             self.open_editor()
         elif event.button() == Qt.RightButton:
-            # Toggle ports on double right-click
             self.toggle_ports()
-
         super().mouseDoubleClickEvent(event)
 
     def open_editor(self):
-        """Open the note editor for this node. Placeholder implementation."""
-        # Create a simple placeholder dialog
-        dialog = QDialog()
-        dialog.setWindowTitle(f"Edit Node: {self.title}")
-        dialog.setGeometry(100, 100, 400, 300)
-
-        layout = QVBoxLayout()
-        label = QLabel(f"Note Editor Placeholder\n\nNode: {self.title}\nUUID: {self.uuid}")
-        layout.addWidget(label)
-        dialog.setLayout(layout)
-        dialog.exec()
+        """Open the note editor for this node. Override in subclasses."""
+        pass
 
     def mousePressEvent(self, event):
         """Check if resize handle was clicked."""
         if event.button() == Qt.LeftButton:
-            # Check if click is near the bottom-right corner (resize handle area)
             rect = self.rect()
             handle_area = QRectF(
                 rect.right() - self._resize_handle_size * 2,
@@ -198,21 +167,17 @@ class NodeBase(QGraphicsRectItem):
         if not self._is_resizing:
             return super().mouseMoveEvent(event)
 
-        # Calculate new dimensions
         delta = event.pos() - self._resize_start_pos
         new_width = max(120, self._resize_start_rect.width() + delta.x())
         new_height = max(50, self._resize_start_rect.height() + delta.y())
 
-        # Optional: hold Shift to maintain aspect ratio
         if event.modifiers() & Qt.ShiftModifier:
             orig_ratio = self._resize_start_rect.width() / self._resize_start_rect.height()
             new_height = new_width / orig_ratio
 
-        # Update the node size
         self.prepareGeometryChange()
         self.setRect(QRectF(self.rect().topLeft(), QSizeF(new_width, new_height)))
 
-        # Explicitly invalidate the scene region including shadow margins
         if self.scene():
             self.scene().update(self.sceneBoundingRect())
 
@@ -256,21 +221,18 @@ class NodeBase(QGraphicsRectItem):
 
     def paint(self, painter, option, widget):
         """Paint the node body and delegate content to subclasses."""
-        # Draw the main body
         painter.setPen(self.pen())
         painter.setBrush(self.brush())
         painter.drawRoundedRect(self.rect(), self.round_radius, self.round_radius)
 
-        # Draw resize handle in bottom-right corner (diagonal lines)
+        # Draw resize handle in bottom-right corner
         painter.setPen(QPen(QColor(255, 255, 255, 60), 1.5))
         br = self.rect().bottomRight()
         for i in range(3):
             offset = (i + 1) * 4
             painter.drawLine(br.x() - offset, br.y() - 2, br.x() - 2, br.y() - offset)
 
-        # Only show body content if there's enough vertical space
         if self.rect().height() >= 60:
-            # Let subclasses draw their specific content
             self.paint_content(painter)
 
     def setRect(self, rect):
@@ -279,10 +241,7 @@ class NodeBase(QGraphicsRectItem):
         self._update_port_positions()
 
     def boundingRect(self):
-        """
-        Return the full rect including shadow effect margins.
-        The drop shadow extends ~20 pixels beyond the rect (blur radius 15 + offset 5).
-        """
+        """Return the full rect including shadow effect margins."""
         shadow_margin = 22
         rect = self.rect()
         return rect.adjusted(-shadow_margin, -shadow_margin, shadow_margin, shadow_margin)
@@ -311,7 +270,6 @@ class NodeBase(QGraphicsRectItem):
         """Factory method to create appropriate node type from dictionary."""
         node_type = data.get("type", "node")
 
-        # Dispatch to correct node class based on type
         if node_type == "warm":
             return WarmNode.from_dict(data)
         elif node_type == "about":
@@ -319,7 +277,6 @@ class NodeBase(QGraphicsRectItem):
         elif node_type == "image":
             return ImageNode.from_dict(data)
         else:
-            # Default fallback to base node
             return NodeBase._create_from_dict(data)
 
     @staticmethod
@@ -339,11 +296,15 @@ class NodeBase(QGraphicsRectItem):
 
 
 class WarmNode(NodeBase):
-    """Text/thought node - displays title and full text content with word wrapping."""
+    """Text/thought node with QGraphicsTextItem, emoji, and note editor."""
+
+    MIN_WIDTH = 180
+    MIN_HEIGHT = 60
+    MAX_HEIGHT = 1000
+    MARGIN = 20
 
     def __init__(self, node_id=0, title="", full_text="", pos=QPointF(0, 0), 
                  width=None, height=None, uuid=None):
-        # Use provided dimensions or fall back to defaults
         if width is None:
             width = Theme.NODE_WIDTH
         if height is None:
@@ -353,47 +314,134 @@ class WarmNode(NodeBase):
         self.node_type = "warm"
         self.setBrush(Theme.WARM_NODE_BG)
 
+        # Random emoji for visual personality
+        self.emoji = random.choice(["🪴", "💭", "🌸", "✨", "🤗", "😍", "☕", "💛", "❤", "📌", "💖", "🌼"])
+
+        # QGraphicsTextItem for title
+        self.title_item = QGraphicsTextItem(self)
+        self.title_item.setFont(QFont(Theme.NODE_TITLE_FONT_FAMILY, Theme.NODE_TITLE_FONT_SIZE, QFont.Bold))
+        self.title_item.setDefaultTextColor(QColor("#a8d0ff"))
+
+        # QGraphicsTextItem for body text
+        self.text_item = QGraphicsTextItem(self)
+        self.text_item.setFont(QFont(Theme.NODE_BODY_FONT_FAMILY, Theme.NODE_BODY_FONT_SIZE))
+        self.text_item.setDefaultTextColor(QColor("#ffffff"))
+
+        # Layout update timer
+        self._layout_timer = QTimer()
+        self._layout_timer.setSingleShot(True)
+        self._layout_timer.timeout.connect(self._sync_content_layout)
+
+        # Track if editor is open
+        self._editor = None
+
+        self._sync_content_layout()
+
+    def setRect(self, rect):
+        """Override to sync content layout when resized."""
+        super().setRect(rect)
+        self._sync_content_layout()
+
+    def _sync_content_layout(self):
+        """Update position and visibility of title and body text items."""
+        r = self.rect()
+
+        # === Emoji display (top-left) ===
+        # (Will be drawn in paint_content instead)
+
+        # === Title positioning ===
+        metrics = QFontMetrics(self.title_item.font())
+        elided_title = metrics.elidedText(self.title, Qt.ElideRight, r.width() - 80)
+        self.title_item.setPlainText(elided_title)
+        self.title_item.setPos(60, 9)
+
+        # === Tiny title-card mode (< 95px height) ===
+        if r.height() < 95:
+            # Hide body text for small nodes
+            self.text_item.setVisible(False)
+        else:
+            # Show body text
+            self.text_item.setVisible(True)
+
+            doc = QTextDocument()
+            doc.setDefaultFont(self.text_item.font())
+            doc.setPlainText(self.full_text)
+            doc.setTextWidth(r.width() - (self.MARGIN * 2))
+
+            self.text_item.setDocument(doc)
+            self.text_item.setPos(self.MARGIN, 55)
+
+            # Auto-grow height based on content
+            content_needed = doc.size().height() + 85
+            if content_needed > r.height() + 8:
+                final_h = max(self.MIN_HEIGHT, min(self.MAX_HEIGHT, content_needed))
+                if abs(r.height() - final_h) > 4:
+                    self.prepareGeometryChange()
+                    self.setRect(QRectF(r.topLeft(), QSizeF(r.width(), final_h)))
+
+        self.update()
+
     def paint_content(self, painter):
-        """Render title and full text with proper wrapping and layout."""
-        padding = 12
-        inner_width = self.rect().width() - (padding * 2)
-        inner_height = self.rect().height() - (padding * 2)
+        """Draw emoji and handle title display."""
+        painter.setFont(QFont("Segoe UI Emoji", 24))
+        painter.setPen(Qt.NoPen)
+        painter.drawText(QRectF(5, 5, 50, 50), Qt.AlignCenter, self.emoji)
 
-        if inner_width <= 0 or inner_height <= 0:
-            return
+    def open_editor(self):
+        """Open the sophisticated note editor."""
+        from graphics.note_editor import CozyNoteEditor
 
-        # Render title (bold, larger font with Chandler42)
-        title_font = QFont(Theme.NODE_TITLE_FONT_FAMILY, Theme.NODE_TITLE_FONT_SIZE, QFont.Bold)
-        painter.setFont(title_font)
+        # Get the main window to set window priority
+        main_window = None
+        for view in self.scene().views():
+            main_window = view.window()
+            break
 
-        # Title shadow
-        painter.setPen(QColor(0, 0, 0, 150))
-        painter.drawText(padding + 1, padding + 1, inner_width, inner_height, 
-                        Qt.TextWordWrap | Qt.AlignTop, self.title)
+        # Create editor dialog
+        self._editor = CozyNoteEditor(self.node_id, self.title, self.full_text, parent=main_window)
 
-        # Title main color
-        painter.setPen(Theme.TEXT_PRIMARY)
-        painter.drawText(padding, padding, inner_width, inner_height, 
-                        Qt.TextWordWrap | Qt.AlignTop, self.title)
+        # Set note editor to be on top while main window loses that flag
+        if main_window:
+            self._editor.setWindowFlags(self._editor.windowFlags() | Qt.WindowStaysOnTopHint)
+            # Remove always-on-top from main window
+            main_window.setWindowFlags(main_window.windowFlags() & ~Qt.WindowStaysOnTopHint)
+            main_window.show()
 
-        # Calculate space for title
-        title_rect = painter.fontMetrics().boundingRect(
-            padding, padding, inner_width, inner_height,
-            Qt.TextWordWrap | Qt.AlignTop, self.title
-        )
-        title_height = title_rect.height() + 8
+        # Connect signals
+        self._editor.accepted.connect(self._on_editor_accepted)
+        self._editor.rejected.connect(self._on_editor_rejected)
 
-        # Render full text if available
-        if self.full_text and self.full_text.strip():
-            body_font = QFont(Theme.NODE_BODY_FONT_FAMILY, Theme.NODE_BODY_FONT_SIZE, QFont.Normal)
-            painter.setFont(body_font)
-            painter.setPen(QColor(200, 200, 200, 210))
+        # Show modeless dialog
+        self._editor.setModal(False)
+        self._editor.show()
 
-            text_rect_height = inner_height - title_height
-            if text_rect_height > 5:
-                painter.drawText(padding, padding + title_height, inner_width, 
-                               text_rect_height, Qt.TextWordWrap | Qt.AlignTop, 
-                               self.full_text)
+    def _on_editor_accepted(self):
+        """User clicked Save → apply changes."""
+        if self._editor:
+            self.title = self._editor.get_title()
+            self.full_text = self._editor.get_text()
+            self._sync_content_layout()
+            self.update()
+            self._editor.mark_as_saved()
+            if self.scene():
+                self.scene().update()
+            self._close_editor()
+
+    def _on_editor_rejected(self):
+        """User clicked Cancel → do nothing."""
+        self._close_editor()
+
+    def _close_editor(self):
+        """Clean up editor and restore main window priority."""
+        if self._editor:
+            # Restore main window always-on-top flag
+            main_window = self._editor.parent()
+            if main_window:
+                main_window.setWindowFlags(main_window.windowFlags() | Qt.WindowStaysOnTopHint)
+                main_window.show()
+
+            del self._editor
+            self._editor = None
 
     @staticmethod
     def from_dict(data: dict) -> 'WarmNode':
@@ -418,7 +466,6 @@ class AboutNode(NodeBase):
                  width=200, height=55, uuid=None):
         super().__init__(node_id, title, full_text, pos, width, height, uuid)
         self.node_type = "about"
-        # Darker, more muted styling
         self.setBrush(Theme.ABOUT_NODE_BG)
 
     def paint_content(self, painter):
@@ -461,7 +508,7 @@ class ImageNode(NodeBase):
 
         super().__init__(node_id, title, full_text, pos, width, height, uuid)
         self.node_type = "image"
-        self.image = None  # Will load actual image later if available
+        self.image = None
 
     def paint_content(self, painter):
         """Image nodes: show title as caption if needed."""
