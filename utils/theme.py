@@ -12,7 +12,7 @@ class Theme:
 
     # --- Sizing & Spacing ---
     WINDOW_BORDER_WIDTH = 1
-    HANDLE_HEIGHT = 70  # Toolbar height
+    HANDLE_HEIGHT = 120  # Toolbar height
 
     # --- Branding (The Soul) ---
     ACCENT_NORMAL = QColor("#3498db")   # Primary Action Blue
@@ -58,13 +58,13 @@ class Theme:
 
     # --- Button Styling ---
     BUTTON_FONT_FAMILY = "Reey"
-    BUTTON_FONT_SIZE = 10
+    BUTTON_FONT_SIZE = 20
     BUTTON_FONT_BOLD = False
     BUTTON_TEXT_VERTICAL_OFFSET = -2
     BUTTON_BORDER_WIDTH = 2
     BUTTON_BORDER_ENABLED = True
-    BUTTON_MIN_WIDTH = 200
-    BUTTON_MIN_HEIGHT = 150
+    BUTTON_MIN_WIDTH = 160
+    BUTTON_MIN_HEIGHT = 75
 
     # --- Node Typography ---
     NODE_TITLE_FONT_FAMILY = "Chandler42"
@@ -73,7 +73,7 @@ class Theme:
     NODE_BODY_FONT_SIZE = 9
 
     # --- Button Colors ---
-    BUTTON_BG = QColor("#3a3a3a")
+    BUTTON_BG = QColor("#1e1e1e")
     BUTTON_BORDER = QColor("#1e1e1e")
     BUTTON_BG_HOVER = QColor("#1e1e1e")
     BUTTON_BORDER_HOVER = QColor("#6b5a47")

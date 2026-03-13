@@ -7,6 +7,7 @@
 """
 
 from pathlib import Path
+import ctypes
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter
 from PySide6.QtCore import Qt
@@ -17,6 +18,10 @@ from utils.logger import setup_logger
 from utils.session_manager import SessionManager
 
 logger = setup_logger()
+
+# Windows ShowWindow flags for Aero animation
+SW_MINIMIZE = 6
+SW_RESTORE = 9
 
 class NodeGraphicsView(QGraphicsView):
     def __init__(self, scene):
@@ -311,7 +316,7 @@ class NodalApp(QMainWindow):
         self.bottom_toolbar_container, bottom_toolbar_layout = self._create_toolbar(border_position="top")
 
         # New Node button (left-aligned)
-        self.btn_new_node = CozyButton("New Node")
+        self.btn_new_node = CozyButton("Node")
         self.btn_new_node.clicked.connect(self.create_new_node)
         bottom_toolbar_layout.addWidget(self.btn_new_node)
 
@@ -321,6 +326,11 @@ class NodalApp(QMainWindow):
         # The Blur Intensity Slider
         self.blur_slider = self._create_blur_slider()
         bottom_toolbar_layout.insertWidget(1, self.blur_slider)
+
+        # Wait button (minimize - left of exit)
+        self.btn_wait = CozyButton("Wait")
+        self.btn_wait.clicked.connect(self.minimize_with_aero)
+        bottom_toolbar_layout.addWidget(self.btn_wait)
 
         # Exit button (right-aligned)
         self.btn_exit = CozyButton("Exit")
@@ -402,6 +412,27 @@ class NodalApp(QMainWindow):
     def mouseReleaseEvent(self, event):
         self._dragging_window = False
         super().mouseReleaseEvent(event)
+
+    def minimize_with_aero(self):
+        """Minimize window with native Windows Aero animation."""
+        try:
+            ctypes.windll.user32.ShowWindow(int(self.winId()), SW_MINIMIZE)
+        except Exception as e:
+            logger.warning(f"Failed to minimize with Aero: {e}, falling back to standard minimize")
+            self.showMinimized()
+
+    def changeEvent(self, event):
+        """Handle window state changes to restore with Aero animation."""
+        from PySide6.QtGui import QGuiApplication
+        if event.type() == event.WindowStateChange:
+            if self.windowState() & Qt.WindowMinimized:
+                pass
+            elif self.isVisible():
+                try:
+                    ctypes.windll.user32.ShowWindow(int(self.winId()), SW_RESTORE)
+                except Exception as e:
+                    logger.warning(f"Failed to restore with Aero: {e}")
+        super().changeEvent(event)
 
     def showEvent(self, event):
         """Triggered when the window is first shown to the user."""
