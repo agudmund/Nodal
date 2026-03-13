@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsS
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPainter, QTransform
 from utils.theme import Theme
-from graphics.node import Node
+from graphics.node_types import WarmNode
 
 def enable_blur(hwnd):
     """Enable Windows blur effect on the window (Windows only)."""
@@ -86,7 +86,7 @@ class NodeScene(QGraphicsScene):
         node_b.connections.append(conn)
         return conn
 
-    def add_node(self, x: float, y: float, title: str = "Node") -> Node:
+    def add_node(self, x: float, y: float, title: str = "Node") -> 'WarmNode':
         """
         Add a node to the scene at the specified coordinates.
         Coordinates are clamped to the scene bounds (0-2000).
@@ -97,13 +97,13 @@ class NodeScene(QGraphicsScene):
             title: Node title label
 
         Returns:
-            Node: The created and added node
+            WarmNode: The created and added node
         """
         # Clamp coordinates to scene bounds
         x = max(0, min(2000, x))
         y = max(0, min(2000, y))
 
-        node = Node(x, y, title)
+        node = WarmNode(x, y, title)
         node.setZValue(10) 
         self.addItem(node)
         return node

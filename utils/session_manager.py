@@ -8,13 +8,13 @@
 
 import os
 import json
+from graphics.node_types import NodeBase
 from pathlib import Path
 from typing import List, Optional
 
 from PySide6.QtCore import QPointF
 from PySide6.QtWidgets import QGraphicsView
 
-from graphics.node import Node
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -62,7 +62,7 @@ class SessionManager:
 
         # Collect all nodes from scene
         for item in scene.items():
-            if isinstance(item, Node):
+            if isinstance(item, NodeBase):
                 nodes_data.append(item.to_dict())
                 node_uuids.append(item.uuid)
 
@@ -119,7 +119,7 @@ class SessionManager:
             return None
 
         # Clear existing nodes from scene
-        nodes_to_remove = [item for item in scene.items() if isinstance(item, Node)]
+        nodes_to_remove = [item for item in scene.items() if isinstance(item, NodeBase)]
         for node in nodes_to_remove:
             scene.removeItem(node)
 
@@ -133,7 +133,7 @@ class SessionManager:
             node_data = nodes_data.get(node_uuid)
             if node_data:
                 try:
-                    node = Node.from_dict(node_data)
+                    node = NodeBase.from_dict(node_data)
                     scene.addItem(node)
                     created_nodes[node.uuid] = node
                 except Exception as e:
