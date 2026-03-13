@@ -28,10 +28,18 @@ class Theme:
     NODE_WIDTH = 140
     NODE_HEIGHT = 90
     NODE_RADIUS = 10
-    
-    # --- Sockets (Ports) ---
+
+    # --- Ports (Connection Points) ---
+    PORT_INPUT_COLOR = QColor(180, 140, 120)      # Warm/copper for inputs
+    PORT_OUTPUT_COLOR = QColor(140, 190, 160)     # Cool/mint for outputs
+    PORT_GLOW_DARKNESS = 140                       # Glow effect darkness factor
+    PORT_SIZE = 20                                 # Diameter in pixels
+    PORT_BORDER_COLOR = QColor(60, 60, 80, 100)   # Port border
+    PORT_GLOW_BLUR_RADIUS = 12                     # Glow effect blur
+
+    # --- Sockets (Legacy - for backward compatibility) ---
     SOCKET_RADIUS = 5
-    SOCKET_GRAB_MARGIN = 12 
+    SOCKET_GRAB_MARGIN = 12
     
     # --- Colors: Scene & Mica ---
     FROST_COLOR = QColor(30, 30, 35, 150)

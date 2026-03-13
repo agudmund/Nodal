@@ -9,7 +9,7 @@
 import ctypes
 import sys
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsScene
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QColor, QPainter, QTransform
 from utils.theme import Theme
 from graphics.node_types import WarmNode, NodeBase
@@ -103,7 +103,9 @@ class NodeScene(QGraphicsScene):
         x = max(0, min(2000, x))
         y = max(0, min(2000, y))
 
-        node = WarmNode(x, y, title)
+        # Create a WarmNode with auto-incremented node_id
+        node_id = len([item for item in self.items() if isinstance(item, NodeBase)])
+        node = WarmNode(node_id=node_id, title=title, pos=QPointF(x, y))
         node.setZValue(10) 
         self.addItem(node)
         return node
