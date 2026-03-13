@@ -150,6 +150,8 @@ class NodalApp(QMainWindow):
         self._restore_animation = None   # Store animation group for restore
         self._pre_minimize_geometry = None  # Store geometry before minimizing
         self._animating = False  # Flag to prevent double animations
+        self._first_show = True  # Flag to trigger fade in on first show
+        self.anim = None  # Store fade in animation
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -631,6 +633,18 @@ class NodalApp(QMainWindow):
     def showEvent(self, event):
         """Triggered when the window is first shown to the user."""
         super().showEvent(event)
+
+        # Fade in on first show
+        if self._first_show:
+            self._first_show = False
+            self.setWindowOpacity(0.0)
+            self.anim = QPropertyAnimation(self, b"windowOpacity")
+            self.anim.setDuration(600)
+            self.anim.setStartValue(0.0)
+            self.anim.setEndValue(1.0)
+            self.anim.setEasingCurve(QEasingCurve.InOutQuad)
+            self.anim.start()
+
         # Force a 'First Sync' of the blur layer so it's not 
         # trying to blur the infinite void on frame one.
         self.update_blur_intensity(self.blur_slider.value())
