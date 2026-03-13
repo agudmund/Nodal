@@ -449,15 +449,40 @@ class NodalApp(QMainWindow):
             50,
             50
         )
-        geom_anim.setStartValue(start_geom)
-        geom_anim.setEndValue(end_geom)
+
+        # Add intermediate keyframes for smoother animation
+        geom_anim.setKeyValueAt(0.0, start_geom)
+        geom_anim.setKeyValueAt(0.25, QRect(
+            start_geom.x() + (start_geom.width() * 0.06),
+            start_geom.y() + (start_geom.height() * 0.06),
+            start_geom.width() * 0.88,
+            start_geom.height() * 0.88
+        ))
+        geom_anim.setKeyValueAt(0.5, QRect(
+            start_geom.right() - 150,
+            start_geom.bottom() - 150,
+            100,
+            100
+        ))
+        geom_anim.setKeyValueAt(0.75, QRect(
+            start_geom.right() - 125,
+            start_geom.bottom() - 125,
+            75,
+            75
+        ))
+        geom_anim.setKeyValueAt(1.0, end_geom)
 
         # Animate opacity fade
         opacity_anim = QPropertyAnimation(self, b"windowOpacity")
         opacity_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
         opacity_anim.setEasingCurve(QEasingCurve.InCubic)
-        opacity_anim.setStartValue(1.0)
-        opacity_anim.setEndValue(0.0)
+
+        # Add intermediate keyframes for smoother fade
+        opacity_anim.setKeyValueAt(0.0, 1.0)
+        opacity_anim.setKeyValueAt(0.25, 0.75)
+        opacity_anim.setKeyValueAt(0.5, 0.5)
+        opacity_anim.setKeyValueAt(0.75, 0.25)
+        opacity_anim.setKeyValueAt(1.0, 0.0)
 
         self._minimize_animation.addAnimation(geom_anim)
         self._minimize_animation.addAnimation(opacity_anim)
@@ -503,15 +528,43 @@ class NodalApp(QMainWindow):
         geom_anim = QPropertyAnimation(self, b"geometry")
         geom_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
         geom_anim.setEasingCurve(QEasingCurve.OutCubic)
-        geom_anim.setStartValue(self.geometry())
-        geom_anim.setEndValue(self._pre_minimize_geometry)
+
+        current_geom = self.geometry()
+        target_geom = self._pre_minimize_geometry
+
+        # Add intermediate keyframes for smoother animation
+        geom_anim.setKeyValueAt(0.0, current_geom)
+        geom_anim.setKeyValueAt(0.25, QRect(
+            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.25),
+            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.25),
+            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.25),
+            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.25)
+        ))
+        geom_anim.setKeyValueAt(0.5, QRect(
+            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.5),
+            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.5),
+            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.5),
+            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.5)
+        ))
+        geom_anim.setKeyValueAt(0.75, QRect(
+            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.75),
+            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.75),
+            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.75),
+            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.75)
+        ))
+        geom_anim.setKeyValueAt(1.0, target_geom)
 
         # Animate opacity fade in
         opacity_anim = QPropertyAnimation(self, b"windowOpacity")
         opacity_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
         opacity_anim.setEasingCurve(QEasingCurve.OutCubic)
-        opacity_anim.setStartValue(0.0)
-        opacity_anim.setEndValue(1.0)
+
+        # Add intermediate keyframes for smoother fade
+        opacity_anim.setKeyValueAt(0.0, 0.0)
+        opacity_anim.setKeyValueAt(0.25, 0.25)
+        opacity_anim.setKeyValueAt(0.5, 0.5)
+        opacity_anim.setKeyValueAt(0.75, 0.75)
+        opacity_anim.setKeyValueAt(1.0, 1.0)
 
         self._restore_animation.addAnimation(geom_anim)
         self._restore_animation.addAnimation(opacity_anim)
