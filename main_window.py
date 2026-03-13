@@ -657,7 +657,14 @@ class NodalApp(QMainWindow):
             self.anim.setStartValue(self.windowOpacity())
             self.anim.setEndValue(0.0)
             self.anim.setEasingCurve(QEasingCurve.InCubic)
-            self.anim.finished.connect(lambda: event.accept())
+
+            def on_fade_finished():
+                try:
+                    event.accept()
+                except RuntimeError:
+                    pass  # Event object already deleted, ignore
+
+            self.anim.finished.connect(on_fade_finished)
             self.anim.start()
             event.ignore()
         else:
