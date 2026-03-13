@@ -24,6 +24,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="benchmarks\performance_tests.py" />
     <Compile Include="benchmarks\profiler.py" />
     <Compile Include="benchmarks\run_benchmarks.py" />
     <Compile Include="benchmarks\__init__.py" />
