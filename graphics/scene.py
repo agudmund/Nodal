@@ -136,19 +136,19 @@ class NodeScene(QGraphicsScene):
     def mouseReleaseEvent(self, event):
         if self.temp_conn:
             item = self.itemAt(event.scenePos(), QTransform())
-            
-            if isinstance(item, Node) and item != self.temp_conn.start_node:
+
+            if isinstance(item, NodeBase) and item != self.temp_conn.start_node:
                 # 1. Finalize the connection
                 self.temp_conn.end_node = item
-                
+
                 # 2. THE LINK: Tell both nodes they now own this wire
                 # This ensures the wire follows BOTH nodes when they move
                 if self.temp_conn not in self.temp_conn.start_node.connections:
                     self.temp_conn.start_node.connections.append(self.temp_conn)
-                
+
                 if self.temp_conn not in item.connections:
                     item.connections.append(self.temp_conn)
-                
+
                 # 3. Final path update to snap to the target socket
                 self.temp_conn.update_path()
             else:
