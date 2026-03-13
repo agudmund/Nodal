@@ -117,46 +117,17 @@ class NodeScene(QGraphicsScene):
         painter.drawRect(rect)
 
     def mousePressEvent(self, event):
-        item = self.itemAt(event.scenePos(), QTransform())
-        if isinstance(item, NodeBase):
-            socket = item.get_socket_at(item.mapFromScene(event.scenePos()))
-            if socket == "output":
-                from graphics.connection import Connection
-                self.temp_conn = Connection(item)
-                self.addItem(self.temp_conn)
-                event.accept()
-                return
+        """Handle mouse press events on the scene."""
+        # For now, just pass through to default handling
+        # Port-based connection drawing will be implemented separately
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if self.temp_conn:
-            # We call update_path directly with the new mouse position
-            self.temp_conn.update_path(event.scenePos())
-            self.update() 
+        """Handle mouse move events on the scene."""
+        # Port-based connection system will handle dragging
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        if self.temp_conn:
-            item = self.itemAt(event.scenePos(), QTransform())
-
-            if isinstance(item, NodeBase) and item != self.temp_conn.start_node:
-                # 1. Finalize the connection
-                self.temp_conn.end_node = item
-
-                # 2. THE LINK: Tell both nodes they now own this wire
-                # This ensures the wire follows BOTH nodes when they move
-                if self.temp_conn not in self.temp_conn.start_node.connections:
-                    self.temp_conn.start_node.connections.append(self.temp_conn)
-
-                if self.temp_conn not in item.connections:
-                    item.connections.append(self.temp_conn)
-
-                # 3. Final path update to snap to the target socket
-                self.temp_conn.update_path()
-            else:
-                # If we didn't hit a node, delete the ghost wire
-                self.removeItem(self.temp_conn)
-            
-            self.temp_conn = None
-            
+        """Handle mouse release events on the scene."""
+        # Port-based connection system will handle finalization
         super().mouseReleaseEvent(event)
