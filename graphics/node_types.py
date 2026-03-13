@@ -179,7 +179,7 @@ class NodeBase(QGraphicsItem):
 
 
 class WarmNode(NodeBase):
-    """Text/thought node - displays title and full text content."""
+    """Text/thought node - displays title and full text content with word wrapping."""
 
     def __init__(self, x: float, y: float, title: str = "", node_uuid: str = None,
                  full_text: str = "", width: float = None, height: float = None, 
@@ -189,22 +189,47 @@ class WarmNode(NodeBase):
                          ports_visible=ports_visible)
 
     def _paint_text(self, painter: QPainter):
-        """Render both title and full text for warm nodes."""
-        painter.setFont(QFont(Theme.BUTTON_FONT_FAMILY, 11, QFont.Bold))
+        """Render title and full text with proper wrapping and layout."""
+        # Padding around text
+        padding = 12
+        inner_width = self.width - (padding * 2)
+        inner_height = self.height - (padding * 2)
 
-        # Title with shadow
+        if inner_width <= 0 or inner_height <= 0:
+            return  # Node too small to render text
+
+        # Render title (bold)
+        title_font = QFont(Theme.BUTTON_FONT_FAMILY, 11, QFont.Bold)
+        painter.setFont(title_font)
+
+        # Title shadow
         painter.setPen(QColor(0, 0, 0, 150))
-        painter.drawText(10, 10, self.width - 20, 30, Qt.TextWordWrap, self.title)
+        painter.drawText(padding + 1, padding + 1, inner_width, inner_height, 
+                        Qt.TextWordWrap | Qt.AlignTop, self.title)
 
-        # Title in main color
+        # Title main color
         painter.setPen(Theme.TEXT_PRIMARY)
-        painter.drawText(10, 9, self.width - 20, 30, Qt.TextWordWrap, self.title)
+        painter.drawText(padding, padding, inner_width, inner_height, 
+                        Qt.TextWordWrap | Qt.AlignTop, self.title)
 
-        # Full text in smaller font
-        if self.full_text:
-            painter.setFont(QFont(Theme.BUTTON_FONT_FAMILY, 9))
-            painter.setPen(QColor(200, 200, 200, 200))
-            painter.drawText(10, 40, self.width - 20, self.height - 50, Qt.TextWordWrap, self.full_text)
+        # Calculate space for title (rough estimate)
+        title_rect = painter.fontMetrics().boundingRect(
+            padding, padding, inner_width, inner_height,
+            Qt.TextWordWrap | Qt.AlignTop, self.title
+        )
+        title_height = title_rect.height() + 8  # Add spacing after title
+
+        # Render full text if available (smaller font, lighter color)
+        if self.full_text and self.full_text.strip():
+            body_font = QFont(Theme.BUTTON_FONT_FAMILY, 9, QFont.Normal)
+            painter.setFont(body_font)
+            painter.setPen(QColor(200, 200, 200, 210))
+
+            text_rect_height = inner_height - title_height
+            if text_rect_height > 5:  # Only render if there's space
+                painter.drawText(padding, padding + title_height, inner_width, 
+                               text_rect_height, Qt.TextWordWrap | Qt.AlignTop, 
+                               self.full_text)
 
     @staticmethod
     def from_dict(data: dict) -> 'WarmNode':
