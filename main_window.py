@@ -555,7 +555,7 @@ class NodalApp(QMainWindow):
         # Animate geometry expand back to original
         geom_anim = QPropertyAnimation(self, b"geometry")
         geom_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
-        geom_anim.setEasingCurve(QEasingCurve.OutInCubic)
+        geom_anim.setEasingCurve(QEasingCurve.Linear)
 
         current_geom = self.geometry()
         target_geom = self._pre_minimize_geometry
@@ -609,7 +609,7 @@ class NodalApp(QMainWindow):
         # Animate opacity fade in
         opacity_anim = QPropertyAnimation(self, b"windowOpacity")
         opacity_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
-        opacity_anim.setEasingCurve(QEasingCurve.OutInCubic)
+        opacity_anim.setEasingCurve(QEasingCurve.Linear)
 
         # Add intermediate keyframes for smoother fade (9 total frames)
         opacity_anim.setKeyValueAt(0.0, 0.0)
