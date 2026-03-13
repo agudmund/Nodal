@@ -29,12 +29,16 @@
     <Compile Include="benchmarks\run_benchmarks.py" />
     <Compile Include="benchmarks\__init__.py" />
     <Compile Include="graphics\node.py" />
+    <Compile Include="graphics\node_types.py" />
+    <Compile Include="graphics\note_editor.py" />
+    <Compile Include="graphics\port.py" />
     <Compile Include="graphics\scene.py" />
     <Compile Include="graphics\__init__.py" />
     <Compile Include="main.py" />
     <Compile Include="main_window.py" />
     <Compile Include="utils\logger.py" />
     <Compile Include="utils\resource_monitor.py" />
+    <Compile Include="utils\session_manager.py" />
     <Compile Include="utils\__init__.py" />
     <Compile Include="widgets\__init__.py" />
   </ItemGroup>

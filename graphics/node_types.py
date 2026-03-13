@@ -424,6 +424,19 @@ class WarmNode(NodeBase):
         if self._editor:
             self.title = self._editor.get_title()
             self.full_text = self._editor.get_text()
+
+            # Recalculate width based on new title (same logic as __init__)
+            title_font = QFont(Theme.NODE_TITLE_FONT_FAMILY, Theme.NODE_TITLE_FONT_SIZE, QFont.Bold)
+            metrics = QFontMetrics(title_font)
+            title_width = metrics.horizontalAdvance(self.title) if self.title else 0
+            new_width = max(Theme.NODE_WIDTH, title_width + 90)
+
+            # Update node width if it changed
+            rect = self.rect()
+            if abs(rect.width() - new_width) > 0.1:
+                self.prepareGeometryChange()
+                self.setRect(QRectF(rect.topLeft(), QSizeF(new_width, rect.height())))
+
             self._sync_content_layout()
             self.update()
             self._editor.mark_as_saved()

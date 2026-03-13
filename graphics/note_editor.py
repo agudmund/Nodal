@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import QColor, QFont
+from utils.spellchecker import DebouncedSpellHighlighter, show_spell_suggestions, SPELL_CHECKER_TYPE
 
 
 class CozyNoteEditor(QDialog):
@@ -60,15 +61,32 @@ class CozyNoteEditor(QDialog):
         self.text_edit.setMinimumHeight(420)
         layout.addWidget(self.text_edit)
 
+        # === Spell checking (debounced, with size awareness) ===
+        self.spell_highlighter = None
+        if SPELL_CHECKER_TYPE:
+            self.spell_highlighter = DebouncedSpellHighlighter(self.text_edit.document())
+
+        # Enable right-click context menu for spell suggestions
+        self.text_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.text_edit.customContextMenuRequested.connect(self._on_text_edit_context_menu)
+
         # === Word count label ===
         self.word_count = QLabel("Gentle words")
         self.word_count.setObjectName("wordCountLabel")
         self.word_count.setFont(QFont("Chandler42", 11))
         self.word_count.setStyleSheet("color: #a8d0ff;")
 
+        # Spell check status indicator
+        self.spell_check_indicator = QLabel("")
+        self.spell_check_indicator.setObjectName("spellCheckIndicator")
+        self.spell_check_indicator.setFont(QFont("Lato", 10))
+        self._update_spell_check_indicator()
+
         # === Button row ===
         button_layout = QHBoxLayout()
         button_layout.addStretch()
+        button_layout.addWidget(self.spell_check_indicator)
+        button_layout.addSpacing(15)
         button_layout.addWidget(self.word_count)
 
         from widgets import CozyButton
@@ -118,6 +136,7 @@ class CozyNoteEditor(QDialog):
         """Update word count display with heartbeat animation on increase"""
         words = len(self.text_edit.toPlainText().split())
         self.word_count.setText(f"{words} Gentle words")
+        self._update_spell_check_indicator()
 
         if words > self.last_word_count:
             self._happy_word_heartbeat()
@@ -152,6 +171,26 @@ class CozyNoteEditor(QDialog):
         """Sprinkle a little joy into the writing ✨"""
         emojis = ["🪴", "💭", "🌸", "✨", "🤗", "😍", "☕", "💛", "❤", "📌", "💖", "🌼"]
         self.text_edit.insertPlainText(random.choice(emojis) + " ")
+
+    def _update_spell_check_indicator(self):
+        """Update spell check status indicator based on document size and state."""
+        if not self.spell_highlighter:
+            self.spell_check_indicator.setText("")
+            return
+
+        if self.spell_highlighter.is_document_too_large():
+            self.spell_check_indicator.setText("📋 (spell check disabled - doc too large)")
+            self.spell_check_indicator.setStyleSheet("color: #ffaa66;")
+        elif self.spell_highlighter.is_spell_check_enabled():
+            self.spell_check_indicator.setText("✓ (spell check active)")
+            self.spell_check_indicator.setStyleSheet("color: #66ff99;")
+        else:
+            self.spell_check_indicator.setText("✗ (spell check disabled)")
+            self.spell_check_indicator.setStyleSheet("color: #ff6666;")
+
+    def _on_text_edit_context_menu(self, pos):
+        """Handle right-click context menu on text edit."""
+        show_spell_suggestions(self.text_edit, pos)
 
     def get_title(self):
         return self.title_edit.text().strip()
