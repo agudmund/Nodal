@@ -11,7 +11,7 @@ from PySide6.QtGui import QColor
 class Theme:
 
     # --- Sizing & Spacing ---
-    WINDOW_BORDER_WIDTH = 2
+    WINDOW_BORDER_WIDTH = 1
     HANDLE_HEIGHT = 70  # Toolbar height
 
     # --- Branding (The Soul) ---
