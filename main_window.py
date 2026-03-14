@@ -277,7 +277,6 @@ class NodalApp(QMainWindow):
                 background-image: url({image_path});
                 background-repeat: no-repeat;
                 background-position: center;
-                background-size: contain;
                 width: 16px;
                 height: 16px;
                 margin: -5px 0px;
