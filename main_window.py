@@ -148,6 +148,33 @@ class NodeGraphicsView(QGraphicsView):
         else:
             super().mouseReleaseEvent(event)
 
+    def keyPressEvent(self, event):
+        """Handle keyboard shortcuts."""
+        if event.key() == Qt.Key.Key_Delete or event.key() == Qt.Key.Key_Backspace:
+            # Delete selected nodes
+            self.delete_selected_nodes()
+            event.accept()
+        else:
+            super().keyPressEvent(event)
+
+    def delete_selected_nodes(self):
+        """Delete all selected nodes from the scene."""
+        from graphics.node_types import NodeBase
+        scene = self.scene()
+        if not scene:
+            return
+
+        # Get all selected items
+        selected_items = scene.selectedItems()
+
+        # Filter for nodes only (exclude other graphics items)
+        nodes_to_delete = [item for item in selected_items if isinstance(item, NodeBase)]
+
+        # Remove each node
+        for node in nodes_to_delete:
+            scene.removeItem(node)
+
+
 class NodalApp(QMainWindow):
     def __init__(self):
         super().__init__()
