@@ -30,7 +30,7 @@ class SettingsDialog(CozyDialog):
         self.storage = QSettings("SingleSharedBraincell", "Nodal")
 
         # Call parent init with title
-        super().__init__(title="Settings 🌱", parent=parent)
+        super().__init__(title="The Fancy Settings Window 🌱", parent=parent)
 
         # Load values from registry/file
         self._load_settings()
@@ -47,10 +47,10 @@ class SettingsDialog(CozyDialog):
 
     def _setup_bottom_buttons(self, layout):
         """Add Save and Cancel buttons to the bottom bar."""
-        self.cancel_btn = CozyButton("Cancel")
+        self.cancel_btn = CozyButton("Exid")
         self.cancel_btn.clicked.connect(self.reject)
 
-        self.apply_btn = CozyButton("Save Cozy Changes")
+        self.apply_btn = CozyButton("Save")
         self.apply_btn.clicked.connect(self._apply_and_close)
 
         layout.addWidget(self.cancel_btn)

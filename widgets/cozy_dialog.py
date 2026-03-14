@@ -72,8 +72,6 @@ class CozyDialog(QDialog):
         titlebar_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
             border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
-            border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
-            border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
 
         titlebar_layout = QHBoxLayout(titlebar_container)
@@ -112,8 +110,6 @@ class CozyDialog(QDialog):
         bottom_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
             border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
-            border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
-            border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
 
         bottom_layout = QHBoxLayout(bottom_container)

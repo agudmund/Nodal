@@ -20,6 +20,7 @@ from utils.session_manager import SessionManager
 from utils.window_animator import WindowAnimator
 from widgets.log_viewer_dialog import LogViewerDialog
 from widgets.settings_dialog import SettingsDialog
+from widgets.demo_dialog import DemoDialog
 
 
 logger = setup_logger()
@@ -194,6 +195,12 @@ class NodalApp(QMainWindow):
         self.settings_window = SettingsDialog(self)
         self.settings_window.show()
 
+    def open_demo_window(self):
+        """Shows the demo window"""
+        # We keep a reference so it doesn't get garbage collected
+        self.demo_window = DemoDialog(self)
+        self.demo_window.show()
+
     def open_log_viewer(self):
         """Shows the internal log viewer"""
         # We keep a reference so it doesn't get garbage collected
@@ -348,9 +355,14 @@ class NodalApp(QMainWindow):
         bottom_toolbar_layout.insertWidget(1, self.blur_slider)
 
         # Settings button
-        self.btn_settings = CozyButton("Setings")
+        self.btn_settings = CozyButton("Settings")
         self.btn_settings.clicked.connect(self.open_settings_window)
         bottom_toolbar_layout.addWidget(self.btn_settings)
+
+        # Demo button
+        self.btn_demo = CozyButton("Demo")
+        self.btn_demo.clicked.connect(self.open_demo_window)
+        bottom_toolbar_layout.addWidget(self.btn_demo)
 
         # Wait button (minimize - left of exit)
         self.btn_wait = CozyButton("Wait")
