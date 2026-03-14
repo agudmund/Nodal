@@ -25,12 +25,16 @@ class SettingsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.logger = setup_logger()
-        
+
         # Initialize QSettings (Company Name, App Name)
         self.storage = QSettings("SingleSharedBraincell", "Nodal")
 
         self.setWindowTitle("Settings 🌱")
         self.setFixedSize(550, 600)
+
+        # Frameless window to match main window design motif
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
         # Build stylesheet from Theme
         window_bg = Theme.WINDOW_BG.name()
