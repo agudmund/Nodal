@@ -40,7 +40,6 @@ class SettingsDialog(QDialog):
 
         # Frameless window to match main window design motif
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
-        self.setAttribute(Qt.WA_TranslucentBackground)
 
         # Build stylesheet from Theme
         window_bg = Theme.WINDOW_BG.name()
