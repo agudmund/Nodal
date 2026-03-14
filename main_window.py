@@ -144,7 +144,9 @@ class NodeGraphicsView(QGraphicsView):
         elif self.middle_mouse_pressed:
             self.middle_mouse_pressed = False
             self.setCursor(Qt.ArrowCursor)
-        super().mouseReleaseEvent(event)
+            event.accept()
+        else:
+            super().mouseReleaseEvent(event)
 
 class NodalApp(QMainWindow):
     def __init__(self):
