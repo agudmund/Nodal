@@ -390,7 +390,11 @@ class NodalApp(QMainWindow):
 
         self.show()
 
-        # Auto-load the last session if available (AFTER scene is fully initialized)
+        # Auto-load the last session (AFTER scene is fully initialized)
+        self.auto_load()
+
+    def auto_load(self):
+        """Auto-load the last session if available."""
         session_names = self._load_session_names()
         last_session = Settings.get("session/last_loaded", "")
         if last_session and session_names and last_session in session_names:
