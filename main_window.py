@@ -190,19 +190,19 @@ class NodalApp(QMainWindow):
         return container, layout
 
     def open_settings_window(self):
-        """Shows the internal log viewer"""
+        """Open the application settings dialog."""
         # We keep a reference so it doesn't get garbage collected
         self.settings_window = SettingsDialog(self)
         self.settings_window.show()
 
     def open_demo_window(self):
-        """Shows the demo window"""
+        """Open the proof-of-concept demo dialog."""
         # We keep a reference so it doesn't get garbage collected
         self.demo_window = DemoDialog(self)
         self.demo_window.show()
 
     def open_log_viewer(self):
-        """Shows the internal log viewer"""
+        """Open the application log viewer dialog."""
         # We keep a reference so it doesn't get garbage collected
         self.log_viewer = LogViewerDialog(self)
         self.log_viewer.show()

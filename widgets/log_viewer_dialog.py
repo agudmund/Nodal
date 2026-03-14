@@ -31,6 +31,8 @@ def get_log_file_path():
     return base_path / "nodal.log"
 
 class LogViewerDialog(QDialog):
+    """Frameless dialog for viewing and filtering application logs with live search."""
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.log_file = get_log_file_path()
@@ -127,6 +129,7 @@ class LogViewerDialog(QDialog):
         self.load_log_content()
 
     def load_log_content(self):
+        """Load and display the complete log file content."""
         if not self.log_file.exists():
             self.log_display.setPlainText("Log file not found. ✨ Start the app to generate one.")
             return
@@ -144,13 +147,16 @@ class LogViewerDialog(QDialog):
             self.log_display.setPlainText(f"Error reading log: {e}")
 
     def open_in_explorer(self):
+        """Open the log file location in Windows Explorer."""
         if self.log_file.exists():
             subprocess.run(['explorer', '/select,', str(self.log_file)])
 
     def debounce_filter(self):
+        """Debounce the filter input to avoid excessive filtering on every keystroke."""
         self.filter_timer.start(200)
 
     def _apply_filter_now(self):
+        """Apply the current filter to display matching log lines."""
         search_text = self.search_input.text().strip().lower()
         if not search_text:
             self.log_display.setPlainText(self.full_content)
@@ -159,6 +165,7 @@ class LogViewerDialog(QDialog):
             self.log_display.setPlainText("\n".join(filtered))
 
     def on_slider_changed(self, value):
+        """Update log display scroll position when slider is moved."""
         # Maps the 0-99 slider to the scrollbar range
         bar = self.log_display.verticalScrollBar()
         max_val = bar.maximum()

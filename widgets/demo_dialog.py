@@ -41,7 +41,7 @@ class DemoDialog(CozyDialog):
         return container
 
     def _setup_bottom_buttons(self, layout):
-        """Add a simple Close button."""
+        """Add Close button to dialog bottom bar."""
         close_btn = CozyButton("Close")
         close_btn.clicked.connect(self.accept)
         layout.addWidget(close_btn)
