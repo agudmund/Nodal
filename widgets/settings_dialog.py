@@ -8,7 +8,7 @@
 
 import os
 from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QTabWidget, QWidget,
+    QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QTabWidget, QWidget,
     QLabel, QPushButton, QSlider, QLineEdit, QCheckBox,
     QGroupBox, QFormLayout
 )
