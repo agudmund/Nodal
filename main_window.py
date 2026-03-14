@@ -314,13 +314,6 @@ class NodalApp(QMainWindow):
         # Connect combobox selection change to load session (AFTER populating items)
         self.combo_graphs.currentIndexChanged.connect(self.on_session_changed)
 
-        # Auto-load the last session if available
-        last_session = Settings.get("session/last_loaded", "")
-        if last_session and session_names and last_session in session_names:
-            index = self.combo_graphs.findText(last_session)
-            if index >= 0:
-                self.combo_graphs.setCurrentIndex(index)
-
         toolbar_layout.addWidget(self.combo_graphs)
 
         # Save button (right after combobox)
@@ -396,6 +389,14 @@ class NodalApp(QMainWindow):
         grid_layout.setColumnStretch(1, 1)
 
         self.show()
+
+        # Auto-load the last session if available (AFTER scene is fully initialized)
+        session_names = self._load_session_names()
+        last_session = Settings.get("session/last_loaded", "")
+        if last_session and session_names and last_session in session_names:
+            index = self.combo_graphs.findText(last_session)
+            if index >= 0:
+                self.combo_graphs.setCurrentIndex(index)
 
     def update_blur_intensity(self, value):
         Theme.FROST_COLOR.setAlpha(value)
