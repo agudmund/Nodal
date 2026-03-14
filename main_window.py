@@ -339,7 +339,7 @@ class NodalApp(QMainWindow):
         bottom_toolbar_layout.addWidget(self.btn_wait)
 
         # Exit button (right-aligned)
-        self.btn_exit = CozyButton("Exit")
+        self.btn_exit = CozyButton("Exid")
         self.btn_exit.clicked.connect(lambda: (self.save_session(), self.close()))
         bottom_toolbar_layout.addWidget(self.btn_exit)
 
