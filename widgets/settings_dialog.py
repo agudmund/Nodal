@@ -29,7 +29,7 @@ class SettingsDialog(QDialog):
         # Dragging state for frameless window
         self._dragging_window = False
         self._drag_pos = None
-        self._titlebar_height = 30  # Height of draggable top bar
+        self._titlebar_height = Theme.HANDLE_HEIGHT  # Use Theme constant for consistency
 
         # Initialize QSettings (Company Name, App Name)
         self.storage = QSettings("SingleSharedBraincell", "Nodal")
@@ -49,7 +49,7 @@ class SettingsDialog(QDialog):
 
         # Consistent Lookdev Styling using Theme constants
         self.setStyleSheet(f"""
-            QDialog {{ background-color: {window_bg}; color: {text_color}; border: 1px solid {accent_color}; }}
+            QDialog {{ background-color: {window_bg}; color: {text_color}; border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()}; }}
             QTabWidget::pane {{ border: 1px solid {accent_color}; background: {window_bg}; top: -1px; }}
             QTabBar::tab {{
                 background: {Theme.COMBOBOX_BG.name()};
@@ -68,26 +68,34 @@ class SettingsDialog(QDialog):
         """)
 
         # Main layout
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
-        # Draggable top bar
+        # Top draggable bar (using _create_toolbar approach)
         titlebar_container = QWidget()
         titlebar_container.setFixedHeight(self._titlebar_height)
+        titlebar_container.setStyleSheet(f"""
+            background-color: {Theme.TOOLBAR_BG.name()};
+            border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+        """)
+
         titlebar_layout = QHBoxLayout(titlebar_container)
         titlebar_layout.setContentsMargins(15, 0, 15, 0)
         titlebar_layout.addStretch()
 
         titlebar_label = QLabel("Settings 🌱")
-        titlebar_label.setStyleSheet(f"color: {text_color};")
+        titlebar_label.setStyleSheet(f"color: {text_color}; font-weight: bold;")
         titlebar_layout.addWidget(titlebar_label)
         titlebar_layout.addStretch()
 
-        layout.addWidget(titlebar_container)
+        main_layout.addWidget(titlebar_container)
 
         # Content area
         content_layout = QVBoxLayout()
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(0)
+
         self.tabs = QTabWidget()
 
         self._create_general_tab()
@@ -109,10 +117,10 @@ class SettingsDialog(QDialog):
         btn_layout.addStretch()
         btn_layout.addWidget(self.cancel_btn)
         btn_layout.addWidget(self.apply_btn)
-        content_layout.addLayout(btn_layout)
-        content_layout.setContentsMargins(0, 10, 0, 10)
+        btn_layout.setContentsMargins(15, 10, 15, 10)
 
-        layout.addLayout(content_layout)
+        content_layout.addLayout(btn_layout)
+        main_layout.addLayout(content_layout)
 
         # Load values from registry/file
         self._load_settings()
