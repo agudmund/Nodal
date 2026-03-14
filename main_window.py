@@ -17,6 +17,7 @@ from utils.theme import Theme
 from utils.logger import setup_logger
 from utils.settings import Settings
 from utils.session_manager import SessionManager
+from utils.window_animator import WindowAnimator
 from widgets.log_viewer_dialog import LogViewerDialog
 from widgets.settings_dialog import SettingsDialog
 
@@ -150,10 +151,7 @@ class NodalApp(QMainWindow):
         self._dragging_window = False
         self._drag_pos = None
         self._current_session = None  # Track current loaded session
-        self._minimize_animation = None  # Store animation group for minimize
-        self._restore_animation = None   # Store animation group for restore
-        self._pre_minimize_geometry = None  # Store geometry before minimizing
-        self._animating = False  # Flag to prevent double animations
+        self._animator = WindowAnimator()  # Manages minimize/restore animations
         self._first_show = True  # Flag to trigger fade in on first show
         self.anim = None  # Store fade in animation
 
@@ -442,214 +440,16 @@ class NodalApp(QMainWindow):
 
     def minimize_with_animation(self):
         """Minimize window with custom shrink + fade animation."""
-        if self._animating:
-            return
-
-        self._animating = True
-        self._pre_minimize_geometry = self.geometry()
-
-        logger.info("Starting custom minimize animation")
-
-        # Stop any ongoing restore animation
-        if self._restore_animation:
-            self._restore_animation.stop()
-
-        # Create parallel animation group (shrink + fade happen simultaneously)
-        self._minimize_animation = QParallelAnimationGroup()
-
-        # Animate geometry shrink (to bottom-right area, like taskbar)
-        geom_anim = QPropertyAnimation(self, b"geometry")
-        geom_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
-        geom_anim.setEasingCurve(QEasingCurve.InOutCubic)
-
-        # Start from current geometry
-        start_geom = self.geometry()
-
-        # End at a small size in the bottom-right corner
-        end_geom = QRect(
-            start_geom.right() - 100,
-            start_geom.bottom() - 100,
-            50,
-            50
-        )
-
-        # Add intermediate keyframes for smoother animation (9 total frames)
-        geom_anim.setKeyValueAt(0.0, start_geom)
-        geom_anim.setKeyValueAt(0.125, QRect(
-            start_geom.x() + (start_geom.width() * 0.015),
-            start_geom.y() + (start_geom.height() * 0.015),
-            start_geom.width() * 0.97,
-            start_geom.height() * 0.97
-        ))
-        geom_anim.setKeyValueAt(0.25, QRect(
-            start_geom.x() + (start_geom.width() * 0.06),
-            start_geom.y() + (start_geom.height() * 0.06),
-            start_geom.width() * 0.88,
-            start_geom.height() * 0.88
-        ))
-        geom_anim.setKeyValueAt(0.375, QRect(
-            start_geom.right() - 175,
-            start_geom.bottom() - 175,
-            125,
-            125
-        ))
-        geom_anim.setKeyValueAt(0.5, QRect(
-            start_geom.right() - 150,
-            start_geom.bottom() - 150,
-            100,
-            100
-        ))
-        geom_anim.setKeyValueAt(0.625, QRect(
-            start_geom.right() - 137,
-            start_geom.bottom() - 137,
-            87,
-            87
-        ))
-        geom_anim.setKeyValueAt(0.75, QRect(
-            start_geom.right() - 125,
-            start_geom.bottom() - 125,
-            75,
-            75
-        ))
-        geom_anim.setKeyValueAt(0.875, QRect(
-            start_geom.right() - 112,
-            start_geom.bottom() - 112,
-            62,
-            62
-        ))
-        geom_anim.setKeyValueAt(1.0, end_geom)
-
-        # Animate opacity fade
-        opacity_anim = QPropertyAnimation(self, b"windowOpacity")
-        opacity_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
-        opacity_anim.setEasingCurve(QEasingCurve.InOutCubic)
-
-        # Add intermediate keyframes for smoother fade (9 total frames)
-        opacity_anim.setKeyValueAt(0.0, 1.0)
-        opacity_anim.setKeyValueAt(0.125, 0.875)
-        opacity_anim.setKeyValueAt(0.25, 0.75)
-        opacity_anim.setKeyValueAt(0.375, 0.625)
-        opacity_anim.setKeyValueAt(0.5, 0.5)
-        opacity_anim.setKeyValueAt(0.625, 0.375)
-        opacity_anim.setKeyValueAt(0.75, 0.25)
-        opacity_anim.setKeyValueAt(0.875, 0.125)
-        opacity_anim.setKeyValueAt(1.0, 0.0)
-
-        self._minimize_animation.addAnimation(geom_anim)
-        self._minimize_animation.addAnimation(opacity_anim)
-        self._minimize_animation.finished.connect(self._on_minimize_animation_finished)
-
-        self._minimize_animation.start()
-
-    def _on_minimize_animation_finished(self):
-        """Called when minimize animation completes."""
-        logger.info("Minimize animation finished, calling showMinimized()")
-        self.showMinimized()
-        self._animating = False
+        self._animator.minimize(self)
 
     def changeEvent(self, event):
         """Handle window state changes to animate restore."""
         if event.type() == QEvent.WindowStateChange:
-            if not (self.windowState() & Qt.WindowMinimized) and self._pre_minimize_geometry:
+            if not (self.windowState() & Qt.WindowMinimized) and self._animator._pre_minimize_geometry:
                 # Window is being restored from minimized state
                 logger.info("Window restored, starting restore animation")
-                self._animate_restore()
+                self._animator.restore(self)
         super().changeEvent(event)
-
-    def _animate_restore(self):
-        """Animate window expanding and fading back in."""
-        if self._animating:
-            return
-
-        self._animating = True
-
-        # Stop any ongoing minimize animation
-        if self._minimize_animation:
-            self._minimize_animation.stop()
-
-        # Reset opacity to 0 before animating back in
-        self.setWindowOpacity(0.0)
-
-        logger.info("Starting custom restore animation")
-
-        # Create parallel animation group (expand + fade in)
-        self._restore_animation = QParallelAnimationGroup()
-
-        # Animate geometry expand back to original
-        geom_anim = QPropertyAnimation(self, b"geometry")
-        geom_anim.setDuration(Theme.WINDOW_RESTORE_ANIMATION_DURATION)
-        geom_anim.setEasingCurve(QEasingCurve.Linear)
-
-        current_geom = self.geometry()
-        target_geom = self._pre_minimize_geometry
-
-        # Add intermediate keyframes for smoother animation (9 total frames)
-        geom_anim.setKeyValueAt(0.0, current_geom)
-        geom_anim.setKeyValueAt(0.125, QRect(
-            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.125),
-            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.125),
-            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.125),
-            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.125)
-        ))
-        geom_anim.setKeyValueAt(0.25, QRect(
-            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.25),
-            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.25),
-            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.25),
-            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.25)
-        ))
-        geom_anim.setKeyValueAt(0.375, QRect(
-            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.375),
-            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.375),
-            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.375),
-            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.375)
-        ))
-        geom_anim.setKeyValueAt(0.5, QRect(
-            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.5),
-            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.5),
-            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.5),
-            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.5)
-        ))
-        geom_anim.setKeyValueAt(0.625, QRect(
-            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.625),
-            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.625),
-            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.625),
-            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.625)
-        ))
-        geom_anim.setKeyValueAt(0.75, QRect(
-            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.75),
-            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.75),
-            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.75),
-            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.75)
-        ))
-        geom_anim.setKeyValueAt(0.875, QRect(
-            current_geom.x() + ((target_geom.x() - current_geom.x()) * 0.875),
-            current_geom.y() + ((target_geom.y() - current_geom.y()) * 0.875),
-            current_geom.width() + ((target_geom.width() - current_geom.width()) * 0.875),
-            current_geom.height() + ((target_geom.height() - current_geom.height()) * 0.875)
-        ))
-        geom_anim.setKeyValueAt(1.0, target_geom)
-
-        # Animate opacity fade in
-        opacity_anim = QPropertyAnimation(self, b"windowOpacity")
-        opacity_anim.setDuration(Theme.WINDOW_RESTORE_ANIMATION_DURATION)
-        opacity_anim.setEasingCurve(QEasingCurve.Linear)
-
-        # Add intermediate keyframes for smoother fade (9 total frames)
-        opacity_anim.setKeyValueAt(0.0, 0.0)
-        opacity_anim.setKeyValueAt(0.125, 0.125)
-        opacity_anim.setKeyValueAt(0.25, 0.25)
-        opacity_anim.setKeyValueAt(0.375, 0.375)
-        opacity_anim.setKeyValueAt(0.5, 0.5)
-        opacity_anim.setKeyValueAt(0.625, 0.625)
-        opacity_anim.setKeyValueAt(0.75, 0.75)
-        opacity_anim.setKeyValueAt(0.875, 0.875)
-        opacity_anim.setKeyValueAt(1.0, 1.0)
-
-        self._restore_animation.addAnimation(geom_anim)
-        self._restore_animation.addAnimation(opacity_anim)
-        self._restore_animation.finished.connect(lambda: setattr(self, '_animating', False))
-
-        self._restore_animation.start()
 
     def showEvent(self, event):
         """Triggered when the window is first shown to the user."""
