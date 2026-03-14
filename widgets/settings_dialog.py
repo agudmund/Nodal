@@ -30,7 +30,6 @@ class SettingsDialog(QDialog):
         # Dragging state for frameless window
         self._dragging_window = False
         self._drag_pos = None
-        self._bar_height = Theme.BUTTON_MIN_HEIGHT + 10  # Compact height with padding around buttons
         self._side_padding = 15
 
         # Initialize QSettings (Company Name, App Name)
@@ -75,17 +74,18 @@ class SettingsDialog(QDialog):
 
         # Row 0, Col 1: Top draggable bar
         titlebar_container = QWidget()
-        titlebar_container.setFixedHeight(self._bar_height)
+        titlebar_container.setFixedHeight(Theme.DIALOG_BAR_HEIGHT)
         titlebar_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
             border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
 
         titlebar_layout = QHBoxLayout(titlebar_container)
         titlebar_layout.setContentsMargins(15, 0, 15, 0)
         titlebar_layout.addStretch()
 
-        titlebar_label = QLabel("Settings 🌱")
+        titlebar_label = QLabel("The Fancy Settings Window 🌱")
         titlebar_label.setStyleSheet(f"color: {text_color}; font-weight: bold;")
         titlebar_layout.addWidget(titlebar_label)
         titlebar_layout.addStretch()
@@ -115,7 +115,7 @@ class SettingsDialog(QDialog):
 
         # Row 2, Col 1: Bottom bar with buttons
         bottom_container = QWidget()
-        bottom_container.setFixedHeight(self._bar_height)
+        bottom_container.setFixedHeight(Theme.DIALOG_BAR_HEIGHT)
         bottom_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
             border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
@@ -125,10 +125,10 @@ class SettingsDialog(QDialog):
         bottom_layout.setContentsMargins(15, 0, 15, 0)
         bottom_layout.addStretch()
 
-        self.cancel_btn = CozyButton("Cancel")
+        self.cancel_btn = CozyButton("Abort")
         self.cancel_btn.clicked.connect(self.reject)
 
-        self.apply_btn = CozyButton("Save Cozy Changes")
+        self.apply_btn = CozyButton("Save")
         self.apply_btn.clicked.connect(self._apply_and_close)
 
         bottom_layout.addWidget(self.cancel_btn)
@@ -246,7 +246,7 @@ class SettingsDialog(QDialog):
 
     def mousePressEvent(self, event):
         """Handle window dragging from the top bar."""
-        if event.button() == Qt.LeftButton and event.position().y() < self._bar_height:
+        if event.button() == Qt.LeftButton and event.position().y() < Theme.DIALOG_BAR_HEIGHT:
             self._dragging_window = True
             self._drag_pos = event.globalPosition().toPoint()
             event.accept()
