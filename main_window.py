@@ -151,7 +151,7 @@ class NodeGraphicsView(QGraphicsView):
 class NodalApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.handle_height = Theme.HANDLE_HEIGHT
+        self.handle_height_top = Theme.HANDLE_HEIGHT_TOP
         self._dragging_window = False
         self._drag_pos = None
         self._current_session = None  # Track current loaded session
@@ -165,18 +165,21 @@ class NodalApp(QMainWindow):
         self.init_ui()
         enable_blur(int(self.winId()))
 
-    def _create_toolbar(self, border_position="bottom"):
+    def _create_toolbar(self, border_position="bottom", height=None):
         """
         Create a toolbar container with consistent styling.
 
         Args:
             border_position: "top", "bottom", or None for no border
+            height: Fixed height of the toolbar. Defaults to HANDLE_HEIGHT_TOP if None.
 
         Returns:
             tuple: (container QWidget, layout QHBoxLayout)
         """
         container = QWidget()
-        container.setFixedHeight(self.handle_height)
+        if height is None:
+            height = Theme.HANDLE_HEIGHT_TOP
+        container.setFixedHeight(height)
 
         border_style = ""
         if border_position:
@@ -265,8 +268,8 @@ class NodalApp(QMainWindow):
         # Row 0, Col 0: Top left spacer
         grid_layout.addWidget(self._create_spacer(), 0, 0)
 
-        # Row 0, Col 1: Top toolbar with border-bottom
-        self.toolbar_container, toolbar_layout = self._create_toolbar(border_position="bottom")
+         # Row 0, Col 1: Top toolbar with border-bottom
+        self.toolbar_container, toolbar_layout = self._create_toolbar(border_position="bottom", height=Theme.HANDLE_HEIGHT_TOP)
         toolbar_layout.addStretch()
 
         # Graph selector combobox (centered)
@@ -339,7 +342,7 @@ class NodalApp(QMainWindow):
         grid_layout.addWidget(self._create_spacer(), 2, 0)
 
         # Row 2, Col 1: Bottom toolbar with border-top
-        self.bottom_toolbar_container, bottom_toolbar_layout = self._create_toolbar(border_position="top")
+        self.bottom_toolbar_container, bottom_toolbar_layout = self._create_toolbar(border_position="top", height=Theme.HANDLE_HEIGHT_BOTTOM)
 
         # New Node button (left-aligned)
         self.btn_new_node = CozyButton("Node")
@@ -448,7 +451,7 @@ class NodalApp(QMainWindow):
         self.load_session(session_name)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton and event.position().y() < self.handle_height:
+        if event.button() == Qt.LeftButton and event.position().y() < self.handle_height_top:
             self._dragging_window = True
             self._drag_pos = event.globalPosition().toPoint()
             event.accept()
@@ -457,7 +460,7 @@ class NodalApp(QMainWindow):
 
     def mouseDoubleClickEvent(self, event):
         """Toggle maximize/restore on double-click of title bar."""
-        if event.position().y() < self.handle_height:
+        if event.position().y() < self.handle_height_top:
             if self.isMaximized():
                 self.showNormal()
             else:

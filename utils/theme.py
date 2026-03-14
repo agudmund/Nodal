@@ -12,7 +12,8 @@ class Theme:
 
     # --- Sizing & Spacing ---
     WINDOW_BORDER_WIDTH = 1
-    HANDLE_HEIGHT = 120  # Toolbar height
+    HANDLE_HEIGHT_TOP = 65  # Top toolbar/title bar height (draggable area)
+    HANDLE_HEIGHT_BOTTOM = 65  # Bottom toolbar/button bar height
     DIALOG_TOP_BAR_HEIGHT = 35  # Utility dialog top bar height (text only)
     DIALOG_BOTTOM_BAR_HEIGHT = 85  # Utility dialog bottom bar height (button bar)
     WINDOW_ANIMATION_DURATION = 500  # Milliseconds for minimize animation
