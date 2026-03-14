@@ -234,10 +234,16 @@ class NodalApp(QMainWindow):
         slider.setFixedWidth(150)
         slider.setToolTip("Adjust Background Abstraction")
         slider.setStyleSheet("""
+            QSlider::groove:horizontal {
+                background: transparent;
+                border: none;
+                height: 6px;
+            }
             QSlider::handle:horizontal {
                 background: #00d2ff;
                 width: 12px;
                 border-radius: 6px;
+                margin: -3px 0px;
             }
         """)
         slider.valueChanged.connect(self.update_blur_intensity)
