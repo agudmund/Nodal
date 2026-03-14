@@ -9,7 +9,7 @@
 import sys
 import os
 import io
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtCore import Qt
 from utils.logger import setup_logger
 from main_window import NodalApp
@@ -18,21 +18,29 @@ APP_NAME = "Nodal"
 ORG_NAME = "Single Shared Braincell"
 
 def main():
-    # 1. Encoding Shield
-    # Force UTF-8 for terminal output so ✨ and other cozy characters 
-    # don't trigger the 'cp1252' charmap error on Windows terminals.
-    if sys.stdout.encoding.lower() != 'utf-8':
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-    if sys.stderr.encoding.lower() != 'utf-8':
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+    # 1. Encoding Shield (pythonw-safe)
+    # We check if stdout exists before touching it to avoid NoneType errors
+    if sys.stdout is not None:
+        try:
+            if sys.stdout.encoding is None or sys.stdout.encoding.lower() != 'utf-8':
+                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        except (AttributeError, io.UnsupportedOperation):
+            pass
+
+    if sys.stderr is not None:
+        try:
+            if sys.stderr.encoding is None or sys.stderr.encoding.lower() != 'utf-8':
+                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+        except (AttributeError, io.UnsupportedOperation):
+            pass
 
     # 2. High-DPI Precision (Modern Qt6 Style)
-    # This prevents the 'Gaussian Tax' performance hit we saw earlier
     QApplication.setHighDpiScaleFactorRoundingPolicy(
         Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
     )
 
     # 3. Initialization
+    # Initialize the logger early so we can capture as much as possible
     logger = setup_logger()
     logger.info(f"{APP_NAME} is generally so happy that you are here. ✨")
 
@@ -45,22 +53,27 @@ def main():
 
         # 4. Launch the Obsidian Vessel
         window = NodalApp()
+        # Ensure the window is actually shown!
+        window.show() 
 
         sys.exit(app.exec())
+
     except Exception as e:
-        # 1. Attempt the professional way
+        # Log the error professionally
+        error_msg = f"Starting {APP_NAME} failed catastrophically:\n{str(e)}"
         try:
-            logger.exception(f"Starting {APP_NAME} failed catastrophically.", exc_info=True)
-        except Exception:
-            # If the logger itself is broken, we don't want to crash during the crash!
+            logger.exception(error_msg, exc_info=True)
+        except:
             pass
 
-        # 2. The Brute Force Safety Net (Your 'Void' Print)
-        # We use stderr to ensure it pops up even if stdout is being piped elsewhere
-        print(f"\n[!] {APP_NAME} has entered the void: {str(e)}", file=sys.stderr)
+        # 5. The Visual Safety Net
+        # If we are in pythonw, we need a GUI popup to show the error
+        if QApplication.instance():
+            QMessageBox.critical(None, "Launch Error", error_msg)
+        else:
+            # Fallback to console if GUI hasn't started
+            print(f"\n[!] {error_msg}", file=sys.stderr if sys.stderr else sys.stdout)
         
-        # 3. Clean Exit
-        # sys.exit(1) is the proper way to tell the OS 'Something went wrong'
         sys.exit(1)
 
 if __name__ == "__main__":
