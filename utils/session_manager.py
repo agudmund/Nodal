@@ -82,8 +82,11 @@ class SessionManager:
         # Collect all nodes from scene
         for item in scene.items():
             if isinstance(item, NodeBase):
-                nodes_data.append(item.to_dict())
+                node_dict = item.to_dict()
+                nodes_data.append(node_dict)
                 node_uuids.append(item.uuid)
+
+        logger.debug(f"Saving {len(nodes_data)} nodes to session")
 
         # Build session data
         session_data = {
@@ -110,7 +113,7 @@ class SessionManager:
             with open(temp_path, "w", encoding="utf-8") as f:
                 json.dump(session_data, f, indent=2, ensure_ascii=False)
             os.replace(temp_path, filepath)
-            logger.info(f"✅ Session saved: {filepath}")
+            logger.info(f"✅ Session saved: {filepath} ({len(nodes_data)} nodes)")
         except Exception as e:
             logger.error(f"❌ Failed to save session {filepath}: {e}")
             if os.path.exists(temp_path):
@@ -146,6 +149,8 @@ class SessionManager:
         created_nodes = {}
         node_order = session_data.get("node_order", [])
         nodes_data = {nd.get("uuid"): nd for nd in session_data.get("nodes", [])}
+
+        logger.debug(f"Loading session with {len(nodes_data)} nodes defined, node_order: {len(node_order)}")
 
         # Load nodes in saved order for consistency
         for node_uuid in node_order:
