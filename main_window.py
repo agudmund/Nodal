@@ -174,6 +174,10 @@ class NodeGraphicsView(QGraphicsView):
         for node in nodes_to_delete:
             scene.removeItem(node)
 
+        # Refresh viewport immediately to show deletion without lag
+        if nodes_to_delete:
+            self.viewport().update()
+
 
 class NodalApp(QMainWindow):
     def __init__(self):
