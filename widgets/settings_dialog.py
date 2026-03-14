@@ -250,7 +250,7 @@ class SettingsDialog(QDialog):
 
     def mousePressEvent(self, event):
         """Handle window dragging from the top bar."""
-        if event.button() == Qt.LeftButton and event.position().y() < self._titlebar_height:
+        if event.button() == Qt.LeftButton and event.position().y() < self._bar_height:
             self._dragging_window = True
             self._drag_pos = event.globalPosition().toPoint()
             event.accept()
