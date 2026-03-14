@@ -15,6 +15,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from utils.logger import setup_logger
 from main_window import NodalApp
+from utils.settings import Settings
 
 # --- Windows Taskbar Icon Fix ---
 try:
@@ -36,8 +37,12 @@ def main():
         except (AttributeError, io.UnsupportedOperation):
             pass
 
-    # 2. High-DPI Precision
-    QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+    # 2. THE SETTINGS INJECTION (Step 3)
+    # We ask the wrapper if High-DPI is enabled before creating the App
+    if Settings.is_high_dpi_enabled():
+        QApplication.setHighDpiScaleFactorRoundingPolicy(
+            Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+        )
 
     # 3. Initialization
     logger = setup_logger()
@@ -57,6 +62,9 @@ def main():
 
         # 5. Launch the Vessel
         window = NodalApp()
+
+        geometry = Settings.get_window_geometry()
+        if geometry: window.restoreGeometry(geometry)
 
         sys.exit(app.exec())
 

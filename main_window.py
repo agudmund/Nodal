@@ -15,7 +15,11 @@ from graphics.scene import NodeScene, enable_blur
 from widgets import CozyButton
 from utils.theme import Theme
 from utils.logger import setup_logger
+from utils.settings import Settings
 from utils.session_manager import SessionManager
+from widgets.log_viewer_dialog import LogViewerDialog
+from widgets.settings_dialog import SettingsDialog
+
 
 logger = setup_logger()
 
@@ -186,6 +190,18 @@ class NodalApp(QMainWindow):
 
         return container, layout
 
+    def open_settings_window(self):
+        """Shows the internal log viewer"""
+        # We keep a reference so it doesn't get garbage collected
+        self.settings_window = SettingsDialog(self)
+        self.settings_window.show()
+
+    def open_log_viewer(self):
+        """Shows the internal log viewer"""
+        # We keep a reference so it doesn't get garbage collected
+        self.log_viewer = LogViewerDialog(self)
+        self.log_viewer.show()
+
     def _create_spacer(self):
         """Create a standard padding spacer widget."""
         spacer = QWidget()
@@ -323,7 +339,10 @@ class NodalApp(QMainWindow):
 
         # New Node button (left-aligned)
         self.btn_new_node = CozyButton("Node")
-        self.btn_new_node.clicked.connect(self.create_new_node)
+        # self.btn_new_node.clicked.connect(self.create_new_node)open_log_viewer
+        # self.btn_new_node.clicked.connect(self.open_log_viewer)
+        self.btn_new_node.clicked.connect(self.open_settings_window)
+
         bottom_toolbar_layout.addWidget(self.btn_new_node)
 
         # Stretch to push exit button to the right
@@ -650,13 +669,27 @@ class NodalApp(QMainWindow):
         self.update_blur_intensity(self.blur_slider.value())
 
     def closeEvent(self, event):
-        """Triggered when the window is about to close - fade out first."""
-        event.accept()  # Accept immediately to let Qt know we're handling it
+        # 1. Save Geometry immediately while the window is still valid
+        if Settings.get_bool("interface/restore_geom", True):
+            Settings.set_window_geometry(self.saveGeometry())
+            logger.debug("Geometry saved to nodal_config.ini")
 
-        if not self._first_show:  # Only fade out if we've already faded in
-            self.anim = QPropertyAnimation(self, b"windowOpacity")
-            self.anim.setDuration(300)
-            self.anim.setStartValue(self.windowOpacity())
-            self.anim.setEndValue(0.0)
-            self.anim.setEasingCurve(QEasingCurve.InCubic)
-            self.anim.start()
+        # 2. Check if we are already fading out
+        # If the opacity is already 0, we've finished the animation
+        if self.windowOpacity() <= 0.0:
+            event.accept()
+            return
+
+        # 3. Ignore the initial close request to allow the animation to play
+        event.ignore()
+
+        # 4. Start the Fade-Out Animation
+        self.anim = QPropertyAnimation(self, b"windowOpacity")
+        self.anim.setDuration(300)
+        self.anim.setStartValue(self.windowOpacity())
+        self.anim.setEndValue(0.0)
+        self.anim.setEasingCurve(QEasingCurve.InCubic)
+        
+        # 5. When the animation finishes, THEN call the real close
+        self.anim.finished.connect(self.close) 
+        self.anim.start()

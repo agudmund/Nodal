@@ -2,15 +2,15 @@
   "version": "1.0",
   "nodes": [
     {
-      "node_id": 0,
-      "uuid": "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c",
+      "node_id": 2,
+      "uuid": "cfd6974a34184c28a99208bae8904624",
       "type": "warm",
       "title": "New Node",
       "full_text": "",
-      "pos_x": 1027.1739130434785,
-      "pos_y": 638.5869565217394,
-      "width": 888.7729947550538,
-      "height": 145.1414389490152,
+      "pos_x": 999.2695489265575,
+      "pos_y": 836.1235001222216,
+      "width": 178.0,
+      "height": 90.0,
       "ports_visible": false
     },
     {
@@ -26,26 +26,26 @@
       "ports_visible": false
     },
     {
-      "node_id": 2,
-      "uuid": "cfd6974a34184c28a99208bae8904624",
+      "node_id": 0,
+      "uuid": "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c",
       "type": "warm",
       "title": "New Node",
       "full_text": "",
-      "pos_x": 999.2695489265575,
-      "pos_y": 836.1235001222216,
-      "width": 178.0,
-      "height": 90.0,
+      "pos_x": 1027.1739130434785,
+      "pos_y": 638.5869565217394,
+      "width": 888.7729947550538,
+      "height": 145.1414389490152,
       "ports_visible": false
     }
   ],
   "node_order": [
-    "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c",
+    "cfd6974a34184c28a99208bae8904624",
     "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
-    "cfd6974a34184c28a99208bae8904624"
+    "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c"
   ],
   "viewport": {
     "scale": 0.7288,
-    "center_x": 1174.61,
-    "center_y": 907.03
+    "center_x": 1174.53,
+    "center_y": 908.34
   }
 }
