@@ -147,7 +147,8 @@ class SessionManager:
 
         # Restore nodes in order
         created_nodes = {}
-        node_order = session_data.get("node_order", [])
+        # Support both "node_order" and "layout_order" for compatibility
+        node_order = session_data.get("node_order") or session_data.get("layout_order", [])
         nodes_data = {nd.get("uuid"): nd for nd in session_data.get("nodes", [])}
 
         logger.debug(f"Loading session with {len(nodes_data)} nodes defined, node_order: {len(node_order)}")

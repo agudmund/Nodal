@@ -76,7 +76,6 @@ class NodeScene(QGraphicsScene):
         self.blur_effect = QGraphicsBlurEffect()
         self.fog_layer.setGraphicsEffect(self.blur_effect)
         self.addItem(self.fog_layer)
-        self.setSceneRect(0, 0, 2000, 2000)
 
     def add_connection(self, node_a, node_b):
         from graphics.connection import Connection
