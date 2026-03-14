@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+-Cozy times nodal playground - settings_dialog.py application configuration for enjoying
+-Tabbed settings dialog for managing application preferences and node behavior
+-Built using a single shared braincell by Yours Truly and various Intelligences
+"""
+
 import os
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QTabWidget, QWidget,
@@ -7,6 +15,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Signal, QSettings
 from utils.logger import setup_logger
 from utils.settings import Settings
+from utils.theme import Theme
 from widgets.log_viewer_dialog import LogViewerDialog
 
 
@@ -22,25 +31,31 @@ class SettingsDialog(QDialog):
 
         self.setWindowTitle("Settings 🌱")
         self.setFixedSize(550, 600)
-        
-        # Consistent Lookdev Styling
-        self.setStyleSheet("""
-            QDialog { background-color: #121212; color: #e0e0e0; }
-            QTabWidget::pane { border: 1px solid #333; background: #1a1a1a; top: -1px; }
-            QTabBar::tab {
-                background: #252525;
-                color: #888;
+
+        # Build stylesheet from Theme
+        window_bg = Theme.WINDOW_BG.name()
+        text_color = Theme.TEXT_PRIMARY.name()
+        accent_color = Theme.ACCENT_NORMAL.name()
+        accent_selected = Theme.ACCENT_SELECTED.name()
+
+        # Consistent Lookdev Styling using Theme constants
+        self.setStyleSheet(f"""
+            QDialog {{ background-color: {window_bg}; color: {text_color}; }}
+            QTabWidget::pane {{ border: 1px solid {accent_color}; background: {window_bg}; top: -1px; }}
+            QTabBar::tab {{
+                background: {Theme.COMBOBOX_BG.name()};
+                color: {text_color};
                 padding: 10px 20px;
                 border-top-left-radius: 4px;
                 border-top-right-radius: 4px;
                 margin-right: 2px;
-            }
-            QTabBar::tab:selected { background: #1a1a1a; color: #fff; border: 1px solid #333; border-bottom: none; }
-            QGroupBox { color: #888; font-weight: bold; border: 1px solid #333; margin-top: 20px; padding-top: 20px; }
-            QLabel { color: #bbb; }
-            QPushButton#saveBtn { background-color: #2d5a27; color: white; font-weight: bold; padding: 8px; border-radius: 4px; }
-            QPushButton#saveBtn:hover { background-color: #3e7a36; }
-            QPushButton#cancelBtn { background-color: #333; color: #bbb; padding: 8px; border-radius: 4px; }
+            }}
+            QTabBar::tab:selected {{ background: {window_bg}; color: {accent_selected}; border: 1px solid {accent_color}; border-bottom: none; }}
+            QGroupBox {{ color: {text_color}; font-weight: bold; border: 1px solid {accent_color}; margin-top: 20px; padding-top: 20px; }}
+            QLabel {{ color: {text_color}; }}
+            QPushButton#saveBtn {{ background-color: {accent_color}; color: {window_bg}; font-weight: bold; padding: 8px; border-radius: 4px; }}
+            QPushButton#saveBtn:hover {{ background-color: {accent_selected}; }}
+            QPushButton#cancelBtn {{ background-color: {Theme.BUTTON_BG_INACTIVE.name()}; color: {text_color}; padding: 8px; border-radius: 4px; }}
         """)
         
         layout = QVBoxLayout(self)

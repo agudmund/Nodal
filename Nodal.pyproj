@@ -42,6 +42,8 @@
     <Compile Include="utils\spellchecker.py" />
     <Compile Include="utils\__init__.py" />
     <Compile Include="widgets\__init__.py" />
+    <Compile Include="*.py" xmlns="" />
+    <Compile Include="**\*.py" Exclude="__pycache__\**;build\**;dist\**" xmlns="" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\" />
@@ -53,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".github\copilot-instructions.md" />
+    <Content Include="update_pyproj.ps1" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

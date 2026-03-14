@@ -339,10 +339,7 @@ class NodalApp(QMainWindow):
 
         # New Node button (left-aligned)
         self.btn_new_node = CozyButton("Node")
-        # self.btn_new_node.clicked.connect(self.create_new_node)open_log_viewer
-        # self.btn_new_node.clicked.connect(self.open_log_viewer)
-        self.btn_new_node.clicked.connect(self.open_settings_window)
-
+        self.btn_new_node.clicked.connect(self.create_new_node)
         bottom_toolbar_layout.addWidget(self.btn_new_node)
 
         # Stretch to push exit button to the right
@@ -351,6 +348,11 @@ class NodalApp(QMainWindow):
         # The Blur Intensity Slider
         self.blur_slider = self._create_blur_slider()
         bottom_toolbar_layout.insertWidget(1, self.blur_slider)
+
+        # Settings button
+        self.btn_settings = CozyButton("Setings")
+        self.btn_settings.clicked.connect(self.open_settings_window)
+        bottom_toolbar_layout.addWidget(self.btn_settings)
 
         # Wait button (minimize - left of exit)
         self.btn_wait = CozyButton("Wait")

@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+-Cozy times nodal playground - log_viewer_dialog.py interactive log viewer
+-A PySide6 dialog for viewing and filtering application logs with theme integration
+-Built using a single shared braincell by Yours Truly and various Intelligences
+"""
+
 import os
 import sys
 import subprocess
@@ -8,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
+from utils.theme import Theme
 
 # We use the same path logic to find the file
 def get_log_file_path():
@@ -28,32 +37,38 @@ class LogViewerDialog(QDialog):
         
         self.setWindowTitle("Nodal System Logs 📜")
         self.setMinimumSize(800, 550)
-        self.setStyleSheet("""
-            QDialog { background-color: #121212; border: 1px solid #333; }
-            QLabel { color: #888; font-family: 'Segoe UI', sans-serif; font-size: 11px; }
-            QTextBrowser { 
-                background-color: #1a1a1a; 
-                color: #d4d4d4; 
+
+        # Build stylesheet from Theme
+        window_bg = Theme.WINDOW_BG.name()
+        text_color = Theme.TEXT_PRIMARY.name()
+        accent_color = Theme.ACCENT_NORMAL.name()
+
+        self.setStyleSheet(f"""
+            QDialog {{ background-color: {window_bg}; border: {Theme.WINDOW_BORDER_WIDTH}px solid {accent_color}; }}
+            QLabel {{ color: {text_color}; font-family: 'Segoe UI', sans-serif; font-size: 11px; }}
+            QTextBrowser {{ 
+                background-color: {window_bg}; 
+                color: {text_color}; 
                 border: none; 
                 font-family: 'Consolas', 'Courier New', monospace;
                 font-size: 12px;
                 line-height: 1.5;
-            }
-            QLineEdit { 
-                background-color: #252525; 
-                border: 1px solid #333; 
+            }}
+            QLineEdit {{ 
+                background-color: {Theme.COMBOBOX_BG.name()}; 
+                border: 1px solid {accent_color}; 
                 padding: 5px; 
-                color: white; 
+                color: {text_color}; 
                 border-radius: 4px;
-            }
-            QPushButton {
-                background-color: #333;
-                color: #eee;
-                border: none;
+            }}
+            QPushButton {{
+                background-color: {window_bg};
+                color: {text_color};
+                border: 1px solid {accent_color};
                 padding: 6px 12px;
                 border-radius: 4px;
-            }
-            QPushButton:hover { background-color: #444; }
+            }}
+            QPushButton:hover {{ background-color: {Theme.BUTTON_BG_HOVER.name()}; border: 1px solid {Theme.ACCENT_SELECTED.name()}; }}
         """)
 
         main_layout = QHBoxLayout(self)
