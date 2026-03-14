@@ -29,7 +29,7 @@ class SettingsDialog(QDialog):
         # Dragging state for frameless window
         self._dragging_window = False
         self._drag_pos = None
-        self._titlebar_height = Theme.HANDLE_HEIGHT
+        self._bar_height = 45  # Compact height for top/bottom bars with gentle padding
         self._side_padding = 15
 
         # Initialize QSettings (Company Name, App Name)
@@ -77,7 +77,7 @@ class SettingsDialog(QDialog):
 
         # Row 0, Col 1: Top draggable bar
         titlebar_container = QWidget()
-        titlebar_container.setFixedHeight(self._titlebar_height)
+        titlebar_container.setFixedHeight(self._bar_height)
         titlebar_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
             border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
@@ -117,7 +117,7 @@ class SettingsDialog(QDialog):
 
         # Row 2, Col 1: Bottom bar with buttons
         bottom_container = QWidget()
-        bottom_container.setFixedHeight(self._titlebar_height)
+        bottom_container.setFixedHeight(self._bar_height)
         bottom_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
             border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
