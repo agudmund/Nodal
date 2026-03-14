@@ -472,7 +472,7 @@ class NodalApp(QMainWindow):
     def changeEvent(self, event):
         """Handle window state changes to animate restore."""
         if event.type() == QEvent.WindowStateChange:
-            if not (self.windowState() & Qt.WindowMinimized) and self._animator._pre_minimize_geometry:
+            if not (self.windowState() & Qt.WindowMinimized) and self._animator.is_minimized:
                 # Window is being restored from minimized state
                 logger.info("Window restored, starting restore animation")
                 self._animator.restore(self)

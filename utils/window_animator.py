@@ -27,6 +27,11 @@ class WindowAnimator:
         self._restore_animation = None
         self._pre_minimize_geometry = None
 
+    @property
+    def is_minimized(self) -> bool:
+        """Check if window is currently in minimized state (has saved geometry to restore)."""
+        return self._pre_minimize_geometry is not None
+
     def minimize(self, window):
         """
         Minimize window with custom shrink + fade animation.
