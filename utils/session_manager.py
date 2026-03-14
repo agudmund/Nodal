@@ -106,6 +106,7 @@ class SessionManager:
                 "center_x": round(center.x(), 2),
                 "center_y": round(center.y(), 2),
             }
+            logger.debug(f"Captured viewport: scale={scale}, center=({center.x()}, {center.y()})")
 
         # Atomic save using temporary file
         temp_path = f"{filepath}.tmp"
@@ -188,21 +189,34 @@ class SessionManager:
         # Update scene bounds
         if created_nodes:
             scene.setSceneRect(scene.itemsBoundingRect())
+            logger.debug(f"Scene bounds set: {scene.sceneRect()}")
 
         # Restore viewport state if available
+        # IMPORTANT: Do this AFTER all nodes are loaded and scene bounds are set
         if view is not None and "viewport" in session_data:
             vp = session_data["viewport"]
+            logger.debug(f"Viewport data in session: scale={vp.get('scale')}, center=({vp.get('center_x')}, {vp.get('center_y')})")
             try:
+                # Reset to identity transform first
                 view.resetTransform()
+                logger.debug(f"Transform reset. View rect: {view.viewport().rect()}")
+
                 scale = vp.get("scale", 1.0)
                 center_x = vp.get("center_x", 0.0)
                 center_y = vp.get("center_y", 0.0)
+
+                # Apply scale
                 view.scale(scale, scale)
+                logger.debug(f"Scale applied: {scale}")
+
+                # Apply pan (center)
                 view.centerOn(QPointF(center_x, center_y))
-                # Trigger full view refresh to ensure viewport is properly updated
+                logger.debug(f"Centered on: ({center_x}, {center_y})")
+
+                # Trigger full view refresh
                 view.update()
                 view.viewport().update()
-                logger.debug(f"Restored viewport: scale={scale}, center=({center_x}, {center_y})")
+                logger.info(f"✅ Restored viewport: scale={scale}, center=({center_x}, {center_y})")
             except Exception as e:
                 logger.warning(f"Could not restore viewport state: {e}")
 
