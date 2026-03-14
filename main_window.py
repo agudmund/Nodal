@@ -316,11 +316,6 @@ class NodalApp(QMainWindow):
 
         toolbar_layout.addWidget(self.combo_graphs)
 
-        # Save button (right after combobox)
-        self.btn_save_session = CozyButton("Save")
-        self.btn_save_session.clicked.connect(self.save_session)
-        toolbar_layout.addWidget(self.btn_save_session)
-
         toolbar_layout.addStretch()
         grid_layout.addWidget(self.toolbar_container, 0, 1)
 
