@@ -195,9 +195,14 @@ class SessionManager:
             try:
                 view.resetTransform()
                 scale = vp.get("scale", 1.0)
+                center_x = vp.get("center_x", 0.0)
+                center_y = vp.get("center_y", 0.0)
                 view.scale(scale, scale)
-                view.centerOn(QPointF(vp.get("center_x", 0.0), vp.get("center_y", 0.0)))
+                view.centerOn(QPointF(center_x, center_y))
+                # Trigger full view refresh to ensure viewport is properly updated
+                view.update()
                 view.viewport().update()
+                logger.debug(f"Restored viewport: scale={scale}, center=({center_x}, {center_y})")
             except Exception as e:
                 logger.warning(f"Could not restore viewport state: {e}")
 
