@@ -246,9 +246,10 @@ class NodalApp(QMainWindow):
                 background-image: url({image_path});
                 background-repeat: no-repeat;
                 background-position: center;
-                width: 12px;
-                height: 12px;
-                margin: -3px 0px;
+                background-size: contain;
+                width: 16px;
+                height: 16px;
+                margin: -5px 0px;
             }}"""
             else:
                 # Image path specified but file not found - fallback to solid color
