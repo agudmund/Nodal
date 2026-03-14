@@ -102,6 +102,7 @@ class SettingsDialog(QDialog):
 
         # Row 1, Col 1: Tabs content area
         self.tabs = QTabWidget()
+        self.tabs.setStyleSheet(f"border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};")
 
         self._create_general_tab()
         self._create_nodes_tab()
