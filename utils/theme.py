@@ -13,7 +13,7 @@ class Theme:
     # --- Sizing & Spacing ---
     WINDOW_BORDER_WIDTH = 1
     HANDLE_HEIGHT_TOP = 65  # Top toolbar/title bar height (draggable area)
-    HANDLE_HEIGHT_BOTTOM = 65  # Bottom toolbar/button bar height
+    HANDLE_HEIGHT_BOTTOM = 100  # Bottom toolbar/button bar height
     DIALOG_TOP_BAR_HEIGHT = 35  # Utility dialog top bar height (text only)
     DIALOG_BOTTOM_BAR_HEIGHT = 85  # Utility dialog bottom bar height (button bar)
     WINDOW_ANIMATION_DURATION = 500  # Milliseconds for minimize animation
@@ -98,6 +98,8 @@ class Theme:
     COMBOBOX_DROPDOWN_WIDTH = 30
     COMBOBOX_MIN_WIDTH = 200
 
+    # --- Slider Styling ---
+    SLIDER_HANDLE_IMAGE = "resources/icons/slider_handle.png"  # Path to custom slider handle image (set to None to use solid color)
     # --- Colors: The Nerve System (Electrical Copper) ---
     # A broad, faint glow to simulate light scattering on the 'Mica' surface
     WIRE_GLOW = QColor(155, 126, 94, 60) 

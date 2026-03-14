@@ -233,18 +233,49 @@ class NodalApp(QMainWindow):
         slider.setValue(Theme.FROST_COLOR.alpha())
         slider.setFixedWidth(150)
         slider.setToolTip("Adjust Background Abstraction")
-        slider.setStyleSheet("""
-            QSlider::groove:horizontal {
-                background: transparent;
-                border: none;
-                height: 6px;
-            }
+
+        # Build slider stylesheet with optional custom handle image
+        handle_style = ""
+        if Theme.SLIDER_HANDLE_IMAGE:
+            import os
+            if os.path.exists(Theme.SLIDER_HANDLE_IMAGE):
+                # Use custom image - convert path to URL format for stylesheet
+                image_path = Theme.SLIDER_HANDLE_IMAGE.replace("\\", "/")
+                handle_style = f"""
+            QSlider::handle:horizontal {{
+                background-image: url({image_path});
+                background-repeat: no-repeat;
+                background-position: center;
+                width: 12px;
+                height: 12px;
+                margin: -3px 0px;
+            }}"""
+            else:
+                # Image path specified but file not found - fallback to solid color
+                logger.warning(f"Slider handle image not found: {Theme.SLIDER_HANDLE_IMAGE}, using solid color")
+                handle_style = """
             QSlider::handle:horizontal {
                 background: #00d2ff;
                 width: 12px;
                 border-radius: 6px;
                 margin: -3px 0px;
-            }
+            }"""
+        else:
+            # No image path specified - use solid color
+            handle_style = """
+            QSlider::handle:horizontal {
+                background: #00d2ff;
+                width: 12px;
+                border-radius: 6px;
+                margin: -3px 0px;
+            }"""
+
+        slider.setStyleSheet(f"""
+            QSlider::groove:horizontal {{
+                background: transparent;
+                border: none;
+                height: 6px;
+            }}{handle_style}
         """)
         slider.valueChanged.connect(self.update_blur_intensity)
         return slider
