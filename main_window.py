@@ -208,7 +208,13 @@ class NodalApp(QMainWindow):
         self.log_viewer.show()
 
     def _create_spacer(self):
-        """Create a standard padding spacer widget."""
+        """Create a standard padding spacer widget.
+
+        Note: The background color is baked into the stylesheet at construction time.
+        This is intentional—the application does not support dynamic theme switching,
+        and we are well aware of the visual appearance. If dynamic theming is needed
+        in the future, this would need refactoring to use palette-based coloring.
+        """
         spacer = QWidget()
         spacer.setFixedWidth(15)
         spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
