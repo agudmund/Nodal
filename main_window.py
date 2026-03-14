@@ -77,9 +77,10 @@ class NodeGraphicsView(QGraphicsView):
         It draws the tint and the grain texture OVER the Mica blur.
         """
         painter.save()
-        
+
         # Keep the grain/tint static relative to the window (don't move when panning)
-        painter.setWorldTransform(painter.worldTransform().inverted()[0] * painter.worldTransform())
+        # Use resetTransform() instead of matrix inversion math for clarity and efficiency
+        painter.resetTransform()
         
         # 1. THE OBSIDIAN TINT
         # Responsive to Theme.FROST_COLOR.alpha() (The Slider!)
