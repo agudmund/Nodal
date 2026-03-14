@@ -460,6 +460,17 @@ class NodalApp(QMainWindow):
         else:
             super().mousePressEvent(event)
 
+    def mouseDoubleClickEvent(self, event):
+        """Toggle maximize/restore on double-click of title bar."""
+        if event.position().y() < self.handle_height:
+            if self.isMaximized():
+                self.showNormal()
+            else:
+                self.showMaximized()
+            event.accept()
+        else:
+            super().mouseDoubleClickEvent(event)
+
     def mouseMoveEvent(self, event):
         if self._dragging_window:
             new_pos = event.globalPosition().toPoint()
