@@ -314,6 +314,13 @@ class NodalApp(QMainWindow):
         # Connect combobox selection change to load session (AFTER populating items)
         self.combo_graphs.currentIndexChanged.connect(self.on_session_changed)
 
+        # Auto-load the last session if available
+        last_session = Settings.get("session/last_loaded", "")
+        if last_session and session_names and last_session in session_names:
+            index = self.combo_graphs.findText(last_session)
+            if index >= 0:
+                self.combo_graphs.setCurrentIndex(index)
+
         toolbar_layout.addWidget(self.combo_graphs)
 
         # Save button (right after combobox)
@@ -428,10 +435,12 @@ class NodalApp(QMainWindow):
         logger.info(f"Saved session: {self._current_session}")
 
     def on_session_changed(self, index: int):
-        """Handle combobox selection change."""
+        """Handle combobox selection change. Loads session and remembers the selection."""
         if index < 0:
             return
         session_name = self.combo_graphs.currentText()
+        # Remember this selection for next launch
+        Settings.set("session/last_loaded", session_name)
         self.load_session(session_name)
 
     def mousePressEvent(self, event):
