@@ -149,7 +149,15 @@ class SessionManager:
         created_nodes = {}
         # Support both "node_order" and "layout_order" for compatibility
         node_order = session_data.get("node_order") or session_data.get("layout_order", [])
-        nodes_data = {nd.get("uuid"): nd for nd in session_data.get("nodes", [])}
+
+        # Build nodes_data dict with UUID as key, but handle missing UUIDs by generating them
+        nodes_data = {}
+        for nd in session_data.get("nodes", []):
+            # If node doesn't have uuid, generate one now
+            if "uuid" not in nd:
+                import uuid as uuid_module
+                nd["uuid"] = str(uuid_module.uuid4())
+            nodes_data[nd.get("uuid")] = nd
 
         logger.debug(f"Loading session with {len(nodes_data)} nodes defined, node_order: {len(node_order)}")
 
@@ -164,6 +172,18 @@ class SessionManager:
                 except Exception as e:
                     logger.error(f"❌ Failed to load node {node_uuid}: {e}")
                     continue
+
+        # If no node_order was specified, load all nodes that weren't already loaded
+        if not node_order:
+            for node_uuid, node_data in nodes_data.items():
+                if node_uuid not in created_nodes:
+                    try:
+                        node = NodeBase.from_dict(node_data)
+                        scene.addItem(node)
+                        created_nodes[node.uuid] = node
+                    except Exception as e:
+                        logger.error(f"❌ Failed to load node {node_uuid}: {e}")
+                        continue
 
         # Update scene bounds
         if created_nodes:
