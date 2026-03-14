@@ -29,13 +29,14 @@ class SettingsDialog(QDialog):
         # Dragging state for frameless window
         self._dragging_window = False
         self._drag_pos = None
-        self._titlebar_height = Theme.HANDLE_HEIGHT  # Use Theme constant for consistency
+        self._titlebar_height = Theme.HANDLE_HEIGHT
+        self._side_padding = 15
 
         # Initialize QSettings (Company Name, App Name)
         self.storage = QSettings("SingleSharedBraincell", "Nodal")
 
         self.setWindowTitle("Settings 🌱")
-        self.setFixedSize(550, 600)
+        self.setFixedSize(600, 650)
 
         # Frameless window to match main window design motif
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
@@ -67,12 +68,15 @@ class SettingsDialog(QDialog):
             QPushButton#cancelBtn {{ background-color: {Theme.BUTTON_BG_INACTIVE.name()}; color: {text_color}; padding: 8px; border-radius: 4px; }}
         """)
 
-        # Main layout
-        main_layout = QVBoxLayout(self)
+        # Main grid layout structure (matching main_window pattern)
+        main_layout = QGridLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Top draggable bar (using _create_toolbar approach)
+        # Row 0, Col 0: Top left spacer
+        main_layout.addWidget(self._create_spacer(), 0, 0)
+
+        # Row 0, Col 1: Top draggable bar
         titlebar_container = QWidget()
         titlebar_container.setFixedHeight(self._titlebar_height)
         titlebar_container.setStyleSheet(f"""
@@ -89,23 +93,41 @@ class SettingsDialog(QDialog):
         titlebar_layout.addWidget(titlebar_label)
         titlebar_layout.addStretch()
 
-        main_layout.addWidget(titlebar_container)
+        main_layout.addWidget(titlebar_container, 0, 1)
 
-        # Content area
-        content_layout = QVBoxLayout()
-        content_layout.setContentsMargins(0, 0, 0, 0)
-        content_layout.setSpacing(0)
+        # Row 0, Col 2: Top right spacer
+        main_layout.addWidget(self._create_spacer(), 0, 2)
 
+        # Row 1, Col 0: Left spacer
+        main_layout.addWidget(self._create_spacer(), 1, 0)
+
+        # Row 1, Col 1: Tabs content area
         self.tabs = QTabWidget()
 
         self._create_general_tab()
         self._create_nodes_tab()
-        self._create_logs_tab() # Nested Viewer
+        self._create_logs_tab()
 
-        content_layout.addWidget(self.tabs)
+        main_layout.addWidget(self.tabs, 1, 1)
 
-        # Bottom Buttons
-        btn_layout = QHBoxLayout()
+        # Row 1, Col 2: Right spacer
+        main_layout.addWidget(self._create_spacer(), 1, 2)
+
+        # Row 2, Col 0: Bottom left spacer
+        main_layout.addWidget(self._create_spacer(), 2, 0)
+
+        # Row 2, Col 1: Bottom bar with buttons
+        bottom_container = QWidget()
+        bottom_container.setFixedHeight(self._titlebar_height)
+        bottom_container.setStyleSheet(f"""
+            background-color: {Theme.TOOLBAR_BG.name()};
+            border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+        """)
+
+        bottom_layout = QHBoxLayout(bottom_container)
+        bottom_layout.setContentsMargins(15, 0, 15, 0)
+        bottom_layout.addStretch()
+
         self.cancel_btn = QPushButton("Cancel")
         self.cancel_btn.setObjectName("cancelBtn")
         self.cancel_btn.clicked.connect(self.reject)
@@ -114,17 +136,28 @@ class SettingsDialog(QDialog):
         self.apply_btn.setObjectName("saveBtn")
         self.apply_btn.clicked.connect(self._apply_and_close)
 
-        btn_layout.addStretch()
-        btn_layout.addWidget(self.cancel_btn)
-        btn_layout.addWidget(self.apply_btn)
-        btn_layout.setContentsMargins(15, 10, 15, 10)
+        bottom_layout.addWidget(self.cancel_btn)
+        bottom_layout.addWidget(self.apply_btn)
 
-        content_layout.addLayout(btn_layout)
-        main_layout.addLayout(content_layout)
+        main_layout.addWidget(bottom_container, 2, 1)
+
+        # Row 2, Col 2: Bottom right spacer
+        main_layout.addWidget(self._create_spacer(), 2, 2)
+
+        # Set row/column stretch
+        main_layout.setRowStretch(1, 1)
+        main_layout.setColumnStretch(1, 1)
 
         # Load values from registry/file
         self._load_settings()
         self._fadein()
+
+    def _create_spacer(self):
+        """Create a standard padding spacer widget."""
+        spacer = QWidget()
+        spacer.setFixedWidth(self._side_padding)
+        spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
+        return spacer
 
     def _create_general_tab(self):
         tab = QWidget()
