@@ -49,7 +49,7 @@ class SettingsDialog(QDialog):
 
         # Consistent Lookdev Styling using Theme constants
         self.setStyleSheet(f"""
-            QDialog {{ background-color: {window_bg}; color: {text_color}; border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()}; }}
+            QDialog {{ background-color: {window_bg}; color: {text_color}; }}
             QTabWidget::pane {{ border: 1px solid {accent_color}; background: {window_bg}; top: -1px; }}
             QTabBar::tab {{
                 background: {Theme.COMBOBOX_BG.name()};
@@ -68,7 +68,10 @@ class SettingsDialog(QDialog):
         """)
 
         # Main grid layout structure (matching main_window pattern)
-        main_layout = QGridLayout(self)
+        outer_container = QWidget()
+        outer_container.setStyleSheet(f"border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};")
+
+        main_layout = QGridLayout(outer_container)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
@@ -102,7 +105,6 @@ class SettingsDialog(QDialog):
 
         # Row 1, Col 1: Tabs content area
         self.tabs = QTabWidget()
-        self.tabs.setStyleSheet(f"border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};")
 
         self._create_general_tab()
         self._create_nodes_tab()
@@ -147,6 +149,11 @@ class SettingsDialog(QDialog):
         # Set row/column stretch
         main_layout.setRowStretch(1, 1)
         main_layout.setColumnStretch(1, 1)
+
+        # Add bordered container to dialog
+        dialog_layout = QVBoxLayout(self)
+        dialog_layout.setContentsMargins(0, 0, 0, 0)
+        dialog_layout.addWidget(outer_container)
 
         # Load values from registry/file
         self._load_settings()
