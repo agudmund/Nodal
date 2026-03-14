@@ -99,7 +99,9 @@ class Theme:
     COMBOBOX_MIN_WIDTH = 200
 
     # --- Slider Styling ---
-    SLIDER_HANDLE_IMAGE = "resources/icons/slider_handle.png"  # Path to custom slider handle image (set to None to use solid color)
+    # Slider handle image: recommended size is 12x12 pixels for best results
+    # Set to None to use solid cyan color instead
+    SLIDER_HANDLE_IMAGE = "resources/icons/iconic.png"  # Path to custom slider handle image
     # --- Colors: The Nerve System (Electrical Copper) ---
     # A broad, faint glow to simulate light scattering on the 'Mica' surface
     WIRE_GLOW = QColor(155, 126, 94, 60) 
