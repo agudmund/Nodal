@@ -274,11 +274,14 @@ class NodalApp(QMainWindow):
         self.combo_graphs.setObjectName("project_selector")
 
         # Populate with session names from sessions/ directory
+        # Block signals during population to avoid loading before scene is initialized
+        self.combo_graphs.blockSignals(True)
         session_names = self._load_session_names()
         if session_names:
             self.combo_graphs.addItems(session_names)
         else:
             self.combo_graphs.addItem("No sessions found")
+        self.combo_graphs.blockSignals(False)
 
         self.combo_graphs.setMinimumWidth(Theme.COMBOBOX_MIN_WIDTH)
 
@@ -308,7 +311,7 @@ class NodalApp(QMainWindow):
             }}
         """)
 
-        # Connect combobox selection change to load session
+        # Connect combobox selection change to load session (AFTER populating items)
         self.combo_graphs.currentIndexChanged.connect(self.on_session_changed)
 
         toolbar_layout.addWidget(self.combo_graphs)
