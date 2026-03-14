@@ -50,7 +50,7 @@ class SettingsDialog(QDialog):
         # Consistent Lookdev Styling using Theme constants
         self.setStyleSheet(f"""
             QDialog {{ background-color: {window_bg}; color: {text_color}; }}
-            QTabWidget::pane {{ border: 1px solid {accent_color}; background: {window_bg}; top: -1px; }}
+            QTabWidget::pane {{ background: {window_bg}; }}
             QTabBar::tab {{
                 background: {Theme.COMBOBOX_BG.name()};
                 color: {text_color};
