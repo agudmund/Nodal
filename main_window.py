@@ -397,6 +397,10 @@ class NodalApp(QMainWindow):
             index = self.combo_graphs.findText(last_session)
             if index >= 0:
                 self.combo_graphs.setCurrentIndex(index)
+                # If the index is already 0, setCurrentIndex won't emit currentIndexChanged signal
+                # So we need to explicitly load the session in that case
+                if index == 0:
+                    self.load_session(last_session)
 
     def update_blur_intensity(self, value):
         Theme.FROST_COLOR.setAlpha(value)
