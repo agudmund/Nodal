@@ -74,7 +74,7 @@ class SettingsDialog(QDialog):
 
         # Row 0, Col 1: Top draggable bar
         titlebar_container = QWidget()
-        titlebar_container.setFixedHeight(Theme.DIALOG_BAR_HEIGHT)
+        titlebar_container.setFixedHeight(Theme.DIALOG_TOP_BAR_HEIGHT)
         titlebar_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
             border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
@@ -115,7 +115,7 @@ class SettingsDialog(QDialog):
 
         # Row 2, Col 1: Bottom bar with buttons
         bottom_container = QWidget()
-        bottom_container.setFixedHeight(Theme.DIALOG_BAR_HEIGHT)
+        bottom_container.setFixedHeight(Theme.DIALOG_BOTTOM_BAR_HEIGHT)
         bottom_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
             border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
@@ -246,7 +246,7 @@ class SettingsDialog(QDialog):
 
     def mousePressEvent(self, event):
         """Handle window dragging from the top bar."""
-        if event.button() == Qt.LeftButton and event.position().y() < Theme.DIALOG_BAR_HEIGHT:
+        if event.button() == Qt.LeftButton and event.position().y() < Theme.DIALOG_TOP_BAR_HEIGHT:
             self._dragging_window = True
             self._drag_pos = event.globalPosition().toPoint()
             event.accept()
