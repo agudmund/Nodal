@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QLabel, QPushButton, QSlider, QLineEdit, QCheckBox,
     QGroupBox, QFormLayout
 )
-from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Signal, QSettings
+from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Signal, QSettings, QPoint
 from utils.logger import setup_logger
 from utils.settings import Settings
 from utils.theme import Theme
@@ -25,6 +25,11 @@ class SettingsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.logger = setup_logger()
+
+        # Dragging state for frameless window
+        self._dragging_window = False
+        self._drag_pos = None
+        self._titlebar_height = 30  # Height of draggable top bar
 
         # Initialize QSettings (Company Name, App Name)
         self.storage = QSettings("SingleSharedBraincell", "Nodal")
@@ -44,7 +49,7 @@ class SettingsDialog(QDialog):
 
         # Consistent Lookdev Styling using Theme constants
         self.setStyleSheet(f"""
-            QDialog {{ background-color: {window_bg}; color: {text_color}; }}
+            QDialog {{ background-color: {window_bg}; color: {text_color}; border: 1px solid {accent_color}; }}
             QTabWidget::pane {{ border: 1px solid {accent_color}; background: {window_bg}; top: -1px; }}
             QTabBar::tab {{
                 background: {Theme.COMBOBOX_BG.name()};
@@ -61,17 +66,37 @@ class SettingsDialog(QDialog):
             QPushButton#saveBtn:hover {{ background-color: {accent_selected}; }}
             QPushButton#cancelBtn {{ background-color: {Theme.BUTTON_BG_INACTIVE.name()}; color: {text_color}; padding: 8px; border-radius: 4px; }}
         """)
-        
+
+        # Main layout
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        # Draggable top bar
+        titlebar_container = QWidget()
+        titlebar_container.setFixedHeight(self._titlebar_height)
+        titlebar_layout = QHBoxLayout(titlebar_container)
+        titlebar_layout.setContentsMargins(15, 0, 15, 0)
+        titlebar_layout.addStretch()
+
+        titlebar_label = QLabel("Settings 🌱")
+        titlebar_label.setStyleSheet(f"color: {text_color};")
+        titlebar_layout.addWidget(titlebar_label)
+        titlebar_layout.addStretch()
+
+        layout.addWidget(titlebar_container)
+
+        # Content area
+        content_layout = QVBoxLayout()
         self.tabs = QTabWidget()
-        
+
         self._create_general_tab()
         self._create_nodes_tab()
         self._create_logs_tab() # Nested Viewer
 
-        layout.addWidget(self.tabs)
-        
-        # 2. Bottom Buttons
+        content_layout.addWidget(self.tabs)
+
+        # Bottom Buttons
         btn_layout = QHBoxLayout()
         self.cancel_btn = QPushButton("Cancel")
         self.cancel_btn.setObjectName("cancelBtn")
@@ -84,7 +109,10 @@ class SettingsDialog(QDialog):
         btn_layout.addStretch()
         btn_layout.addWidget(self.cancel_btn)
         btn_layout.addWidget(self.apply_btn)
-        layout.addLayout(btn_layout)
+        content_layout.addLayout(btn_layout)
+        content_layout.setContentsMargins(0, 10, 0, 10)
+
+        layout.addLayout(content_layout)
 
         # Load values from registry/file
         self._load_settings()
@@ -158,3 +186,27 @@ class SettingsDialog(QDialog):
         self.anim.setEndValue(1.0)
         self.anim.setEasingCurve(QEasingCurve.OutQuad)
         self.anim.start()
+
+    def mousePressEvent(self, event):
+        """Handle window dragging from the top bar."""
+        if event.button() == Qt.LeftButton and event.position().y() < self._titlebar_height:
+            self._dragging_window = True
+            self._drag_pos = event.globalPosition().toPoint()
+            event.accept()
+        else:
+            super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        """Move window when dragging the top bar."""
+        if self._dragging_window:
+            new_pos = event.globalPosition().toPoint()
+            self.move(self.pos() + (new_pos - self._drag_pos))
+            self._drag_pos = new_pos
+            event.accept()
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """Stop dragging on mouse release."""
+        self._dragging_window = False
+        super().mouseReleaseEvent(event)
