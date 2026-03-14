@@ -9,7 +9,7 @@
 import os
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QTabWidget, QWidget,
-    QLabel, QPushButton, QSlider, QLineEdit, QCheckBox,
+    QLabel, QSlider, QLineEdit, QCheckBox,
     QGroupBox, QFormLayout
 )
 from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Signal, QSettings, QPoint
@@ -17,6 +17,7 @@ from utils.logger import setup_logger
 from utils.settings import Settings
 from utils.theme import Theme
 from widgets.log_viewer_dialog import LogViewerDialog
+from widgets import CozyButton
 
 
 class SettingsDialog(QDialog):
@@ -59,12 +60,9 @@ class SettingsDialog(QDialog):
                 border-top-right-radius: 4px;
                 margin-right: 2px;
             }}
-            QTabBar::tab:selected {{ background: {window_bg}; color: {accent_selected}; border: 1px solid {accent_color}; border-bottom: none; }}
+            QTabBar::tab:selected {{ background: {window_bg}; color: {accent_selected}; }}
             QGroupBox {{ color: {text_color}; font-weight: bold; border: 1px solid {accent_color}; margin-top: 20px; padding-top: 20px; }}
             QLabel {{ color: {text_color}; }}
-            QPushButton#saveBtn {{ background-color: {accent_color}; color: {window_bg}; font-weight: bold; padding: 8px; border-radius: 4px; }}
-            QPushButton#saveBtn:hover {{ background-color: {accent_selected}; }}
-            QPushButton#cancelBtn {{ background-color: {Theme.BUTTON_BG_INACTIVE.name()}; color: {text_color}; padding: 8px; border-radius: 4px; }}
         """)
 
         # Main grid layout structure (matching main_window pattern)
@@ -127,12 +125,10 @@ class SettingsDialog(QDialog):
         bottom_layout.setContentsMargins(15, 0, 15, 0)
         bottom_layout.addStretch()
 
-        self.cancel_btn = QPushButton("Cancel")
-        self.cancel_btn.setObjectName("cancelBtn")
+        self.cancel_btn = CozyButton("Cancel")
         self.cancel_btn.clicked.connect(self.reject)
 
-        self.apply_btn = QPushButton("Save Cozy Changes")
-        self.apply_btn.setObjectName("saveBtn")
+        self.apply_btn = CozyButton("Save Cozy Changes")
         self.apply_btn.clicked.connect(self._apply_and_close)
 
         bottom_layout.addWidget(self.cancel_btn)
