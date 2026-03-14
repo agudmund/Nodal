@@ -68,22 +68,21 @@ class SettingsDialog(QDialog):
         """)
 
         # Main grid layout structure (matching main_window pattern)
-        outer_container = QWidget()
-        outer_container.setStyleSheet(f"border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};")
-
-        main_layout = QGridLayout(outer_container)
+        main_layout = QGridLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Row 0, Col 0: Top left spacer
-        main_layout.addWidget(self._create_spacer(), 0, 0)
+        # Row 0, Col 0: Top left corner spacer
+        main_layout.addWidget(self._create_spacer("top-left"), 0, 0)
 
         # Row 0, Col 1: Top draggable bar
         titlebar_container = QWidget()
         titlebar_container.setFixedHeight(self._titlebar_height)
         titlebar_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
-            border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
 
         titlebar_layout = QHBoxLayout(titlebar_container)
@@ -97,11 +96,11 @@ class SettingsDialog(QDialog):
 
         main_layout.addWidget(titlebar_container, 0, 1)
 
-        # Row 0, Col 2: Top right spacer
-        main_layout.addWidget(self._create_spacer(), 0, 2)
+        # Row 0, Col 2: Top right corner spacer
+        main_layout.addWidget(self._create_spacer("top-right"), 0, 2)
 
         # Row 1, Col 0: Left spacer
-        main_layout.addWidget(self._create_spacer(), 1, 0)
+        main_layout.addWidget(self._create_spacer("left"), 1, 0)
 
         # Row 1, Col 1: Tabs content area
         self.tabs = QTabWidget()
@@ -113,17 +112,19 @@ class SettingsDialog(QDialog):
         main_layout.addWidget(self.tabs, 1, 1)
 
         # Row 1, Col 2: Right spacer
-        main_layout.addWidget(self._create_spacer(), 1, 2)
+        main_layout.addWidget(self._create_spacer("right"), 1, 2)
 
-        # Row 2, Col 0: Bottom left spacer
-        main_layout.addWidget(self._create_spacer(), 2, 0)
+        # Row 2, Col 0: Bottom left corner spacer
+        main_layout.addWidget(self._create_spacer("bottom-left"), 2, 0)
 
         # Row 2, Col 1: Bottom bar with buttons
         bottom_container = QWidget()
         bottom_container.setFixedHeight(self._titlebar_height)
         bottom_container.setStyleSheet(f"""
             background-color: {Theme.TOOLBAR_BG.name()};
-            border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
         """)
 
         bottom_layout = QHBoxLayout(bottom_container)
@@ -143,27 +144,43 @@ class SettingsDialog(QDialog):
 
         main_layout.addWidget(bottom_container, 2, 1)
 
-        # Row 2, Col 2: Bottom right spacer
-        main_layout.addWidget(self._create_spacer(), 2, 2)
+        # Row 2, Col 2: Bottom right corner spacer
+        main_layout.addWidget(self._create_spacer("bottom-right"), 2, 2)
 
         # Set row/column stretch
         main_layout.setRowStretch(1, 1)
         main_layout.setColumnStretch(1, 1)
 
-        # Add bordered container to dialog
-        dialog_layout = QVBoxLayout(self)
-        dialog_layout.setContentsMargins(0, 0, 0, 0)
-        dialog_layout.addWidget(outer_container)
-
         # Load values from registry/file
         self._load_settings()
         self._fadein()
 
-    def _create_spacer(self):
-        """Create a standard padding spacer widget."""
+    def _create_spacer(self, position="middle"):
+        """
+        Create a standard padding spacer widget.
+
+        Args:
+            position: "top", "bottom", "left", "right", "corner", or "middle"
+        """
         spacer = QWidget()
         spacer.setFixedWidth(self._side_padding)
-        spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
+
+        # Build border based on position
+        border_style = ""
+        if position == "top-left":
+            border_style = f"border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()}; border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+        elif position == "top-right":
+            border_style = f"border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()}; border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+        elif position == "bottom-left":
+            border_style = f"border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()}; border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+        elif position == "bottom-right":
+            border_style = f"border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()}; border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+        elif position == "left":
+            border_style = f"border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+        elif position == "right":
+            border_style = f"border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+
+        spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()}; {border_style}")
         return spacer
 
     def _create_general_tab(self):
