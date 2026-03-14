@@ -30,7 +30,7 @@ class SettingsDialog(QDialog):
         # Dragging state for frameless window
         self._dragging_window = False
         self._drag_pos = None
-        self._bar_height = 45  # Compact height for top/bottom bars with gentle padding
+        self._bar_height = Theme.BUTTON_MIN_HEIGHT + 10  # Compact height with padding around buttons
         self._side_padding = 15
 
         # Initialize QSettings (Company Name, App Name)
