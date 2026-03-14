@@ -7,6 +7,7 @@
 """
 
 import os
+import sys
 import json
 from graphics.node_types import NodeBase
 from pathlib import Path
@@ -20,6 +21,23 @@ from utils.logger import setup_logger
 logger = setup_logger()
 
 
+def _get_sessions_dir() -> Path:
+    """
+    Get the absolute path to the sessions directory.
+
+    Works correctly regardless of where the process was launched from.
+    Handles both normal script execution and PyInstaller bundles.
+    """
+    if hasattr(sys, '_MEIPASS'):
+        # Running as a PyInstaller EXE
+        base_path = Path(sys.executable).parent
+    else:
+        # Running as a normal script
+        base_path = Path(__file__).resolve().parent.parent
+
+    return base_path / "sessions"
+
+
 class SessionManager:
     """Handle saving and loading of nodal graph sessions to/from JSON files."""
 
@@ -28,16 +46,17 @@ class SessionManager:
 
     @staticmethod
     def get_session_filename(display_name: str) -> str:
-        """Get the full filepath for a session by its display name."""
-        return f"{SessionManager.SESSIONS_DIR}/{display_name}.json"
+        """Get the full absolute filepath for a session by its display name."""
+        sessions_dir = _get_sessions_dir()
+        return str(sessions_dir / f"{display_name}.json")
 
     @staticmethod
     def get_available_sessions() -> List[str]:
         """Get list of available session names from sessions/ directory."""
-        sessions_path = Path(SessionManager.SESSIONS_DIR)
+        sessions_path = _get_sessions_dir()
 
         if not sessions_path.exists():
-            logger.warning("Sessions directory not found")
+            logger.warning(f"Sessions directory not found at {sessions_path}")
             return []
 
         # Find all .json files and return them sorted

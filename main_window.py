@@ -242,15 +242,7 @@ class NodalApp(QMainWindow):
 
     def _load_session_names(self):
         """Load session JSON filenames from the sessions directory."""
-        sessions_dir = Path("sessions")
-        if not sessions_dir.exists():
-            logger.warning("Sessions directory not found")
-            return []
-
-        # Find all .json files in sessions directory
-        session_files = sorted(sessions_dir.glob("*.json"))
-        # Return just the filenames without extension
-        return [f.stem for f in session_files]
+        return SessionManager.get_available_sessions()
 
     def init_ui(self):
         self.setWindowTitle("Nodal")
