@@ -7,11 +7,9 @@
 """
 
 from pathlib import Path
-from PySide6.QtCore import QTimer
-import ctypes
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QApplication, QGraphicsScene
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform
-from PySide6.QtCore import Qt, QEvent, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect
+from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect
 from graphics.scene import NodeScene, enable_blur
 from widgets import CozyButton
 from utils.theme import Theme
