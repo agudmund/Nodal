@@ -190,7 +190,7 @@ class WindowAnimator:
 
         self._restore_animation.addAnimation(geom_anim)
         self._restore_animation.addAnimation(opacity_anim)
-        self._restore_animation.finished.connect(self._on_restore_finished)
+        self._restore_animation.finished.connect(lambda: self._on_restore_finished(window))
 
         self._restore_animation.start()
 
@@ -200,6 +200,10 @@ class WindowAnimator:
         window.showMinimized()
         self._animating = False
 
-    def _on_restore_finished(self):
-        """Called when restore animation completes."""
+    def _on_restore_finished(self, window):
+        """Called when restore animation completes. Syncs viewport position after restore."""
+        # Re-establish the viewport position after animation completes
+        # This ensures the canvas is in the exact same location as before minimize
+        if hasattr(window, 'establish_granite_center'):
+            window.establish_granite_center()
         self._animating = False
