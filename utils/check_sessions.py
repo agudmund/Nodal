@@ -1,16 +1,16 @@
-  #!/usr/bin/env python3
-  # -*- coding: utf-8 -*-
-  """
-  -Cozy times session validator - check_sessions.py
-  -Side utility that validates the format of specific .json files for enjoying
-  -Built using a single shared braincell by Yours Truly and various Intelligences
-  """
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+-Cozy times session validator - check_sessions.py
+-Side utility that validates the format of specific .json files for enjoying
+-Built using a single shared braincell by Yours Truly and various Intelligences
+"""
 
 import json
 from pathlib import Path
 
 # Constants for easy adjustment later
-BOUNDS_THRESHOLD = 10_000 
+BOUNDS_THRESHOLD = 10_000
 
 def check_sessions():
     sessions_dir = Path("sessions")
@@ -37,10 +37,10 @@ def check_sessions():
             # Extract positions
             pos_x = [n.get("pos_x", 0) for n in nodes]
             pos_y = [n.get("pos_y", 0) for n in nodes]
-            
+
             min_x, max_x = min(pos_x), max(pos_x)
             min_y, max_y = min(pos_y), max(pos_y)
-            
+
             total_nodes += len(nodes)
 
             # --- Sanity Check Logic ---
