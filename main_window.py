@@ -64,9 +64,17 @@ class NodeGraphicsView(QGraphicsView):
         self._alt_right_pressed = False
 
         # --- 4. THE MICA CORE (Transparency & Quality) ---
+        # Use a BspTree to make finding nodes faster in a large scene
+        self.scene().setItemIndexMethod(QGraphicsScene.BspTreeIndex)
+
         self.viewport().setAttribute(Qt.WA_TranslucentBackground)
         self.setStyleSheet("background: transparent;")
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
+        self.setOptimizationFlag(QGraphicsView.OptimizationFlag.DontSavePainterState)
+        try:
+            self.setOptimizationFlag(QGraphicsView.OptimizationFlag.DontAdjustCursorShape)
+        except AttributeError:
+            pass
         self.setRenderHint(QPainter.Antialiasing)
 
     def wheelEvent(self, event):
@@ -80,37 +88,35 @@ class NodeGraphicsView(QGraphicsView):
         # The cache call is removed because the Ledger is the only truth now.
 
     def apply_zoom(self, factor):
-        """Apply zoom with bounds checking."""
         new_zoom = self.current_zoom * factor
+
         if self.min_zoom <= new_zoom <= self.max_zoom:
             self.scale(factor, factor)
             self.current_zoom = new_zoom
 
-    def drawBackground(self, painter, rect):
-        """
-        The physical 'Glass' layer. 
-        It draws the tint and the grain texture OVER the Mica blur.
-        """
-        painter.save()
+            # Update the HUD
+            if hasattr(self.window(), 'debug_label'):
+                self.window().debug_label.setText(f"Zoom: {self.current_zoom:.2f}x")
 
-        # Keep the grain/tint static relative to the window (don't move when panning)
-        # Use resetTransform() instead of matrix inversion math for clarity and efficiency
+        if hasattr(self.window(), 'view_zoom'):
+            self.window().view_zoom = self.current_zoom
+
+    def drawBackground(self, painter, rect):
+        painter.save()
         painter.resetTransform()
         
-        # 1. THE OBSIDIAN TINT
-        # Responsive to Theme.FROST_COLOR.alpha() (The Slider!)
+        # 1. THE OBSIDIAN TINT (Always fast)
         painter.fillRect(self.viewport().rect(), Theme.FROST_COLOR)
         
-        # 2. THE DIFFUSER GRAIN
-        # This provides the 'fixed focal point' that makes the blur look professional
+        # 2. THE DIFFUSER GRAIN (The Optimization)
         alpha = Theme.FROST_COLOR.alpha()
-        if alpha > 10:
-            # Subtle white 'sandblasted' grain
+        # Skip grain if it's too faint or if we are zoomed out too far 
+        # to maintain high-performance Mica feel.
+        if alpha > 10 and self.current_zoom > 0.2:
             painter.setBrush(QBrush(QColor(255, 255, 255, 5), Qt.Dense7Pattern))
             painter.setPen(Qt.NoPen)
             painter.drawRect(self.viewport().rect())
             
-            # Subtle black depth grain
             painter.setBrush(QBrush(QColor(0, 0, 0, 3), Qt.Dense7Pattern))
             painter.drawRect(self.viewport().rect())
         
@@ -401,16 +407,11 @@ class NodalApp(QMainWindow):
 
         # Viewport position label (top right)
         from PySide6.QtWidgets import QLabel
-        self.viewport_label = QLabel("Y: 0")
-        self.viewport_label.setStyleSheet(f"""
-            QLabel {{
-                color: {Theme.TEXT_PRIMARY.name()};
-                font-family: monospace;
-                font-size: 10pt;
-                padding: 5px 10px;
-            }}
-        """)
-        self.toolbar_layout.addWidget(self.viewport_label)
+        self.debug_label = QLabel("Y: 0")
+        self.debug_label.setText("Zoom: 1.00x")
+        self.debug_label.setStyleSheet("color: rgba(255, 255, 255, 150); font-family: 'Consolas';")
+        
+        self.toolbar_layout.addWidget(self.debug_label)
 
         grid_layout.addWidget(self.toolbar_container, 0, 1)
 
@@ -564,16 +565,22 @@ class NodalApp(QMainWindow):
                 self.view.viewport().setUpdatesEnabled(True)
                 self.view.viewport().repaint() # Synchronous paint (The Sledgehammer)
                 
-                # 2. Restore the Camera Ledger
+                # 1. Retrieve the Focal Length
                 viewport = data.get("viewport", {})
                 self.view_pan_x = viewport.get("center_x", 0.0)
                 self.view_pan_y = viewport.get("center_y", 0.0)
-                self.view_zoom = viewport.get("scale", 1.0)
-                
-                # 3. Physically move the camera to match the Ledger
+                self.view_zoom = viewport.get("scale", 1.0) # Default to 1:1
+
+                # 2. Sync the View's internal ledger
+                # This is vital so the next scroll wheel event starts from the right place
                 self.view.current_zoom = self.view_zoom
+
+                # 3. Apply the Transformation
+                # We reset to identity first to avoid 'Stacking' zooms on top of each other
                 self.view.resetTransform()
                 self.view.scale(self.view_zoom, self.view_zoom)
+
+                # 4. Center the Camera
                 self.view.centerOn(self.view_pan_x, self.view_pan_y)
                 
                 # Reset the 'First Interact' guard so the next pan is high-precision
@@ -596,7 +603,7 @@ class NodalApp(QMainWindow):
         data["viewport"] = {
             "center_x": float(self.view_pan_x),
             "center_y": float(self.view_pan_y),
-            "scale": float(self.view_zoom)
+            "scale": float(self.view_zoom) # The Focal Length
         }
         
         # 2. Update Memory

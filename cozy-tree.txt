@@ -1,5 +1,5 @@
 ✨ Cozy Snapshot — clean tree respecting .gitignore 🌱
-Generated: 2026-03-15 08:15:52
+Generated: 2026-03-15 19:37:23
 Location:  C:\Users\thisg\Desktop\Cozy Times\Nodal
 Mode:      with cozy emojis
 ────────────────────────────────────────────────────────────
@@ -79,6 +79,7 @@ Mode:      with cozy emojis
 ├── 📄 Nodal.spec
 ├── 📄 nodal_config.ini
 ├── 📄 README.md
+├── 📄 requirements.txt
 ├── 📄 setup_env.ps1
 └── 📄 update_pyproj.ps1
 

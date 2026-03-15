@@ -10,7 +10,7 @@ import uuid as _uuid
 import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsTextItem, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTimer
-from PySide6.QtGui import QColor, QPen, QFont, QPainter, QBrush, QFontMetrics, QTextDocument
+from PySide6.QtGui import QColor, QPen, QFont, QPainter, QBrush, QFontMetrics, QTextDocument, QPainterPath
 from utils.theme import Theme
 from graphics.port import Port
 
@@ -222,20 +222,48 @@ class NodeBase(QGraphicsRectItem):
         super().hoverLeaveEvent(event)
 
     def paint(self, painter, option, widget):
-        """Paint the node body and delegate content to subclasses."""
-        painter.setPen(self.pen())
+        """
+        THE UNIFIED PAINT PIPELINE
+        PURPOSE: One loop to rule the Shell, the Glow, and the LOD.
+        """
+        lod = option.levelOfDetailFromTransform(painter.worldTransform())
+        rect = self.rect()
+
+        # 1. THE BODY (Always Rounded, Always Prestige)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Selection Glow (No more dotted lines!)
+        if self.isSelected():
+            painter.setPen(QPen(QColor("#a8d0ff"), 2.5, Qt.SolidLine))
+        else:
+            painter.setPen(self.pen())
+            
         painter.setBrush(self.brush())
-        painter.drawRoundedRect(self.rect(), self.round_radius, self.round_radius)
+        painter.drawRoundedRect(rect, self.round_radius, self.round_radius)
 
-        # Draw resize handle in bottom-right corner
-        painter.setPen(QPen(QColor(255, 255, 255, 60), 1.5))
-        br = self.rect().bottomRight()
-        for i in range(3):
-            offset = (i + 1) * 4
-            painter.drawLine(br.x() - offset, br.y() - 2, br.x() - 2, br.y() - offset)
+        # 2. LOD GATEKEEPER
+        # Below 0.5, we exit early. No shadows, no text, no extras.
+        if lod < 0.3:
+            for child in self.childItems(): child.hide()
+            if self.graphicsEffect(): self.graphicsEffect().setEnabled(False)
+            return
 
-        if self.rect().height() >= 60:
-            self.paint_content(painter)
+        # 3. HIGH-DETAIL ELEMENTS (Zoom >= 0.5)
+        if self.graphicsEffect(): self.graphicsEffect().setEnabled(True)
+
+        # Draw the Resize Handle (The Triangle)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor(255, 255, 255, 30))
+        handle_path = QPainterPath()
+        handle_path.moveTo(rect.right(), rect.bottom() - 12)
+        handle_path.lineTo(rect.right(), rect.bottom())
+        handle_path.lineTo(rect.right() - 12, rect.bottom())
+        handle_path.closeSubpath()
+        painter.drawPath(handle_path)
+
+        # 4. SPECIALIST HANDOFF
+        # This is where WarmNode or ImageNode draws their 'Soul'
+        self.paint_content(painter)
 
     def setRect(self, rect):
         """Override to update port positions when node is resized."""
@@ -350,6 +378,16 @@ class WarmNode(NodeBase):
         self._editor = None
 
         self._sync_content_layout()
+
+    def paint_content(self, painter):
+        """Specific dialogue for the WarmNode: Emojis and Thoughts."""
+        # Since WarmNode uses child QGraphicsTextItems (self.emoji_item, etc.),
+        # we just ensure they are visible. Qt draws child items automatically 
+        # AFTER the parent's paint() finishes.
+        if not self.emoji_item.isVisible():
+            self.emoji_item.show()
+            self.title_item.show()
+            self.text_item.show()
 
     def setRect(self, rect):
         """Override to sync content layout when resized."""
@@ -522,6 +560,18 @@ class ImageNode(NodeBase):
         super().__init__(node_id, title, full_text, pos, width, height, uuid)
         self.node_type = "image"
         self.image = None
+
+    def paint_content(self, painter):
+        """Specific dialogue for the ImageNode: Visual Content."""
+        if self.image:
+            # Draw the image elided within the rounded frame
+            painter.drawPixmap(self.rect().toRect(), self.image)
+        
+        # Draw the caption if it exists
+        if self.title:
+            painter.setFont(QFont(Theme.BUTTON_FONT_FAMILY, 8))
+            painter.setPen(QColor(200, 200, 200, 150))
+            painter.drawText(self.rect(), Qt.AlignBottom | Qt.AlignHCenter, self.title)
 
     def paint_content(self, painter):
         """Image nodes: show title as caption if needed."""

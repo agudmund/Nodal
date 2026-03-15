@@ -19,6 +19,20 @@ from PySide6.QtWidgets import QApplication
 logger = setup_logger()
 
 @time_function
+def benchmark_zoom_performance(scene, view, zoom_level):
+    """
+    PURPOSE: Measure render time at extreme zoom levels.
+    ACCOUNTABILITY: Higher time = GPU bottleneck.
+    """
+    view.current_zoom = zoom_level
+    view.resetTransform()
+    view.scale(zoom_level, zoom_level)
+    
+    start = time.perf_counter()
+    view.viewport().repaint() # Force an immediate hardware frame
+    return time.perf_counter() - start
+
+@time_function
 def benchmark_complex_graph(count: int = 50):
     """Stress test: Creating nodes AND rubbery connections."""
     scene = NodeScene()
@@ -52,6 +66,10 @@ def run_all_benchmarks():
         print(f"\n🚀 Running Complex Graph Test (100 Nodes + 99 Rubbery Wires)...")
         with benchmark_suite("Heavy Nerve Stress Test", iterations=1):
             benchmark_complex_graph(100)
+
+        # print(f"🚀 Testing 0.1x Zoom Performance...")
+        # time_taken = benchmark_zoom_performance(scene, window.view, 0.1)
+        # print(f" ✅ 0.1x Render: {time_taken:.4f}s")
             
     except Exception as e:
         print(f"\n❌ BENCHMARK CRASHED: {str(e)}")
