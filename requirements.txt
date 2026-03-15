@@ -1,0 +1,24 @@
+# Nodal - Node-based UI Application requirements.txt
+# A minor UI for enjoying
+# Built using a single shared braincell by Yours Truly and various Intelligences
+# Production and Development Dependencies
+
+# Minimum Python version for | type hinting 
+python_version >= "3.10"
+
+# Core UI Framework
+PySide6>=6.7.0,<7.0.0    # pin to a recent stable series (Qt 6.7 is solid in early 2026)
+
+# Optional spell-checking support
+pyenchant>=3.2.0
+
+# System monitoring and utilities
+psutil>=5.9.0
+
+# Development and Build Tools
+PyInstaller>=5.13.0
+Pillow>=10.0.0
+
+# Optional: Performance profiling and benchmarking
+memory-profiler>=0.60.0
+py-spy>=0.3.14
