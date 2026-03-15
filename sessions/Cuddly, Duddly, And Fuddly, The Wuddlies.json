@@ -55,8 +55,8 @@
       "type": "warm",
       "title": "We definately need a way to copy paste nodes from one session to another",
       "full_text": "",
-      "pos_x": -480.19855386220206,
-      "pos_y": -918.6713605162037,
+      "pos_x": -386.2523695150601,
+      "pos_y": -870.2149075371517,
       "width": 881.0,
       "height": 72.79020234291795,
       "ports_visible": true
@@ -79,9 +79,9 @@
       "type": "warm",
       "title": "Irresistible",
       "full_text": "",
-      "pos_x": 116.13965957063323,
-      "pos_y": -596.8050048377769,
-      "width": 313.89776357827486,
+      "pos_x": 136.90671084736988,
+      "pos_y": -587.9048400048898,
+      "width": 222.0,
       "height": 82.10862619808307,
       "ports_visible": true
     },
@@ -93,6 +93,18 @@
       "full_text": "",
       "pos_x": 1015.6076981527852,
       "pos_y": -996.8184612833567,
+      "width": 178.0,
+      "height": 90.0,
+      "ports_visible": false
+    },
+    {
+      "node_id": 8,
+      "uuid": "4603a917ef7c475ba1ba850091d45a33",
+      "type": "warm",
+      "title": "New Node",
+      "full_text": "",
+      "pos_x": 789.1479485159907,
+      "pos_y": -654.65656881903,
       "width": 178.0,
       "height": 90.0,
       "ports_visible": false

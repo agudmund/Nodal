@@ -37,6 +37,7 @@
     <Compile Include="main.py" />
     <Compile Include="main_window.py" />
     <Compile Include="test_autoload_fix.py" />
+    <Compile Include="utils\check_sessions.py" />
     <Compile Include="utils\logger.py" />
     <Compile Include="utils\resource_monitor.py" />
     <Compile Include="utils\session_manager.py" />
@@ -104,10 +105,6 @@
       <xmlns>
       </xmlns>
     </Compile>
-    <Compile Include="utils\check_sessions.py">
-      <xmlns>
-      </xmlns>
-    </Compile>
     <Compile Include="utils\logger.py">
       <xmlns>
       </xmlns>
@@ -148,6 +145,8 @@
       <xmlns>
       </xmlns>
     </Compile>
+    <Compile Include="_circular_import_check.py" />
+    <Compile Include="_runtime_import_check.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\" />
@@ -160,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".github\copilot-instructions.md" />
+    <Content Include="requirements.txt" />
     <Content Include="sessions\ActionPlan.json" />
     <Content Include="update_pyproj.ps1" />
   </ItemGroup>
