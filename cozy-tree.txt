@@ -1,0 +1,88 @@
+✨ Cozy Snapshot — clean tree respecting .gitignore 🌱
+Generated: 2026-03-15 08:15:52
+Location:  C:\Users\thisg\Desktop\Cozy Times\Nodal
+Mode:      with cozy emojis
+────────────────────────────────────────────────────────────
+
+├── 📁 .github/
+│   └── 📄 copilot-instructions.md
+├── 📁 benchmarks/
+│   ├── 📄 __init__.py
+│   ├── 📄 performance_tests.py
+│   ├── 📄 profiler.py
+│   └── 📄 run_benchmarks.py
+├── 📁 build/
+│   └── 📁 Nodal/
+│       ├── 📄 Analysis-00.toc
+│       ├── 📄 base_library.zip
+│       ├── 📄 EXE-00.toc
+│       ├── 📄 Nodal.pkg
+│       ├── 📄 PKG-00.toc
+│       ├── 📄 PYZ-00.pyz
+│       ├── 📄 PYZ-00.toc
+│       ├── 📄 warn-Nodal.txt
+│       └── 📄 xref-Nodal.html
+├── 📁 dist/
+│   ├── 📄 Nodal.exe
+│   └── 📄 nodal_config.ini
+├── 📁 graphics/
+│   ├── 📄 __init__.py
+│   ├── 📄 connection.py
+│   ├── 📄 node.py
+│   ├── 📄 node_types.py
+│   ├── 📄 note_editor.py
+│   ├── 📄 port.py
+│   └── 📄 scene.py
+├── 📁 resources/
+│   └── 📁 icons/
+│       ├── 📄 app_icon.ico
+│       ├── 📄 iconic.png
+│       └── 📄 tester.png
+├── 📁 sessions/
+│   ├── 📄 tester two.json
+│   └── 📄 tester.json
+├── 📁 sessions_OG/
+│   ├── 📄 ActionPlan.json
+│   ├── 📄 Bill The Bubble Head.json
+│   ├── 📄 Cartoonify.json
+│   ├── 📄 Cleanup.json
+│   ├── 📄 Cozy Times.json
+│   ├── 📄 Cuddly, Duddly, And Fuddly, The Wuddlies.json
+│   └── 📄 tester.json
+├── 📁 utils/
+│   ├── 📄 __init__.py
+│   ├── 📄 check_sessions.py
+│   ├── 📄 logger.py
+│   ├── 📄 resource_monitor.py
+│   ├── 📄 session_manager.py
+│   ├── 📄 settings.py
+│   ├── 📄 spellchecker.py
+│   ├── 📄 theme.py
+│   └── 📄 window_animator.py
+├── 📁 widgets/
+│   ├── 📄 __init__.py
+│   ├── 📄 cozy_dialog.py
+│   ├── 📄 demo_dialog.py
+│   ├── 📄 log_viewer_dialog.py
+│   └── 📄 settings_dialog.py
+├── 📄 .gitattributes
+├── 📄 .gitignore
+├── 📄 build.py
+├── 📄 current cozy-tree.txt
+├── 📄 LICENSE.txt
+├── 📄 main.py
+├── 📄 main_window.py
+├── 📄 Nodal.exe
+├── 📄 Nodal.lnk
+├── 📄 Nodal.pyproj
+├── 📄 Nodal.slnx
+├── 📄 Nodal.spec
+├── 📄 nodal_config.ini
+├── 📄 README.md
+├── 📄 setup_env.ps1
+└── 📄 update_pyproj.ps1
+
+────────────────────────────────────────────────────────────
+Saved by cozy-snapshot.py  •  gentle sibling to cozy-tree.py
+Hidden: .git, __pycache__, gitignored items, empty folders
+Double-click or run anytime — add --print to see live ♡

@@ -36,6 +36,7 @@
     <Compile Include="graphics\__init__.py" />
     <Compile Include="main.py" />
     <Compile Include="main_window.py" />
+    <Compile Include="test_autoload_fix.py" />
     <Compile Include="utils\logger.py" />
     <Compile Include="utils\resource_monitor.py" />
     <Compile Include="utils\session_manager.py" />
@@ -153,6 +154,7 @@
     <Folder Include="benchmarks\" />
     <Folder Include="graphics\" />
     <Folder Include="resources\" />
+    <Folder Include="sessions\" />
     <Folder Include="utils\" />
     <Folder Include="widgets\" />
   </ItemGroup>

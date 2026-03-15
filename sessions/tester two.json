@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "node_id": 1,
+      "uuid": "151f21437c1345dc8ed4f9974858c608",
+      "type": "warm",
+      "title": "New Node",
+      "full_text": "",
+      "pos_x": 76.0,
+      "pos_y": 14.0,
+      "width": 100.0,
+      "height": 100.0,
+      "ports_visible": false
+    }
+  ],
+  "viewport": {
+    "center_x": 0.0,
+    "center_y": 0.0,
+    "scale": 1.0
+  }
+}

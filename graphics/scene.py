@@ -52,17 +52,19 @@ def enable_blur(hwnd):
 class NodeScene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._dirty = False
 
         # Only try to enable blur if we actually have a parent window
         if parent and hasattr(parent, 'winId'):
              enable_blur(parent.winId())
 
         self.temp_conn = None
-        self.setSceneRect(-5000, -5000, 10000, 10000) # Give yourself room to roam
+        self.setSceneRect(-1000, -1000, 1000, 1000) # Give yourself room to roam
 
         # 1. THE FOG LAYER (The Blur Container)
         # This is a transparent rectangle that holds the blur effect
         self.fog_layer = QGraphicsRectItem(self.sceneRect())
+        self.fog_layer.setRect(-1000, -1000, 1000, 1000)
         self.fog_layer.setBrush(Qt.NoBrush)
         self.fog_layer.setPen(Qt.NoPen)
         self.fog_layer.setZValue(-100) # Deep in the background
@@ -76,6 +78,29 @@ class NodeScene(QGraphicsScene):
         self.blur_effect = QGraphicsBlurEffect()
         self.fog_layer.setGraphicsEffect(self.blur_effect)
         self.addItem(self.fog_layer)
+
+    def set_dirty(self, value: bool):
+        """Updates the dirty state and could eventually trigger UI changes."""
+        if self._dirty != value:
+            self._dirty = value
+            # logger.debug(f"Scene Accountability: Dirty Flag set to {value}")
+            # Here is where you'd eventually tell the Save Button to glow!
+
+    def is_dirty(self):
+        return self._dirty
+
+    def get_session_data(self) -> dict:
+        """The Specialist gathers a manifest of all current nodes."""
+        from graphics.node_types import NodeBase
+        
+        # 1. Catch all nodes using our 'Wide Net'
+        nodes = [item for item in self.items() if isinstance(item, NodeBase)]
+        
+        # 2. Convert them to dictionaries using their own to_dict()
+        return {
+            "version": "1.0",
+            "nodes": [node.to_dict() for node in nodes]
+        }
 
     def add_connection(self, node_a, node_b):
         from graphics.connection import Connection
@@ -91,16 +116,13 @@ class NodeScene(QGraphicsScene):
         Coordinates are clamped to the scene bounds (0-2000).
 
         Args:
-            x: X coordinate (will be clamped to 0-2000)
-            y: Y coordinate (will be clamped to 0-2000)
+            x: X coordinate
+            y: Y coordinate
             title: Node title label
 
         Returns:
             WarmNode: The created and added node
         """
-        # Clamp coordinates to scene bounds
-        x = max(0, min(2000, x))
-        y = max(0, min(2000, y))
 
         # Create a WarmNode with auto-incremented node_id
         node_id = len([item for item in self.items() if isinstance(item, NodeBase)])
@@ -109,24 +131,57 @@ class NodeScene(QGraphicsScene):
         self.addItem(node)
         return node
 
+    def clear_nodes(self):
+        """
+        PURPOSE: Clear the stage of all transient characters.
+        CLAIM: Only the Fog Layer has a permanent claim to existing.
+        """
+        # 1. Grab everything currently on the stage
+        all_items = self.items()
+        
+        # 2. THE ULTIMATUM: If it's not the Fog, it's gone.
+        # This catches nodes, wires, ports, and 'Ghost' artifacts.
+        for item in all_items:
+            if item != self.fog_layer:
+                # Strip effects (like shadows) before removal to clear the buffer
+                if hasattr(item, 'setGraphicsEffect'):
+                    item.setGraphicsEffect(None)
+                self.removeItem(item)
+
+        # 3. THE GHOST BUSTER: Invalidate the entire visual cache
+        # This is the 'Simulate pointing at every pixel' button in code.
+        self.invalidate(self.sceneRect(), QGraphicsScene.AllLayers)
+        
+        # 4. Notify the cameras
+        for view in self.views():
+            view.viewport().update()
+
+    def rebuild_from_session(self, data: dict):
+        # 1. The Lazy Import of our Type Registry
+        from graphics import node_types 
+
+        self.clear_nodes() # A helper to clear just the nodes
+
+        for node_data in data.get("nodes", []):
+            node_type = node_data.get("type", "node")
+            
+            # 2. Pick the right specialist based on the schema
+            if node_type == "warm":
+                new_node = node_types.WarmNode.from_dict(node_data)
+            elif node_type == "image":
+                new_node = node_types.ImageNode.from_dict(node_data)
+            else:
+                # Fallback to the champ
+                from graphics.node import Node
+                new_node = Node.from_dict(node_data)
+
+            self.addItem(new_node)
+
     def drawBackground(self, painter, rect):
         bg_color = Theme.get_alpha(Theme.FROST_COLOR, Theme.CANVAS_OPACITY)
         painter.setBrush(bg_color) 
         painter.setPen(Qt.NoPen)
         painter.drawRect(rect)
 
-    def mousePressEvent(self, event):
-        """Handle mouse press events on the scene."""
-        # For now, just pass through to default handling
-        # Port-based connection drawing will be implemented separately
-        super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event):
-        """Handle mouse move events on the scene."""
-        # Port-based connection system will handle dragging
-        super().mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        """Handle mouse release events on the scene."""
-        # Port-based connection system will handle finalization
-        super().mouseReleaseEvent(event)
+        

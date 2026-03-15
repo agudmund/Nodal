@@ -7,9 +7,10 @@
 """
 
 from pathlib import Path
+from PySide6.QtCore import QTimer
 import ctypes
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox
-from PySide6.QtGui import QBrush, QColor, QPen, QPainter
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QApplication, QGraphicsScene
+from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform
 from PySide6.QtCore import Qt, QEvent, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect
 from graphics.scene import NodeScene, enable_blur
 from widgets import CozyButton
@@ -32,37 +33,53 @@ SW_RESTORE = 9
 class NodeGraphicsView(QGraphicsView):
     def __init__(self, scene):
         super().__init__(scene)
+
+        # --- 1. THE FOUNDATION (Ledger & Anchors) ---
+        self._first_interact_done = False
+        self.viewport_locked = False
+        self.setInteractive(True)
         
-        # --- Internal Navigation State ---
-        self.middle_mouse_pressed = False
-        self.last_pan_pos = None
-        self.alt_right_pressed = False
-        self.last_zoom_pos = None
-        self.zoom_speed = 0.002
-        self.min_zoom = 0.1
-        self.max_zoom = 5.0
-        self.current_zoom = 1.0
+        # Stop Qt from trying to 'help' with placement
+        self.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.setTransformationAnchor(QGraphicsView.NoAnchor)
+        self.setResizeAnchor(QGraphicsView.NoAnchor)
+        self.setSceneRect(-5000, -5000, 10000, 10000)
 
-        # --- Transparency & Rendering ---
-        # 1. This tells the widget itself to be see-through
-        self.viewport().setAttribute(Qt.WA_TranslucentBackground)
-
-        # 2. Remove frame and set transparent background
+        # --- 2. KILL THE FRAME (The Zero-Point Directive) ---
         self.setFrameShape(QGraphicsView.NoFrame)
-        self.setStyleSheet("background: transparent;")
-
-        # 3. Optimization: Force full updates so the blur doesn't leave 'ghosts'
-        self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
-        self.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-
-        # Hide scrollbars
+        self.setLineWidth(0)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.viewport().setContentsMargins(0, 0, 0, 0)
+        self.setFocusPolicy(Qt.NoFocus)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
+        # --- 3. THE NAVIGATOR (Internal State) ---
+        self.current_zoom = 1.0
+        self.zoom_speed = 0.002
+        self.min_zoom = 0.1
+        self.max_zoom = 5.0
+        
+        # Consolidate: use underscore naming for internal mouse state
+        self._last_pan_pos = None 
+        self._last_zoom_pos = None
+        self._alt_right_pressed = False
+
+        # --- 4. THE MICA CORE (Transparency & Quality) ---
+        self.viewport().setAttribute(Qt.WA_TranslucentBackground)
+        self.setStyleSheet("background: transparent;")
+        self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
+        self.setRenderHint(QPainter.Antialiasing)
+
     def wheelEvent(self, event):
-        """Mouse wheel zoom - scroll up to zoom in, scroll down to zoom out."""
+        """
+        PURPOSE: Provide stepped zooming via the mouse wheel.
+        ACCOUNTABILITY: zoom_factor is relative. No cache update needed as the 
+        ledger will be naturally captured during the next save.
+        """
         zoom_factor = 1.25 if event.angleDelta().y() > 0 else 0.8
         self.apply_zoom(zoom_factor)
+        # The cache call is removed because the Ledger is the only truth now.
 
     def apply_zoom(self, factor):
         """Apply zoom with bounds checking."""
@@ -102,23 +119,30 @@ class NodeGraphicsView(QGraphicsView):
         painter.restore()
 
     def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.MiddleButton:
+            # ACCOUNTABILITY: We use position() for sub-pixel accuracy.
+            self._last_pan_pos = event.position() 
+            self.setCursor(Qt.ClosedHandCursor)
+            event.accept()
+            return # Skip super() to prevent the 'Camera Operator' from flinching
+        
+        super().mousePressEvent(event)
+
         # Alt + Right Mouse Button = Zoom mode
         if event.modifiers() == Qt.KeyboardModifier.AltModifier and event.button() == Qt.MouseButton.RightButton:
-            self.alt_right_pressed = True
+            self._alt_right_pressed = True
             self.last_zoom_pos = event.pos()
             self.setCursor(Qt.SizeVerCursor)
             event.accept()
-        # Middle Mouse Button = Pan mode
-        elif event.button() == Qt.MouseButton.MiddleButton:
-            self.middle_mouse_pressed = True
-            self.last_pan_pos = event.pos()
-            self.setCursor(Qt.SizeAllCursor)
-        else:
-            super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
+        # Don't process pan/zoom during viewport restoration to prevent interference
+        if self.viewport_locked:
+            event.accept()
+            return
+
         # Zoom mode: Alt + Right Mouse drag
-        if self.alt_right_pressed and self.last_zoom_pos:
+        if self._alt_right_pressed and self.last_zoom_pos:
             delta_y = event.pos().y() - self.last_zoom_pos.y()
             # Drag up = positive delta = zoom in
             # Drag down = negative delta = zoom out
@@ -126,27 +150,53 @@ class NodeGraphicsView(QGraphicsView):
             self.apply_zoom(zoom_factor)
             self.last_zoom_pos = event.pos()
             event.accept()
-        # Pan mode: Middle Mouse drag
-        elif self.middle_mouse_pressed and self.last_pan_pos:
-            delta = event.pos() - self.last_pan_pos
-            self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
-            self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
-            self.last_pan_pos = event.pos()
+
+        if event.buttons() & Qt.MouseButton.MiddleButton:
+            curr_pos = event.position() # High-precision float point
+            
+            # --- THE SOFT-SYNC GUARD ---
+            if not self._first_interact_done:
+                self.centerOn(self.window().view_pan_x, self.window().view_pan_y)
+                self._last_pan_pos = curr_pos
+                self._first_interact_done = True
+                event.accept()
+                return
+
+            # Calculate delta using high-precision floats
+            # QPointF - QPointF = QPointF
+            delta = curr_pos - self._last_pan_pos
+            self._last_pan_pos = curr_pos
+
+            zoom = self.transform().m11()
+            
+            # Update the Ledger with the exact fractional movement
+            self.window().view_pan_x -= delta.x() / zoom
+            self.window().view_pan_y -= delta.y() / zoom
+
+            # Enforce the absolute reality
+            self.centerOn(self.window().view_pan_x, self.window().view_pan_y)
+            event.accept()
         else:
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        if self.alt_right_pressed:
-            self.alt_right_pressed = False
-            self.last_zoom_pos = None
+        """
+        PURPOSE: Reset the cursor and state when the interaction ends.
+        ACCOUNTABILITY: We remove the _update_viewport_cache call. It has no 
+        claim to existing in a Ledger-based world.
+        """
+        if self._alt_right_pressed:
+            self._alt_right_pressed = False
+            self._last_zoom_pos = None
             self.setCursor(Qt.ArrowCursor)
             event.accept()
-        elif self.middle_mouse_pressed:
-            self.middle_mouse_pressed = False
+        
+        elif event.button() == Qt.MouseButton.MiddleButton:
             self.setCursor(Qt.ArrowCursor)
             event.accept()
-        else:
-            super().mouseReleaseEvent(event)
+
+        super().mouseReleaseEvent(event)
+           
 
     def keyPressEvent(self, event):
         """Handle keyboard shortcuts."""
@@ -182,6 +232,11 @@ class NodeGraphicsView(QGraphicsView):
 class NodalApp(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.view_pan_x = 0.0
+        self.view_pan_y = 0.0
+        self.view_zoom = 1.0
+
         self.handle_height_top = Theme.HANDLE_HEIGHT_TOP
         self._dragging_window = False
         self._drag_pos = None
@@ -195,6 +250,12 @@ class NodalApp(QMainWindow):
 
         self.init_ui()
         enable_blur(int(self.winId()))
+
+    # Example for a Panning function in MainWindow
+    def pan_view(self, delta_x, delta_y):
+        self.view_pan_x += delta_x
+        self.view_pan_y += delta_y
+        self.view.centerOn(self.view_pan_x, self.view_pan_y)
 
     def _create_toolbar(self, border_position="bottom", height=None):
         """
@@ -311,10 +372,6 @@ class NodalApp(QMainWindow):
         slider.valueChanged.connect(self.update_blur_intensity)
         return slider
 
-    def _load_session_names(self):
-        """Load session JSON filenames from the sessions directory."""
-        return SessionManager.get_available_sessions()
-
     def init_ui(self):
         self.setWindowTitle("Nodal")
         self.setGeometry(100, 100, 1200, 800)
@@ -337,57 +394,25 @@ class NodalApp(QMainWindow):
         grid_layout.addWidget(self._create_spacer(), 0, 0)
 
          # Row 0, Col 1: Top toolbar with border-bottom
-        self.toolbar_container, toolbar_layout = self._create_toolbar(border_position="bottom", height=Theme.HANDLE_HEIGHT_TOP)
-        toolbar_layout.addStretch()
+        self.toolbar_container, self.toolbar_layout = self._create_toolbar(border_position="bottom", height=Theme.HANDLE_HEIGHT_TOP)
+        
+        self.toolbar_layout.addStretch()
+        self.toolbar_layout.addWidget(self.setup_project_selector())
+        self.toolbar_layout.addStretch()
 
-        # Graph selector combobox (centered)
-        self.combo_graphs = QComboBox()
-        self.combo_graphs.setObjectName("project_selector")
-
-        # Populate with session names from sessions/ directory
-        # Block signals during population to avoid loading before scene is initialized
-        self.combo_graphs.blockSignals(True)
-        session_names = self._load_session_names()
-        if session_names:
-            self.combo_graphs.addItems(session_names)
-        else:
-            self.combo_graphs.addItem("No sessions found")
-        self.combo_graphs.blockSignals(False)
-
-        self.combo_graphs.setMinimumWidth(Theme.COMBOBOX_MIN_WIDTH)
-
-        # Apply theme-driven stylesheet
-        self.combo_graphs.setStyleSheet(f"""
-            QComboBox#project_selector {{
-                background-color: {Theme.COMBOBOX_BG.name()};
-                color: {Theme.COMBOBOX_TEXT.name()};
-                border: 1px solid {Theme.COMBOBOX_BORDER.name()};
-                border-radius: {Theme.COMBOBOX_BORDER_RADIUS}px;
-                padding: {Theme.COMBOBOX_PADDING};
-                font-family: {Theme.COMBOBOX_FONT_FAMILY};
-                font-size: {Theme.COMBOBOX_FONT_SIZE}pt;
-                font-weight: {Theme.COMBOBOX_FONT_WEIGHT};
-            }}
-            QComboBox#project_selector::drop-down {{
-                border: none;
-                width: {Theme.COMBOBOX_DROPDOWN_WIDTH}px;
-            }}
-            QComboBox#project_selector QAbstractItemView {{
-                background-color: {Theme.COMBOBOX_BG_OPEN.name()};
-                color: {Theme.COMBOBOX_TEXT.name()};
-                border: 1px solid {Theme.COMBOBOX_BORDER.name()};
-                selection-background-color: {Theme.ACCENT_SELECTED.name()};
-                font-family: {Theme.COMBOBOX_FONT_FAMILY};
-                font-size: {Theme.COMBOBOX_FONT_SIZE}pt;
+        # Viewport position label (top right)
+        from PySide6.QtWidgets import QLabel
+        self.viewport_label = QLabel("Y: 0")
+        self.viewport_label.setStyleSheet(f"""
+            QLabel {{
+                color: {Theme.TEXT_PRIMARY.name()};
+                font-family: monospace;
+                font-size: 10pt;
+                padding: 5px 10px;
             }}
         """)
+        self.toolbar_layout.addWidget(self.viewport_label)
 
-        # Connect combobox selection change to load session (AFTER populating items)
-        self.combo_graphs.currentIndexChanged.connect(self.on_session_changed)
-
-        toolbar_layout.addWidget(self.combo_graphs)
-
-        toolbar_layout.addStretch()
         grid_layout.addWidget(self.toolbar_container, 0, 1)
 
         # Row 0, Col 2: Top right spacer
@@ -398,8 +423,18 @@ class NodalApp(QMainWindow):
 
         # Row 1, Col 1: Canvas (expands) with border
         self.scene = NodeScene()
+        # main_window.py -> MainWindow.init_ui
         self.view = NodeGraphicsView(self.scene)
-        self.view.centerOn(1000, 1000)
+        # Force the 'Example.py' level of reliability:
+        self.view.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.view.setTransformationAnchor(QGraphicsView.NoAnchor)
+        self.view.setResizeAnchor(QGraphicsView.NoAnchor)
+
+        # Initialize Ledger
+        self.view_pan_x = 0.0
+        self.view_pan_y = 0.0
+        self.view_zoom = 1.0
+
         self.view.setStyleSheet(f"border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};")
         grid_layout.addWidget(self.view, 1, 1)
 
@@ -459,18 +494,149 @@ class NodalApp(QMainWindow):
         # Auto-load the last session (AFTER scene is fully initialized)
         self.auto_load()
 
+    def setup_project_selector(self):
+        """The Project Selector Combo Box"""
+        
+        self.project_selector = QComboBox()
+        self.project_selector.setObjectName("project_selector")
+        
+        # Apply theme-driven stylesheet
+        self.project_selector.setMinimumWidth(Theme.COMBOBOX_MIN_WIDTH)
+        self.project_selector.setStyleSheet(f"""
+            QComboBox#project_selector {{
+                background-color: {Theme.COMBOBOX_BG.name()};
+                color: {Theme.COMBOBOX_TEXT.name()};
+                border: 1px solid {Theme.COMBOBOX_BORDER.name()};
+                border-radius: {Theme.COMBOBOX_BORDER_RADIUS}px;
+                padding: {Theme.COMBOBOX_PADDING};
+                font-family: {Theme.COMBOBOX_FONT_FAMILY};
+                font-size: {Theme.COMBOBOX_FONT_SIZE}pt;
+                font-weight: {Theme.COMBOBOX_FONT_WEIGHT};
+            }}
+            QComboBox#project_selector::drop-down {{
+                border: none;
+                width: {Theme.COMBOBOX_DROPDOWN_WIDTH}px;
+            }}
+            QComboBox#project_selector QAbstractItemView {{
+                background-color: {Theme.COMBOBOX_BG_OPEN.name()};
+                color: {Theme.COMBOBOX_TEXT.name()};
+                border: 1px solid {Theme.COMBOBOX_BORDER.name()};
+                selection-background-color: {Theme.ACCENT_SELECTED.name()};
+                font-family: {Theme.COMBOBOX_FONT_FAMILY};
+                font-size: {Theme.COMBOBOX_FONT_SIZE}pt;
+            }}
+        """)
+
+        self.project_selector.currentIndexChanged.connect(self.on_session_changed)
+
+        return self.project_selector
+
+    def load_session(self, session_name: str):
+        filepath = SessionManager.get_session_filename(session_name)
+        data = SessionManager.get_session_data(filepath)
+        if not data:
+            return
+
+        # Step A: The Specialist rebuilds the nodes
+        self.view._first_interact_done = False
+        # 1. THE SWITCH FLICK: Disable updates so the GPU doesn't stutter
+        # during the heavy lifting of clearing and rebuilding.
+        self.view.viewport().setUpdatesEnabled(False)
+    
+        try:
+            self.scene.clear_nodes() # Stage is now empty and Fog is expanded
+            self.scene.rebuild_from_session(data)
+            
+            # 103% CERTAINTY: Force the 'Camera Operator' to look at the truth
+            self.view.viewport().setUpdatesEnabled(True)
+            self.view.viewport().repaint() # Synchronous paint (The Sledgehammer)
+            
+        finally:
+            self.view.viewport().setUpdatesEnabled(True)
+            self.view.update()
+            self.view.viewport().update()
+            
+            # Accountability: Reset the Dirty Flag now that the truth is loaded
+            self.scene.set_dirty(False)
+
+        # Inside load_session(self, session_name)
+        viewport = data.get("viewport", {})
+        if viewport:
+            self.view_pan_x = viewport.get("center_x", 0.0)
+            self.view_pan_y = viewport.get("center_y", 0.0)
+            self.view_zoom = viewport.get("scale", 1.0)
+
+            # Force the 'Camera Operator' to look at the spot NOW
+            self.view.current_zoom = self.view_zoom
+            self.view.resetTransform()
+            self.view.scale(self.view_zoom, self.view_zoom)
+            self.view.centerOn(self.view_pan_x, self.view_pan_y)
+
+    def save_session(self):
+        """The Foreman triggers a save of the current state."""
+        if not self._current_session:
+            return
+
+        # 1. Get node data from the Specialist
+        data = self.scene.get_session_data()
+
+        # 2. Capture the Camera (Viewport) state simply
+        # We find the center point of the view mapped to the scene coordinates
+        view_center = self.view.mapToScene(self.view.viewport().rect().center())
+        
+        # We get the current scale (zoom) directly from the transform
+        # Since we use a simple scale(s, s), the m11 value is our scale factor
+        current_scale = self.view.transform().m11()
+
+        data["viewport"] = {
+            "center_x": self.view_pan_x,
+            "center_y": self.view_pan_y,
+            "scale": self.view_zoom
+        }
+
+        # 3. Hand the data to the Truck (SessionManager) to drive to disk
+        filepath = SessionManager.get_session_filename(self._current_session)
+        SessionManager.save_session(filepath, data)
+
+    def on_session_changed(self, index: int):
+        """Handle combobox selection change. Loads session and remembers the selection."""
+        if index < 0:
+            return
+        session_name = self.project_selector.currentText()
+
+        # Remember this selection for next launch
+        Settings.set("session/last_loaded", session_name)
+        
+        self.load_session(session_name)
+
+    def populate_sessions(self):
+        """Populate with session names from sessions/ directory"""
+        print('populate_sessions')
+        # Block signals during population to avoid loading before scene is initialized
+        self.project_selector.blockSignals(True)
+
+        session_names = SessionManager.get_available_sessions()
+        if session_names:
+            self.project_selector.addItems(session_names)
+        else:
+            self.project_selector.addItem("No sessions found")
+        
+        self.project_selector.blockSignals(False)
+
+        return session_names
+
     def auto_load(self):
         """Auto-load the last session if available."""
-        session_names = self._load_session_names()
+        print('inside auto load')
+        session_names = self.populate_sessions()
         last_session = Settings.get("session/last_loaded", "")
         if last_session and session_names and last_session in session_names:
-            index = self.combo_graphs.findText(last_session)
-            if index >= 0:
-                self.combo_graphs.setCurrentIndex(index)
-                # If the index is already 0, setCurrentIndex won't emit currentIndexChanged signal
-                # So we need to explicitly load the session in that case
-                if index == 0:
-                    self.load_session(last_session)
+            index = self.project_selector.findText(last_session)
+            self.project_selector.setCurrentIndex(index)
+            # If the index is already 0, setCurrentIndex won't emit currentIndexChanged signal
+            # So we need to explicitly load the session in that case
+            if index == 0:
+                self.load_session(last_session)
 
     def update_blur_intensity(self, value):
         Theme.FROST_COLOR.setAlpha(value)
@@ -488,35 +654,6 @@ class NodalApp(QMainWindow):
     def create_new_node(self):
         view_center = self.view.mapToScene(self.view.viewport().width() // 2, self.view.viewport().height() // 2)
         self.scene.add_node(view_center.x(), view_center.y(), "New Node")
-
-    def load_session(self, session_name: str):
-        """Load a session by name from the sessions directory."""
-        if not session_name:
-            return
-
-        filepath = SessionManager.get_session_filename(session_name)
-        SessionManager.load_session(self.scene, filepath, self.view)
-        self._current_session = session_name
-        logger.info(f"Loaded session: {session_name}")
-
-    def save_session(self):
-        """Save the current session to its file."""
-        if not self._current_session:
-            logger.warning("No session loaded - nothing to save")
-            return
-
-        filepath = SessionManager.get_session_filename(self._current_session)
-        SessionManager.save_session(self.scene, filepath, self.view)
-        logger.info(f"Saved session: {self._current_session}")
-
-    def on_session_changed(self, index: int):
-        """Handle combobox selection change. Loads session and remembers the selection."""
-        if index < 0:
-            return
-        session_name = self.combo_graphs.currentText()
-        # Remember this selection for next launch
-        Settings.set("session/last_loaded", session_name)
-        self.load_session(session_name)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and event.position().y() < self.handle_height_top:
@@ -537,19 +674,6 @@ class NodalApp(QMainWindow):
         else:
             super().mouseDoubleClickEvent(event)
 
-    def mouseMoveEvent(self, event):
-        if self._dragging_window:
-            new_pos = event.globalPosition().toPoint()
-            self.move(self.pos() + (new_pos - self._drag_pos))
-            self._drag_pos = new_pos
-            event.accept()
-        else:
-            super().mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        self._dragging_window = False
-        super().mouseReleaseEvent(event)
-
     def minimize_with_animation(self):
         """Minimize window with custom shrink + fade animation."""
         self._animator.minimize(self)
@@ -564,13 +688,18 @@ class NodalApp(QMainWindow):
         super().changeEvent(event)
 
     def showEvent(self, event):
-        """Triggered when the window is first shown to the user."""
+        """
+        PURPOSE: Trigger the visual 'Entry' and schedule the coordinate sync.
+        CLAIM: The window is now 'Mapped', but we must handle the first-run safety.
+        """
         super().showEvent(event)
-
-        # Fade in on first show
-        if self._first_show:
-            self._first_show = False
-            self.setWindowOpacity(0.0)
+        
+        # 1. CASTING CHECK: Only stop the animation if it actually exists (is not None)
+        if hasattr(self, "anim") and self.anim is not None:
+            self.anim.stop()
+        
+        # 2. START THE FADE
+        if self.windowOpacity() < 1.0:
             self.anim = QPropertyAnimation(self, b"windowOpacity")
             self.anim.setDuration(600)
             self.anim.setStartValue(0.0)
@@ -578,9 +707,22 @@ class NodalApp(QMainWindow):
             self.anim.setEasingCurve(QEasingCurve.InOutQuad)
             self.anim.start()
 
-        # Force a 'First Sync' of the blur layer so it's not 
-        # trying to blur the infinite void on frame one.
-        self.update_blur_intensity(self.blur_slider.value())
+        # 3. THE HANDSHAKE: Schedule the Granite Sync
+        from PySide6.QtCore import QTimer
+        QTimer.singleShot(100, self.establish_granite_center)
+
+    def establish_granite_center(self):
+        """
+        PURPOSE: Match the Viewport's physical camera to the Ledger's coordinates.
+        CLAIM: Geometry is now stable. centerOn() will finally be accurate.
+        """
+        # We move the 'Camera Operator' to look at the spot defined in our Ledger.
+        # This kills the 'First Click Snap' by ensuring the View is already 
+        # perfectly aligned before the user ever touches the mouse.
+        self.view.centerOn(self.view_pan_x, self.view_pan_y)
+        
+        # Log it for accountability
+        logger.debug(f"Handshake Successful: Camera synced to Ledger at ({self.view_pan_x}, {self.view_pan_y})")
 
     def closeEvent(self, event):
         # 1. Save Geometry immediately while the window is still valid

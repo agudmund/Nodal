@@ -93,6 +93,8 @@ class NodeBase(QGraphicsRectItem):
     def itemChange(self, change, value):
         """Handle item changes like position, selection, visibility."""
         if change == QGraphicsRectItem.ItemPositionChange:
+            if self.scene() and hasattr(self.scene(), 'set_dirty'):
+                self.scene().set_dirty(True)
             if self.scene() and self._last_scene_pos != value:
                 old_rect = self.rect().translated(self._last_scene_pos)
                 shadow_margin = 22
