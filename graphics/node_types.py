@@ -10,9 +10,11 @@ import uuid as _uuid
 import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsTextItem, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTimer
-from PySide6.QtGui import QColor, QPen, QFont, QPainter, QBrush, QFontMetrics, QTextDocument, QPainterPath
+from PySide6.QtGui import QColor, QPen, QFont, QPainter, QBrush, QFontMetrics, QTextDocument, QPainterPath, QTransform
 from utils.theme import Theme
-from graphics.port import Port
+from utils.logger import setup_logger
+from . import Port
+logger = setup_logger()
 
 
 class NodeBase(QGraphicsRectItem):
@@ -20,6 +22,13 @@ class NodeBase(QGraphicsRectItem):
 
     def __init__(self, node_id, title, full_text, pos=QPointF(0, 0), width=300, height=200, uuid=None):
         super().__init__(0, 0, width, height)
+
+        self.ports_visible = False # Default
+        self.connections = []
+    
+        # Look at the ledger and manifest the ports if needed
+        QTimer.singleShot(0, self._sync_port_visibility)
+        
         self.setPos(pos)
 
         # Identification
@@ -39,6 +48,8 @@ class NodeBase(QGraphicsRectItem):
         self._last_scene_pos = pos
 
         # Port management
+        self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemSendsScenePositionChanges)
+        self.connections = [] # Ledger for attached wires
         self.ports_visible = False
         self.input_port = None
         self.output_port = None
@@ -82,6 +93,28 @@ class NodeBase(QGraphicsRectItem):
 
         self.setTransformOriginPoint(self.rect().center())
 
+    def itemChange(self, change, value):
+        """
+        THE CENTRAL NERVE HUB
+        Combines Geometry, Dirty Flags, and IK Kinematics.
+        """
+        # A. THE KINEMATIC LINK: Update wires when node moves
+        if change == QGraphicsRectItem.GraphicsItemChange.ItemPositionHasChanged:
+            if hasattr(self, 'connections'):
+                for conn in self.connections:
+                    conn.update_path()
+            
+            # Keep track of last pos for the dirty update
+            self._last_scene_pos = self.scenePos()
+            if self.scene():
+                self.scene().set_dirty(True)
+
+        # B. THE PORT ANCHOR: Keep ports at the edges during resize
+        # elif change == QGraphicsRectItem.GraphicsItemChange.ItemScaleHasChanged:
+        #     self._update_port_positions()
+
+        return super().itemChange(change, value)
+
     def _create_ports(self):
         """Create input and output ports but keep them hidden initially."""
         self.input_port = Port(self, is_output=False)
@@ -89,24 +122,6 @@ class NodeBase(QGraphicsRectItem):
         self._update_port_positions()
         self.input_port.hide()
         self.output_port.hide()
-
-    def itemChange(self, change, value):
-        """Handle item changes like position, selection, visibility."""
-        if change == QGraphicsRectItem.ItemPositionChange:
-            if self.scene() and hasattr(self.scene(), 'set_dirty'):
-                self.scene().set_dirty(True)
-            if self.scene() and self._last_scene_pos != value:
-                old_rect = self.rect().translated(self._last_scene_pos)
-                shadow_margin = 22
-                old_bounds = old_rect.adjusted(-shadow_margin, -shadow_margin, shadow_margin, shadow_margin)
-                self.scene().update(old_bounds)
-
-        elif change == QGraphicsRectItem.ItemPositionHasChanged:
-            if self.scene():
-                self._last_scene_pos = self.scenePos()
-                self.scene().update(self.sceneBoundingRect())
-
-        return super().itemChange(change, value)
 
     def _update_port_positions(self):
         """Update port positions to be outside the node, centered vertically."""
@@ -133,26 +148,73 @@ class NodeBase(QGraphicsRectItem):
             self.output_port.hide()
 
     def mouseDoubleClickEvent(self, event):
-        """Handle double-click events."""
-        if event.button() == Qt.LeftButton:
-            self.open_editor()
-        elif event.button() == Qt.RightButton:
-            self.toggle_ports()
-        super().mouseDoubleClickEvent(event)
+        """
+        PURPOSE: Differentiate between 'Thinking' (Left) and 'Connecting' (Right).
+        """
+        if event.button() == Qt.MouseButton.LeftButton:
+            # 1. THE THOUGHT EDITOR
+            if hasattr(self, "open_editor"):
+                self.open_editor()
+                event.accept()
 
-    def open_editor(self):
-        """Open the note editor for this node. Override in subclasses."""
-        pass
+        elif event.button() == Qt.MouseButton.RightButton:
+            # 2. THE NERVE TOGGLE
+            # This reveals the Port.py objects so we can start wiring
+            self.ports_visible = not self.ports_visible
+            
+            # We tell the Foreman the scene has changed
+            if self.scene():
+                self.scene().set_dirty(True)
+                
+            # Visually update the ports immediately
+            self._sync_port_visibility()
+            event.accept()
+
+    def _sync_port_visibility(self):
+        # Clear existing ports (Standard Cleanup)
+        existing_ports = [item for item in self.childItems() if isinstance(item, Port)]
+        for p in existing_ports:
+            self.scene().removeItem(p)
+
+        if self.ports_visible:
+            # 1. Output (Mint) - Always visible if toggled
+            self.output_port = Port(self, is_output=True)
+            self.output_port.setPos(self.rect().width(), self.rect().height() / 2)
+            
+            # 2. Input (Copper) - Only visible if it has a nerve attached
+            has_incoming = any(c.end_node == self for c in self.connections)
+            if has_incoming:
+                self.input_port = Port(self, is_output=False)
+                self.input_port.setPos(0, self.rect().height() / 2)
+
+        def open_editor(self):
+            """Open the note editor for this node. Override in subclasses."""
+            pass
 
     def mousePressEvent(self, event):
-        """Check if resize handle was clicked."""
         if event.button() == Qt.LeftButton:
+            # 1. THE PORT HANDSHAKE (High Priority)
+            # We check the scene at the click point, filtering for our child Ports
+            click_pos = event.scenePos()
+            for child in self.childItems():
+                from graphics.port import Port
+                if isinstance(child, Port):
+                    # Check if the click is physically on the port
+                    if child.contains(child.mapFromScene(click_pos)):
+                        if getattr(child, 'is_output', False):
+                            from graphics.connection import Connection
+                            self.temp_connection = Connection(self)
+                            self.scene().addItem(self.temp_connection)
+                            event.accept()
+                            return
+
+            # B. CHECK FOR RESIZE HANDLE (Geometry)
             rect = self.rect()
+            # Note: self._resize_handle_size should be defined in __init__ (usually 10-15)
             handle_area = QRectF(
-                rect.right() - self._resize_handle_size * 2,
-                rect.bottom() - self._resize_handle_size * 2,
-                self._resize_handle_size * 2,
-                self._resize_handle_size * 2
+                rect.right() - 20, # Buffer for easier grabbing
+                rect.bottom() - 20,
+                20, 20
             )
             if handle_area.contains(event.pos()):
                 self._is_resizing = True
@@ -161,37 +223,85 @@ class NodeBase(QGraphicsRectItem):
                 event.accept()
                 return
 
+        # C. FALLBACK: Standard Node Dragging
         self._is_resizing = False
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        """Handle node dragging and resizing."""
-        if not self._is_resizing:
-            return super().mouseMoveEvent(event)
+        """The 'Live' update loop for Wires and Resizing."""
+        # 1. LIVE WIRE: Follow the mouse
+        # If we are currently growing a nerve, update its destination to the mouse
+        if hasattr(self, 'temp_connection') and self.temp_connection:
+            self.temp_connection.update_path(event.scenePos())
+            event.accept()
+            return
 
-        delta = event.pos() - self._resize_start_pos
-        new_width = max(120, self._resize_start_rect.width() + delta.x())
-        new_height = max(50, self._resize_start_rect.height() + delta.y())
+        # Fallback to your existing Resize or Drag logic
+        super().mouseMoveEvent(event)
 
-        if event.modifiers() & Qt.ShiftModifier:
-            orig_ratio = self._resize_start_rect.width() / self._resize_start_rect.height()
-            new_height = new_width / orig_ratio
+        # 2. LIVE RESIZE: Stretch the geometry
+        if self._is_resizing:
+            delta = event.pos() - self._resize_start_pos
+            new_width = max(120, self._resize_start_rect.width() + delta.x())
+            new_height = max(50, self._resize_start_rect.height() + delta.y())
 
-        self.prepareGeometryChange()
-        self.setRect(QRectF(self.rect().topLeft(), QSizeF(new_width, new_height)))
+            # Support Aspect Ratio Lock
+            if event.modifiers() & Qt.ShiftModifier:
+                ratio = self._resize_start_rect.width() / self._resize_start_rect.height()
+                new_height = new_width / ratio
 
-        if self.scene():
-            self.scene().update(self.sceneBoundingRect())
+            self.prepareGeometryChange()
+            self.setRect(QRectF(self.rect().topLeft(), QSizeF(new_width, new_height)))
+            self.update() # Triggers the Unified Paint Pipeline
+            event.accept()
+            return
 
-        self.update()
-        event.accept()
+        # 3. FALLBACK: Drag the node position
+        super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        """Stop resizing."""
-        if self._is_resizing:
-            self._is_resizing = False
-            event.accept()
-        super().mouseReleaseEvent(event)
+            """Finalizing the 'Nerve' or the 'Geometry'."""
+            # 1. FINALIZE RESIZE
+            if self._is_resizing:
+                self._is_resizing = False
+                self._sync_port_visibility()
+                event.accept()
+
+            # 2. FINALIZE CONNECTION
+            if hasattr(self, 'temp_connection') and self.temp_connection:
+                # THE CANDIDATE SEARCH: Find the node under the release point
+                items = self.scene().items(event.scenePos())
+                target_node = None
+                for item in items:
+                    # We want a NodeBase that isn't ourselves
+                    if isinstance(item, NodeBase) and item != self:
+                        target_node = item
+                        break
+                
+                if target_node:
+                    self.temp_connection.end_node = target_node
+                    
+                    # Register the nerve in both nodes' ledgers
+                    if self.temp_connection not in self.connections:
+                        self.connections.append(self.temp_connection)
+                    if hasattr(target_node, 'connections') and self.temp_connection not in target_node.connections:
+                        target_node.connections.append(self.temp_connection)
+                    
+                    # Force the target to manifest its copper input port
+                    target_node._sync_port_visibility()
+                    self.temp_connection.update_path()
+                    
+                    if self.scene():
+                        self.scene().set_dirty(True)
+                else:
+                    # SACRIFICE: No target found, remove the temporary wire
+                    self.scene().removeItem(self.temp_connection)
+                
+                self.temp_connection = None
+                event.accept()
+                return
+
+            super().mouseReleaseEvent(event)
 
     def hoverEnterEvent(self, event):
         """Trigger a gentle pulse animation on hover."""
@@ -242,14 +352,20 @@ class NodeBase(QGraphicsRectItem):
         painter.drawRoundedRect(rect, self.round_radius, self.round_radius)
 
         # 2. LOD GATEKEEPER
-        # Below 0.5, we exit early. No shadows, no text, no extras.
         if lod < 0.3:
-            for child in self.childItems(): child.hide()
-            if self.graphicsEffect(): self.graphicsEffect().setEnabled(False)
+            for child in self.childItems():
+                # EXCEPTION: If the child is a Port, and it's visible, 
+                # we might want to keep it, but for MAXIMUM speed, 
+                # let's only hide NON-port items here.
+                if not isinstance(child, Port):
+                    child.hide()
+                else:
+                    # Ports stay visible but we stop their expensive glow
+                    child.setGraphicsEffect(None) 
+                    
+            if self.graphicsEffect(): 
+                self.graphicsEffect().setEnabled(False)
             return
-
-        # 3. HIGH-DETAIL ELEMENTS (Zoom >= 0.5)
-        if self.graphicsEffect(): self.graphicsEffect().setEnabled(True)
 
         # Draw the Resize Handle (The Triangle)
         painter.setPen(Qt.NoPen)
@@ -281,19 +397,19 @@ class NodeBase(QGraphicsRectItem):
         pass
 
     def to_dict(self):
-        """Standardized export for SessionManager."""
-        return {
+        data = {
             "node_id": self.node_id,
             "uuid": self.uuid,
             "type": self.node_type,
             "title": self.title,
             "full_text": self.full_text,
-            "pos_x": self.scenePos().x(),
-            "pos_y": self.scenePos().y(),
+            "pos_x": self.pos().x(),
+            "pos_y": self.pos().y(),
             "width": self.rect().width(),
             "height": self.rect().height(),
-            "ports_visible": self.ports_visible
+            "ports_visible": self.ports_visible  # THE KEY!
         }
+        return data
 
     @staticmethod
     def from_dict(data: dict) -> 'NodeBase':

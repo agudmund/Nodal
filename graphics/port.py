@@ -16,6 +16,10 @@ class Port(QGraphicsEllipseItem):
     def __init__(self, parent_node, is_output=False):
         super().__init__(-10, -10, 20, 20, parent_node)
 
+        # Explicitly anchor the identity
+        self.is_output = is_output 
+        self.parent_node = parent_node
+
         # Color based on port type (input=warm/copper, output=cool/mint)
         base_color = QColor(180, 140, 120) if not is_output else QColor(140, 190, 160)
         self.setBrush(QBrush(base_color.lighter(115)))

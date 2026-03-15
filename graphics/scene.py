@@ -90,16 +90,23 @@ class NodeScene(QGraphicsScene):
         return self._dirty
 
     def get_session_data(self) -> dict:
-        """The Specialist gathers a manifest of all current nodes."""
-        from graphics.node_types import NodeBase
+        # 1. Gather Nodes (Existing)
+        nodes_data = [item.to_dict() for item in self.items() if isinstance(item, NodeBase)]
         
-        # 1. Catch all nodes using our 'Wide Net'
-        nodes = [item for item in self.items() if isinstance(item, NodeBase)]
-        
-        # 2. Convert them to dictionaries using their own to_dict()
+        # 2. Gather Connections (The New Nerve Ledger)
+        from graphics.connection import Connection
+        conns_data = []
+        for item in self.items():
+            if isinstance(item, Connection):
+                conns_data.append({
+                    "start_node_uuid": item.start_node.uuid,
+                    "end_node_uuid": item.end_node.uuid if item.end_node else None
+                })
+                
         return {
             "version": "1.0",
-            "nodes": [node.to_dict() for node in nodes]
+            "nodes": nodes_data,
+            "connections": conns_data
         }
 
     def add_connection(self, node_a, node_b):
@@ -157,25 +164,28 @@ class NodeScene(QGraphicsScene):
             view.viewport().update()
 
     def rebuild_from_session(self, data: dict):
-        # 1. The Lazy Import of our Type Registry
-        from graphics import node_types 
+        from graphics import node_types
+        from graphics.connection import Connection # The Nerve specialist
 
-        self.clear_nodes() # A helper to clear just the nodes
+        self.clear_nodes()
+        node_map = {} # To keep track of UUIDs during the build
 
+        # 1. First Pass: Create all Nodes
         for node_data in data.get("nodes", []):
-            node_type = node_data.get("type", "node")
-            
-            # 2. Pick the right specialist based on the schema
-            if node_type == "warm":
-                new_node = node_types.WarmNode.from_dict(node_data)
-            elif node_type == "image":
-                new_node = node_types.ImageNode.from_dict(node_data)
-            else:
-                # Fallback to the champ
-                from graphics.node import Node
-                new_node = Node.from_dict(node_data)
-
+            node_type = node_data.get("type", "warm")
+            # ... (your existing factory logic) ...
+            new_node = node_types.WarmNode.from_dict(node_data)
             self.addItem(new_node)
+            node_map[new_node.uuid] = new_node
+
+        # 2. Second Pass: Re-plug the Nerves
+        for conn_data in data.get("connections", []):
+            start_node = node_map.get(conn_data.get("start_node_uuid"))
+            end_node = node_map.get(conn_data.get("end_node_uuid"))
+            
+            if start_node and end_node:
+                new_conn = Connection(start_node, end_node)
+                self.addItem(new_conn)
 
     def drawBackground(self, painter, rect):
         bg_color = Theme.get_alpha(Theme.FROST_COLOR, Theme.CANVAS_OPACITY)

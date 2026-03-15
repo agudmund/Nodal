@@ -2,39 +2,39 @@
   "version": "1.0",
   "nodes": [
     {
-      "node_id": 4,
-      "uuid": "ab4e7d9c226346fbbc9b46ebc74893b3",
+      "node_id": 7,
+      "uuid": "b2e6bfb469d74e13ade063a99ec4ff22",
       "type": "warm",
-      "title": "Irresistible",
+      "title": "Dont panic",
       "full_text": "",
-      "pos_x": 427.31629392971195,
-      "pos_y": -701.5441959531418,
-      "width": 313.89776357827486,
-      "height": 82.10862619808307,
+      "pos_x": -321.39484118759003,
+      "pos_y": -740.6914955369388,
+      "width": 200.0,
+      "height": 90.0,
       "ports_visible": false
     },
     {
-      "node_id": 2,
-      "uuid": "e2f0d60483d442f199dcb1b6503daec9",
+      "node_id": 6,
+      "uuid": "381329d071924cb69467732b76c24ffb",
       "type": "warm",
-      "title": "Soft",
+      "title": "Tonight",
       "full_text": "",
-      "pos_x": 348.77529286474953,
-      "pos_y": -817.3588924387645,
-      "width": 180.0,
-      "height": 83.43982960596378,
+      "pos_x": -391.60725264703314,
+      "pos_y": -559.7214772682338,
+      "width": 167.0,
+      "height": 90.0,
       "ports_visible": false
     },
     {
-      "node_id": 1,
-      "uuid": "6bd1a4fa3a94421aaf1ff7c5e6cbeaa0",
+      "node_id": 5,
+      "uuid": "dbd17792bdd0465c89a4d5d3be4ed0b8",
       "type": "warm",
-      "title": "We definately need a way to copy paste nodes from one session to another",
+      "title": "Yummi",
       "full_text": "",
-      "pos_x": 130.57888583599583,
-      "pos_y": -957.7087788285412,
-      "width": 1336.261980830671,
-      "height": 72.79020234291795,
+      "pos_x": -59.33443221924736,
+      "pos_y": -1105.59825368531,
+      "width": 145.0,
+      "height": 90.0,
       "ports_visible": false
     },
     {
@@ -43,16 +43,94 @@
       "type": "warm",
       "title": "Sweet",
       "full_text": "",
-      "pos_x": 584.3982960596378,
-      "pos_y": -814.6964856230035,
+      "pos_x": 598.4891310823376,
+      "pos_y": -820.4563120667025,
       "width": 180.7774227902023,
       "height": 86.1022364217252,
+      "ports_visible": true
+    },
+    {
+      "node_id": 1,
+      "uuid": "6bd1a4fa3a94421aaf1ff7c5e6cbeaa0",
+      "type": "warm",
+      "title": "We definately need a way to copy paste nodes from one session to another",
+      "full_text": "",
+      "pos_x": -480.19855386220206,
+      "pos_y": -918.6713605162037,
+      "width": 881.0,
+      "height": 72.79020234291795,
+      "ports_visible": true
+    },
+    {
+      "node_id": 2,
+      "uuid": "e2f0d60483d442f199dcb1b6503daec9",
+      "type": "warm",
+      "title": "Tummi",
+      "full_text": "",
+      "pos_x": 701.7646120113467,
+      "pos_y": -1161.295954546334,
+      "width": 145.0,
+      "height": 83.43982960596378,
+      "ports_visible": false
+    },
+    {
+      "node_id": 4,
+      "uuid": "ab4e7d9c226346fbbc9b46ebc74893b3",
+      "type": "warm",
+      "title": "Irresistible",
+      "full_text": "",
+      "pos_x": 116.13965957063323,
+      "pos_y": -596.8050048377769,
+      "width": 313.89776357827486,
+      "height": 82.10862619808307,
+      "ports_visible": true
+    },
+    {
+      "node_id": 4,
+      "uuid": "c87977599dd94324a05a64cff5c17c37",
+      "type": "warm",
+      "title": "New Node",
+      "full_text": "",
+      "pos_x": 1015.6076981527852,
+      "pos_y": -996.8184612833567,
+      "width": 178.0,
+      "height": 90.0,
       "ports_visible": false
     }
   ],
+  "connections": [
+    {
+      "start_node_uuid": "dbd17792bdd0465c89a4d5d3be4ed0b8",
+      "end_node_uuid": "e2f0d60483d442f199dcb1b6503daec9"
+    },
+    {
+      "start_node_uuid": "b2e6bfb469d74e13ade063a99ec4ff22",
+      "end_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3"
+    },
+    {
+      "start_node_uuid": "381329d071924cb69467732b76c24ffb",
+      "end_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3"
+    },
+    {
+      "start_node_uuid": "e2f0d60483d442f199dcb1b6503daec9",
+      "end_node_uuid": "151f21437c1345dc8ed4f9974858c608"
+    },
+    {
+      "start_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3",
+      "end_node_uuid": "151f21437c1345dc8ed4f9974858c608"
+    },
+    {
+      "start_node_uuid": "6bd1a4fa3a94421aaf1ff7c5e6cbeaa0",
+      "end_node_uuid": "151f21437c1345dc8ed4f9974858c608"
+    },
+    {
+      "start_node_uuid": "151f21437c1345dc8ed4f9974858c608",
+      "end_node_uuid": "c87977599dd94324a05a64cff5c17c37"
+    }
+  ],
   "viewport": {
-    "center_x": 772.9273867735398,
-    "center_y": -799.2270670359158,
-    "scale": 1.2546383001302641
+    "center_x": 451.73960426016635,
+    "center_y": -781.9009604231309,
+    "scale": 1.0112172267578667
   }
 }

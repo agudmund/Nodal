@@ -2,40 +2,28 @@
   "version": "1.0",
   "nodes": [
     {
-      "node_id": 3,
-      "uuid": "0d00e32f9e404b538ad5ee580b24f362",
+      "node_id": 5,
+      "uuid": "ea908c22dc834d82bd4ccbd37566d752",
       "type": "warm",
       "title": "New Node",
       "full_text": "",
-      "pos_x": 659.7275581973654,
-      "pos_y": 919.3508021240913,
+      "pos_x": 738.7435869200727,
+      "pos_y": 674.7666494526463,
       "width": 178.0,
       "height": 90.0,
       "ports_visible": false
     },
     {
-      "node_id": 0,
-      "uuid": "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c",
+      "node_id": 4,
+      "uuid": "715ade5d74d743699bccfee9cd6d3527",
       "type": "warm",
       "title": "New Node",
       "full_text": "",
-      "pos_x": 1019.4238146369695,
-      "pos_y": 637.3213235183117,
-      "width": 888.7729947550538,
-      "height": 145.1414389490152,
-      "ports_visible": false
-    },
-    {
-      "node_id": 0,
-      "uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": 578.8043478260871,
-      "pos_y": 562.4999999999998,
-      "width": 241.41510593261762,
-      "height": 82.71606915130803,
-      "ports_visible": false
+      "pos_x": 346.14129414601797,
+      "pos_y": 927.0050244032112,
+      "width": 178.0,
+      "height": 90.0,
+      "ports_visible": true
     },
     {
       "node_id": 2,
@@ -50,33 +38,55 @@
       "ports_visible": false
     },
     {
-      "node_id": 4,
-      "uuid": "715ade5d74d743699bccfee9cd6d3527",
+      "node_id": 0,
+      "uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
       "type": "warm",
       "title": "New Node",
       "full_text": "",
-      "pos_x": 554.7652916073969,
-      "pos_y": 878.3783783783784,
+      "pos_x": -10.989810410593151,
+      "pos_y": 661.3218935343373,
       "width": 178.0,
-      "height": 90.0,
+      "height": 82.71606915130803,
+      "ports_visible": true
+    },
+    {
+      "node_id": 0,
+      "uuid": "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c",
+      "type": "warm",
+      "title": "New Node",
+      "full_text": "some text",
+      "pos_x": 1020.2081153793054,
+      "pos_y": 638.1056242606478,
+      "width": 178.0,
+      "height": 145.1414389490152,
       "ports_visible": false
     },
     {
-      "node_id": 5,
-      "uuid": "ea908c22dc834d82bd4ccbd37566d752",
+      "node_id": 3,
+      "uuid": "0d00e32f9e404b538ad5ee580b24f362",
       "type": "warm",
       "title": "New Node",
       "full_text": "",
-      "pos_x": 458.74822190611667,
-      "pos_y": 841.0384068278805,
+      "pos_x": 877.7631645667763,
+      "pos_y": 998.5651771000287,
       "width": 178.0,
       "height": 90.0,
-      "ports_visible": false
+      "ports_visible": true
+    }
+  ],
+  "connections": [
+    {
+      "start_node_uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
+      "end_node_uuid": "ea908c22dc834d82bd4ccbd37566d752"
+    },
+    {
+      "start_node_uuid": "715ade5d74d743699bccfee9cd6d3527",
+      "end_node_uuid": "0d00e32f9e404b538ad5ee580b24f362"
     }
   ],
   "viewport": {
-    "center_x": 1119.151844689876,
-    "center_y": 836.9153952085577,
+    "center_x": 573.2785280240124,
+    "center_y": 852.6014100552783,
     "scale": 1.2750211060894017
   }
 }
