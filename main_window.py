@@ -663,6 +663,21 @@ class NodalApp(QMainWindow):
         else:
             super().mousePressEvent(event)
 
+    def mouseMoveEvent(self, event):
+        """Move window when dragging the top bar."""
+        if self._dragging_window:
+            new_pos = event.globalPosition().toPoint()
+            self.move(self.pos() + (new_pos - self._drag_pos))
+            self._drag_pos = new_pos
+            event.accept()
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """Stop dragging on mouse release."""
+        self._dragging_window = False
+        super().mouseReleaseEvent(event)
+
     def mouseDoubleClickEvent(self, event):
         """Toggle maximize/restore on double-click of title bar."""
         if event.position().y() < self.handle_height_top:
