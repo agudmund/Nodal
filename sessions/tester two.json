@@ -5,18 +5,18 @@
       "node_id": 1,
       "uuid": "151f21437c1345dc8ed4f9974858c608",
       "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": 76.0,
-      "pos_y": 14.0,
-      "width": 100.0,
-      "height": 100.0,
+      "title": "Irresistable",
+      "full_text": "some text",
+      "pos_x": 71.718573775908,
+      "pos_y": 12.107361469146255,
+      "width": 237.6053765092941,
+      "height": 105.03534737770106,
       "ports_visible": false
     }
   ],
   "viewport": {
-    "center_x": 0.0,
-    "center_y": 0.0,
+    "center_x": 777.0,
+    "center_y": 2.0,
     "scale": 1.0
   }
 }

@@ -458,12 +458,12 @@ class WarmNode(NodeBase):
 
     @staticmethod
     def from_dict(data: dict) -> 'WarmNode':
-        """Create WarmNode from dictionary."""
+        """Deserializes a WarmNode using the standard Warehouse keys."""
         node = WarmNode(
             node_id=data.get("node_id", 0),
-            title=data.get("title", ""),
+            title=data.get("title", "Warm Node"), # Matches 'title' key
             full_text=data.get("full_text", ""),
-            pos=QPointF(data.get("pos_x", 0), data.get("pos_y", 0)),
+            pos=QPointF(data.get("pos_x", 0), data.get("pos_y", 0)), # Matches 'pos_x/y'
             width=data.get("width"),
             height=data.get("height"),
             uuid=data.get("uuid")
@@ -530,18 +530,16 @@ class ImageNode(NodeBase):
             painter.setPen(QColor(200, 200, 200, 150))
             painter.drawText(0, self.rect().height() - 15, self.rect().width(), 15, 
                            Qt.AlignCenter, self.title)
-
+    
     @staticmethod
     def from_dict(data: dict) -> 'ImageNode':
-        """Create ImageNode from dictionary."""
         node = ImageNode(
             node_id=data.get("node_id", 0),
-            title=data.get("title", ""),
+            title=data.get("title", "Image Node"),
             full_text=data.get("full_text", ""),
             pos=QPointF(data.get("pos_x", 0), data.get("pos_y", 0)),
             width=data.get("width"),
             height=data.get("height"),
             uuid=data.get("uuid")
         )
-        node.ports_visible = data.get("ports_visible", False)
         return node

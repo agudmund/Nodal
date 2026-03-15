@@ -10,6 +10,7 @@ import sys
 import os
 import io
 import ctypes
+import signal
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
@@ -29,6 +30,11 @@ APP_NAME = "Nodal"
 ORG_NAME = "Single Shared Braincell"
 
 def main():
+
+    # 1. THE TERMINAL HANDSHAKE
+    # Tell the OS to let Ctrl-C terminate the Python process immediately
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    
     # 1. Encoding Shield (pythonw-safe)
     if sys.stdout is not None:
         try:

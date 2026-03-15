@@ -231,6 +231,7 @@ class NodalApp(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self._last_saved_viewport = (0.0, 0.0, 1.0)
         self.view_pan_x = 0.0
         self.view_pan_y = 0.0
         self.view_zoom = 1.0
@@ -473,9 +474,10 @@ class NodalApp(QMainWindow):
         bottom_toolbar_layout.addWidget(self.btn_wait)
 
         # Exit button (right-aligned)
-        # Note: "Exid" is intentional stylization, not a typo - it's our cozy branding
+        # Note: "Exid" is intentional stylization, not a typo - it's an exit button named exid
         self.btn_exit = CozyButton("Exid")
-        self.btn_exit.clicked.connect(lambda: (self.save_session(), self.close()))
+        # self.btn_exit.clicked.connect(lambda: (self.save_session(), self.close()))
+        self.btn_exit.clicked.connect(lambda: self.safe_exit())
         bottom_toolbar_layout.addWidget(self.btn_exit)
 
         grid_layout.addWidget(self.bottom_toolbar_container, 2, 1)
@@ -529,83 +531,111 @@ class NodalApp(QMainWindow):
 
         return self.project_selector
 
+    def auto_load(self):
+        """Auto-load the last session if available."""
+        session_names = self.populate_sessions()
+        last_session = Settings.get("session/last_loaded", "")
+        
+        if last_session and session_names and last_session in session_names:
+            index = self.project_selector.findText(last_session)
+            if index >= 0:
+                # Set the identity before loading
+                self._current_session = last_session
+                self.project_selector.setCurrentIndex(index)
+                
+                # Explicit load if signal doesn't fire (e.g., index was already 0)
+                if index == 0:
+                    self.load_session(last_session)
+
     def load_session(self, session_name: str):
         filepath = SessionManager.get_session_filename(session_name)
         data = SessionManager.get_session_data(filepath)
         if not data:
             return
+        
+        if data:
+            # 1. Clear and Rebuild nodes (Your existing logic)
+            self.view.setUpdatesEnabled(False)
+            try:
+                self.scene.clear_nodes()
+                self.scene.rebuild_from_session(data)
 
-        # Step A: The Specialist rebuilds the nodes
-        self.view._first_interact_done = False
-        # 1. THE SWITCH FLICK: Disable updates so the GPU doesn't stutter
-        # during the heavy lifting of clearing and rebuilding.
-        self.view.viewport().setUpdatesEnabled(False)
-    
-        try:
-            self.scene.clear_nodes() # Stage is now empty and Fog is expanded
-            self.scene.rebuild_from_session(data)
-            
-            # 103% CERTAINTY: Force the 'Camera Operator' to look at the truth
-            self.view.viewport().setUpdatesEnabled(True)
-            self.view.viewport().repaint() # Synchronous paint (The Sledgehammer)
-            
-        finally:
-            self.view.viewport().setUpdatesEnabled(True)
-            self.view.update()
-            self.view.viewport().update()
-            
-            # Accountability: Reset the Dirty Flag now that the truth is loaded
-            self.scene.set_dirty(False)
+                # 103% CERTAINTY: Force the 'Camera Operator' to look at the truth
+                self.view.viewport().setUpdatesEnabled(True)
+                self.view.viewport().repaint() # Synchronous paint (The Sledgehammer)
+                
+                # 2. Restore the Camera Ledger
+                viewport = data.get("viewport", {})
+                self.view_pan_x = viewport.get("center_x", 0.0)
+                self.view_pan_y = viewport.get("center_y", 0.0)
+                self.view_zoom = viewport.get("scale", 1.0)
+                
+                # 3. Physically move the camera to match the Ledger
+                self.view.current_zoom = self.view_zoom
+                self.view.resetTransform()
+                self.view.scale(self.view_zoom, self.view_zoom)
+                self.view.centerOn(self.view_pan_x, self.view_pan_y)
+                
+                # Reset the 'First Interact' guard so the next pan is high-precision
+                self.view._first_interact_done = False
+                
+            finally:
+                self.scene.set_dirty(False)
+                self.view.setUpdatesEnabled(True)
+                self.view.viewport().setUpdatesEnabled(True)
+                self.view.viewport().update()
 
-        # Inside load_session(self, session_name)
-        viewport = data.get("viewport", {})
-        if viewport:
-            self.view_pan_x = viewport.get("center_x", 0.0)
-            self.view_pan_y = viewport.get("center_y", 0.0)
-            self.view_zoom = viewport.get("scale", 1.0)
-
-            # Force the 'Camera Operator' to look at the spot NOW
-            self.view.current_zoom = self.view_zoom
-            self.view.resetTransform()
-            self.view.scale(self.view_zoom, self.view_zoom)
-            self.view.centerOn(self.view_pan_x, self.view_pan_y)
-
-    def save_session(self):
-        """The Foreman triggers a save of the current state."""
-        if not self._current_session:
+    def save_session(self, session_name: str):
+        """Gathers characters and camera state; forces the warehouse to acknowledge spaces."""
+        if not session_name:
+            logger.warning("Save failed: No session name provided.")
             return
 
-        # 1. Get node data from the Specialist
+        # 1. Gather the data (The Absolute Truth)
         data = self.scene.get_session_data()
-
-        # 2. Capture the Camera (Viewport) state simply
-        # We find the center point of the view mapped to the scene coordinates
-        view_center = self.view.mapToScene(self.view.viewport().rect().center())
-        
-        # We get the current scale (zoom) directly from the transform
-        # Since we use a simple scale(s, s), the m11 value is our scale factor
-        current_scale = self.view.transform().m11()
-
         data["viewport"] = {
-            "center_x": self.view_pan_x,
-            "center_y": self.view_pan_y,
-            "scale": self.view_zoom
+            "center_x": float(self.view_pan_x),
+            "center_y": float(self.view_pan_y),
+            "scale": float(self.view_zoom)
         }
-
-        # 3. Hand the data to the Truck (SessionManager) to drive to disk
-        filepath = SessionManager.get_session_filename(self._current_session)
+        
+        # 2. Update Memory
+        Settings.set("session/last_loaded", session_name)
+        self._current_session = session_name
+        
+        # 3. Archive to the warehouse
+        filepath = SessionManager.get_session_filename(session_name)
         SessionManager.save_session(filepath, data)
+        
+        # 4. BALANCE THE LEDGER: Update the 'Reference Point'
+        # This prevents the Safe Exit from thinking we still have unsaved moves.
+        self._last_saved_viewport = (self.view_pan_x, self.view_pan_y, self.view_zoom)
+        self.scene.set_dirty(False)
+        
+        logger.info(f"✅ Archived '{session_name}' at {self._last_saved_viewport}")
 
     def on_session_changed(self, index: int):
-        """Handle combobox selection change. Loads session and remembers the selection."""
-        if index < 0:
-            return
-        session_name = self.project_selector.currentText()
-
-        # Remember this selection for next launch
-        Settings.set("session/last_loaded", session_name)
+        """Handle combobox selection change with auto-save for the outgoing session."""
+        if index < 0: return
+        new_session_name = self.project_selector.currentText()
         
-        self.load_session(session_name)
+        # 1. ACCOUNTABILITY: Check if the OLD session needs saving before we overwrite it
+        # We only do this if we actually had a previous session active
+        if hasattr(self, "_current_session") and self._current_session and self._current_session != new_session_name:
+            
+            current_view = (self.view_pan_x, self.view_pan_y, self.view_zoom)
+            last_view = getattr(self, "_last_saved_viewport", (0.0, 0.0, 1.0))
+            
+            if self.scene.is_dirty() or current_view != last_view:
+                logger.info(f"🔄 Auto-saving outgoing session: '{self._current_session}'")
+                self.save_session(self._current_session)
+
+        # 2. Record the identity of the NEW session
+        Settings.set("session/last_loaded", new_session_name)
+        self._current_session = new_session_name
+        
+        # 3. Bring the new characters and camera onto the stage
+        self.load_session(new_session_name)
 
     def populate_sessions(self):
         """Populate with session names from sessions/ directory"""
@@ -622,19 +652,6 @@ class NodalApp(QMainWindow):
         self.project_selector.blockSignals(False)
 
         return session_names
-
-    def auto_load(self):
-        """Auto-load the last session if available."""
-        print('inside auto load')
-        session_names = self.populate_sessions()
-        last_session = Settings.get("session/last_loaded", "")
-        if last_session and session_names and last_session in session_names:
-            index = self.project_selector.findText(last_session)
-            self.project_selector.setCurrentIndex(index)
-            # If the index is already 0, setCurrentIndex won't emit currentIndexChanged signal
-            # So we need to explicitly load the session in that case
-            if index == 0:
-                self.load_session(last_session)
 
     def update_blur_intensity(self, value):
         Theme.FROST_COLOR.setAlpha(value)
@@ -736,6 +753,24 @@ class NodalApp(QMainWindow):
         
         # Log it for accountability
         logger.debug(f"Handshake Successful: Camera synced to Ledger at ({self.view_pan_x}, {self.view_pan_y})")
+
+    def safe_exit(self):
+        """Ensures the camera and nodes are saved if either has moved."""
+        # If _current_session is None or empty, fall back to Settings
+        session_name = self._current_session or Settings.get("session/last_loaded", "latest_session")
+        
+        current_view = (self.view_pan_x, self.view_pan_y, self.view_zoom)
+        last_view = getattr(self, "_last_saved_viewport", (0.0, 0.0, 1.0))
+        
+        camera_moved = current_view != last_view
+
+        if self.scene.is_dirty() or camera_moved:
+            logger.info(f"Exit: Changes detected in '{session_name}'. Saving...")
+            self.save_session(session_name)
+        else:
+            logger.info("Exit: Ledger is balanced. No save required.")
+        
+        self.close()
 
     def closeEvent(self, event):
         # 1. Save Geometry immediately while the window is still valid
