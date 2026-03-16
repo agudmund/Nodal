@@ -9,105 +9,101 @@
 from PySide6.QtGui import QColor
 
 class Theme:
-
     # --- Sizing & Spacing ---
-    WINDOW_BORDER_WIDTH = 1
-    HANDLE_HEIGHT_TOP = 65  # Top toolbar/title bar height (draggable area)
-    HANDLE_HEIGHT_BOTTOM = 100  # Bottom toolbar/button bar height
-    DIALOG_TOP_BAR_HEIGHT = 35  # Utility dialog top bar height (text only)
-    DIALOG_BOTTOM_BAR_HEIGHT = 85  # Utility dialog bottom bar height (button bar)
-    WINDOW_ANIMATION_DURATION = 500  # Milliseconds for minimize animation
-    WINDOW_RESTORE_ANIMATION_DURATION = 200  # Milliseconds for restore animation (half of minimize)
+    windowBorderWidth = 1
+    handleHeightTop = 65                # Top toolbar/title bar height (draggable area)
+    handleHeightBottom = 100            # Bottom toolbar/button bar height
+    dialogTopBarHeight = 35             # Utility dialog top bar height (text only)
+    dialogBottomBarHeight = 85          # Utility dialog bottom bar height (button bar)
+    windowAnimationDuration = 500       # Milliseconds for minimize animation
+    windowRestoreAnimationDuration = 200 # Milliseconds for restore animation (half of minimize)
 
     # --- Branding (The Soul) ---
-    ACCENT_NORMAL = QColor("#3498db")   # Primary Action Blue
-    ACCENT_SELECTED = QColor("#00d2ff") # Glowing Signal Blue
-    TEXT_PRIMARY = QColor("#d2d1cf")
-    
+    accentNormal = QColor("#3498db")    # Primary Action Blue
+    accentSelected = QColor("#00d2ff")  # Glowing Signal Blue
+    textPrimary = QColor("#d2d1cf")
+
     # --- UI Scaffolding ---
-    WINDOW_BG = QColor("#1e1e1e")
-    TOOLBAR_BG = QColor("#1e1e1e")
-    TOOLBAR_BORDER = QColor("#6b5a47") # Consider changing to ACCENT_NORMAL?
-    
+    windowBg = QColor("#1e1e1e")
+    toolbarBg = QColor("#1e1e1e")
+    toolbarBorder = QColor("#6b5a47")   # Consider changing to accentNormal?
+
     # --- Node Dimensions ---
-    NODE_WIDTH = 140
-    NODE_HEIGHT = 90
-    NODE_RADIUS = 10
+    nodeWidth = 140
+    nodeHeight = 90
+    nodeRadius = 10
 
     # --- Ports (Connection Points) ---
-    PORT_INPUT_COLOR = QColor(180, 140, 120)      # Warm/copper for inputs
-    PORT_OUTPUT_COLOR = QColor(140, 190, 160)     # Cool/mint for outputs
-    PORT_GLOW_DARKNESS = 140                       # Glow effect darkness factor
-    PORT_SIZE = 20                                 # Diameter in pixels
-    PORT_BORDER_COLOR = QColor(60, 60, 80, 100)   # Port border
-    PORT_GLOW_BLUR_RADIUS = 12                     # Glow effect blur
+    portInputColor = QColor(180, 140, 120)     # Warm/copper for inputs
+    portOutputColor = QColor(140, 190, 160)    # Cool/mint for outputs
+    portGlowDarkness = 140                      # Glow effect darkness factor
+    portSize = 20                               # Diameter in pixels
+    portBorderColor = QColor(60, 60, 80, 100)  # Port border
+    portGlowBlurRadius = 12                     # Glow effect blur
 
     # --- Sockets (Legacy - for backward compatibility) ---
-    SOCKET_RADIUS = 5
-    SOCKET_GRAB_MARGIN = 12
-    
+    socketRadius = 5
+    socketGrabMargin = 12
+
     # --- Colors: Scene & Mica ---
-    FROST_COLOR = QColor(30, 30, 35, 150)
-    GRID_COLOR = QColor(200, 200, 200, 30)
+    frostColor = QColor(30, 30, 35, 150)
+    gridColor = QColor(200, 200, 200, 30)
 
     # --- Colors: Node Aesthetics ---
-    NODE_GRADIENT_TOP = QColor(55, 55, 60, 255)
-    NODE_GRADIENT_BOTTOM = QColor(25, 25, 30, 255)
+    nodeGradientTop = QColor(55, 55, 60, 255)
+    nodeGradientBottom = QColor(25, 25, 30, 255)
+
+    # --- Colors: The Nerve System ---
+    wireStart = QColor(portOutputColor.red(), portOutputColor.green(), portOutputColor.blue(), 25)
+    wireEnd   = QColor(portInputColor.red(),  portInputColor.green(),  portInputColor.blue(),  255)
 
     # --- Node Type Colors ---
-    WARM_NODE_BG = QColor("#2a2a3a")               # Primary thought/text nodes
-    ABOUT_NODE_BG = QColor(40, 40, 50, 200)        # Meta/info nodes (darker)
-    IMAGE_NODE_BG = QColor(30, 30, 30, 200)        # Image display nodes
-    NODE_BORDER_NORMAL = QColor(255, 255, 255, 40)
-    NODE_BORDER_SELECTED = ACCENT_NORMAL
+    warmNodeBg = QColor("#2a2a3a")              # Primary thought/text nodes
+    aboutNodeBg = QColor(40, 40, 50, 200)       # Meta/info nodes (darker)
+    imageNodeBg = QColor(30, 30, 30, 200)       # Image display nodes
+    nodeBorderNormal = QColor(255, 255, 255, 40)
+    nodeBorderSelected = accentNormal
 
     # --- Button Styling ---
-    BUTTON_FONT_FAMILY = "Reey"
-    BUTTON_FONT_SIZE = 22
-    BUTTON_FONT_BOLD = False
-    BUTTON_TEXT_VERTICAL_OFFSET = -2
-    BUTTON_BORDER_WIDTH = 2
-    BUTTON_BORDER_ENABLED = True
-    BUTTON_MIN_WIDTH = 160
-    BUTTON_MIN_HEIGHT = 75
+    buttonFontFamily = "Reey"
+    buttonFontSize = 22
+    buttonFontBold = False
+    buttonTextVerticalOffset = -2
+    buttonBorderWidth = 2
+    buttonBorderEnabled = True
+    buttonMinWidth = 160
+    buttonMinHeight = 75
 
     # --- Node Typography ---
-    NODE_TITLE_FONT_FAMILY = "Chandler42"
-    NODE_TITLE_FONT_SIZE = 13
-    NODE_BODY_FONT_FAMILY = "Lato"
-    NODE_BODY_FONT_SIZE = 9
+    nodeTitleFontFamily = "Chandler42"
+    nodeTitleFontSize = 13
+    nodeBodyFontFamily = "Lato"
+    nodeBodyFontSize = 9
 
     # --- Button Colors ---
-    BUTTON_BG = QColor("#1e1e1e")
-    BUTTON_BORDER = QColor("#1e1e1e")
-    BUTTON_BG_HOVER = QColor("#1e1e1e")
-    BUTTON_BORDER_HOVER = QColor("#1e1e1e")
-    BUTTON_BG_INACTIVE = QColor("#1f1f1f")
-    BUTTON_BORDER_INACTIVE = QColor("#4a4a4a")
+    buttonBg = QColor("#1e1e1e")
+    buttonBorder = QColor("#1e1e1e")
+    buttonBgHover = QColor("#1e1e1e")
+    buttonBorderHover = QColor("#1e1e1e")
+    buttonBgInactive = QColor("#1f1f1f")
+    buttonBorderInactive = QColor("#4a4a4a")
 
     # --- ComboBox Styling ---
-    COMBOBOX_BG = QColor("#1e1e1e")
-    COMBOBOX_BG_OPEN = QColor("#2a2a3a")
-    COMBOBOX_TEXT = QColor("#e0e0ff")
-    COMBOBOX_BORDER = QColor("#6b5a47")
-    COMBOBOX_BORDER_RADIUS = 8
-    COMBOBOX_PADDING = "6px 10px"
-    COMBOBOX_FONT_FAMILY = "Segoe UI"
-    COMBOBOX_FONT_SIZE = 12
-    COMBOBOX_FONT_WEIGHT = "normal"
-    COMBOBOX_DROPDOWN_WIDTH = 30
-    COMBOBOX_MIN_WIDTH = 200
+    comboboxBg = QColor("#1e1e1e")
+    comboboxBgOpen = QColor("#2a2a3a")
+    comboboxText = QColor("#e0e0ff")
+    comboboxBorder = QColor("#6b5a47")
+    comboboxBorderRadius = 8
+    comboboxPadding = "6px 10px"
+    comboboxFontFamily = "Segoe UI"
+    comboboxFontSize = 12
+    comboboxFontWeight = "normal"
+    comboboxDropdownWidth = 30
+    comboboxMinWidth = 200
 
     # --- Slider Styling ---
-    # Slider handle image: recommended size is 12x12 pixels for best results
-    # Set to None to use solid cyan color instead
-    SLIDER_HANDLE_IMAGE = "resources/icons/tester.png"  # Path to custom slider handle image
-    # --- Colors: The Nerve System (Electrical Copper) ---
-    # A broad, faint glow to simulate light scattering on the 'Mica' surface
-    WIRE_GLOW = QColor(155, 126, 94, 60) 
-    # The sharp, energetic signal core
-    WIRE_CORE = QColor(155, 126, 94, 255)
-
+    sliderHandleImage = "resources/icons/tester.png"
+    
     @staticmethod
     def lerp(color1: QColor, color2: QColor, t: float) -> QColor:
         """Linear interpolation between two colors."""
@@ -127,7 +123,7 @@ class Theme:
     def adjust_brightness(color: QColor, factor: float) -> QColor:
         """
         factor > 1.0 makes it brighter, < 1.0 makes it darker.
-        Example: Theme.adjust_brightness(Theme.ACCENT_NORMAL, 0.8) # 20% darker
+        Example: Theme.adjust_brightness(Theme.accentNormal, 0.8) # 20% darker
         """
         r = max(0, min(255, int(color.red() * factor)))
         g = max(0, min(255, int(color.green() * factor)))

@@ -104,12 +104,12 @@ class NodeGraphicsView(QGraphicsView):
     def drawBackground(self, painter, rect):
         painter.save()
         painter.resetTransform()
-        
+
         # 1. THE OBSIDIAN TINT (Always fast)
-        painter.fillRect(self.viewport().rect(), Theme.FROST_COLOR)
-        
+        painter.fillRect(self.viewport().rect(), Theme.frostColor)
+
         # 2. THE DIFFUSER GRAIN (The Optimization)
-        alpha = Theme.FROST_COLOR.alpha()
+        alpha = Theme.frostColor.alpha()
         # Skip grain if it's too faint or if we are zoomed out too far 
         # to maintain high-performance Mica feel.
         if alpha > 10 and self.current_zoom > 0.2:
@@ -242,7 +242,7 @@ class NodalApp(QMainWindow):
         self.view_pan_y = 0.0
         self.view_zoom = 1.0
 
-        self.handle_height_top = Theme.HANDLE_HEIGHT_TOP
+        self.handle_height_top = Theme.handleHeightTop
         self._dragging_window = False
         self._drag_pos = None
         self._current_session = None  # Track current loaded session
@@ -268,22 +268,22 @@ class NodalApp(QMainWindow):
 
         Args:
             border_position: "top", "bottom", or None for no border
-            height: Fixed height of the toolbar. Defaults to HANDLE_HEIGHT_TOP if None.
+            height: Fixed height of the toolbar. Defaults to handleHeightTop if None.
 
         Returns:
             tuple: (container QWidget, layout QHBoxLayout)
         """
         container = QWidget()
         if height is None:
-            height = Theme.HANDLE_HEIGHT_TOP
+            height = Theme.handleHeightTop
         container.setFixedHeight(height)
 
         border_style = ""
         if border_position:
-            border_style = f"border-{border_position}: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+            border_style = f"border-{border_position}: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};"
 
         container.setStyleSheet(f"""
-            background-color: {Theme.TOOLBAR_BG.name()};
+            background-color: {Theme.toolbarBg.name()};
             {border_style}
         """)
 
@@ -320,24 +320,24 @@ class NodalApp(QMainWindow):
         """
         spacer = QWidget()
         spacer.setFixedWidth(15)
-        spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()};")
+        spacer.setStyleSheet(f"background-color: {Theme.windowBg.name()};")
         return spacer
 
     def _create_blur_slider(self):
         """Create the blur intensity slider with consistent styling and connections."""
         slider = QSlider(Qt.Horizontal)
         slider.setRange(0, 255)
-        slider.setValue(Theme.FROST_COLOR.alpha())
+        slider.setValue(Theme.frostColor.alpha())
         slider.setFixedWidth(150)
         slider.setToolTip("Adjust Background Abstraction")
 
         # Build slider stylesheet with optional custom handle image
         handle_style = ""
-        if Theme.SLIDER_HANDLE_IMAGE:
+        if Theme.sliderHandleImage:
             import os
-            if os.path.exists(Theme.SLIDER_HANDLE_IMAGE):
+            if os.path.exists(Theme.sliderHandleImage):
                 # Use custom image - convert path to URL format for stylesheet
-                image_path = Theme.SLIDER_HANDLE_IMAGE.replace("\\", "/")
+                image_path = Theme.sliderHandleImage.replace("\\", "/")
                 handle_style = f"""
             QSlider::handle:horizontal {{
                 background-image: url({image_path});
@@ -349,7 +349,7 @@ class NodalApp(QMainWindow):
             }}"""
             else:
                 # Image path specified but file not found - fallback to solid color
-                logger.warning(f"Slider handle image not found: {Theme.SLIDER_HANDLE_IMAGE}, using solid color")
+                logger.warning(f"Slider handle image not found: {Theme.sliderHandleImage}, using solid color")
                 handle_style = """
             QSlider::handle:horizontal {
                 background: #00d2ff;
@@ -390,17 +390,17 @@ class NodalApp(QMainWindow):
 
         self.setStyleSheet(f"""
             QMainWindow {{
-                background-color: {Theme.WINDOW_BG.name()};
-                border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+                background-color: {Theme.windowBg.name()};
+                border: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};
             }}
         """)
 
         # Row 0, Col 0: Top left spacer
         grid_layout.addWidget(self._create_spacer(), 0, 0)
 
-         # Row 0, Col 1: Top toolbar with border-bottom
-        self.toolbar_container, self.toolbar_layout = self._create_toolbar(border_position="bottom", height=Theme.HANDLE_HEIGHT_TOP)
-        
+        # Row 0, Col 1: Top toolbar with border-bottom
+        self.toolbar_container, self.toolbar_layout = self._create_toolbar(border_position="bottom", height=Theme.handleHeightTop)
+
         self.toolbar_layout.addStretch()
         self.toolbar_layout.addWidget(self.setup_project_selector())
         self.toolbar_layout.addStretch()
@@ -435,7 +435,7 @@ class NodalApp(QMainWindow):
         self.view_pan_y = 0.0
         self.view_zoom = 1.0
 
-        self.view.setStyleSheet(f"border: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};")
+        self.view.setStyleSheet(f"border: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};")
         grid_layout.addWidget(self.view, 1, 1)
 
         # Row 1, Col 2: Right spacer
@@ -445,7 +445,7 @@ class NodalApp(QMainWindow):
         grid_layout.addWidget(self._create_spacer(), 2, 0)
 
         # Row 2, Col 1: Bottom toolbar with border-top
-        self.bottom_toolbar_container, bottom_toolbar_layout = self._create_toolbar(border_position="top", height=Theme.HANDLE_HEIGHT_BOTTOM)
+        self.bottom_toolbar_container, bottom_toolbar_layout = self._create_toolbar(border_position="top", height=Theme.handleHeightBottom)
 
         # New Node button (left-aligned)
         self.btn_new_node = CozyButton("Node")
@@ -497,34 +497,34 @@ class NodalApp(QMainWindow):
 
     def setup_project_selector(self):
         """The Project Selector Combo Box"""
-        
+
         self.project_selector = QComboBox()
         self.project_selector.setObjectName("project_selector")
-        
+
         # Apply theme-driven stylesheet
-        self.project_selector.setMinimumWidth(Theme.COMBOBOX_MIN_WIDTH)
+        self.project_selector.setMinimumWidth(Theme.comboboxMinWidth)
         self.project_selector.setStyleSheet(f"""
             QComboBox#project_selector {{
-                background-color: {Theme.COMBOBOX_BG.name()};
-                color: {Theme.COMBOBOX_TEXT.name()};
-                border: 1px solid {Theme.COMBOBOX_BORDER.name()};
-                border-radius: {Theme.COMBOBOX_BORDER_RADIUS}px;
-                padding: {Theme.COMBOBOX_PADDING};
-                font-family: {Theme.COMBOBOX_FONT_FAMILY};
-                font-size: {Theme.COMBOBOX_FONT_SIZE}pt;
-                font-weight: {Theme.COMBOBOX_FONT_WEIGHT};
+                background-color: {Theme.comboboxBg.name()};
+                color: {Theme.comboboxText.name()};
+                border: 1px solid {Theme.comboboxBorder.name()};
+                border-radius: {Theme.comboboxBorderRadius}px;
+                padding: {Theme.comboboxPadding};
+                font-family: {Theme.comboboxFontFamily};
+                font-size: {Theme.comboboxFontSize}pt;
+                font-weight: {Theme.comboboxFontWeight};
             }}
             QComboBox#project_selector::drop-down {{
                 border: none;
-                width: {Theme.COMBOBOX_DROPDOWN_WIDTH}px;
+                width: {Theme.comboboxDropdownWidth}px;
             }}
             QComboBox#project_selector QAbstractItemView {{
-                background-color: {Theme.COMBOBOX_BG_OPEN.name()};
-                color: {Theme.COMBOBOX_TEXT.name()};
-                border: 1px solid {Theme.COMBOBOX_BORDER.name()};
-                selection-background-color: {Theme.ACCENT_SELECTED.name()};
-                font-family: {Theme.COMBOBOX_FONT_FAMILY};
-                font-size: {Theme.COMBOBOX_FONT_SIZE}pt;
+                background-color: {Theme.comboboxBgOpen.name()};
+                color: {Theme.comboboxText.name()};
+                border: 1px solid {Theme.comboboxBorder.name()};
+                selection-background-color: {Theme.accentSelected.name()};
+                font-family: {Theme.comboboxFontFamily};
+                font-size: {Theme.comboboxFontSize}pt;
             }}
         """)
 
@@ -661,17 +661,17 @@ class NodalApp(QMainWindow):
         return session_names
 
     def update_blur_intensity(self, value):
-        Theme.FROST_COLOR.setAlpha(value)
+       Theme.frostColor.setAlpha(value)
 
-        # Map the blur (Sane range 0-30 for performance)
-        blur_radius = (value / 255) * 30
+       # Map the blur (Sane range 0-30 for performance)
+       blur_radius = (value / 255) * 30
 
-        # Update the fog layer to what the user actually sees
-        visible_rect = self.view.mapToScene(self.view.viewport().rect()).boundingRect()
-        self.scene.fog_layer.setRect(visible_rect)
+       # Update the fog layer to what the user actually sees
+       visible_rect = self.view.mapToScene(self.view.viewport().rect()).boundingRect()
+       self.scene.fog_layer.setRect(visible_rect)
 
-        self.blur_slider.setToolTip(f"Optimized Smudge: {int(blur_radius)}px")
-        self.view.viewport().update()
+       self.blur_slider.setToolTip(f"Optimized Smudge: {int(blur_radius)}px")
+       self.view.viewport().update()
 
     def create_new_node(self):
         view_center = self.view.mapToScene(self.view.viewport().width() // 2, self.view.viewport().height() // 2)

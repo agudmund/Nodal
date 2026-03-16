@@ -34,18 +34,18 @@ class CozyDialog(QDialog):
         # Frameless window to match main window design motif
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
 
-        # Build stylesheet from Theme
-        window_bg = Theme.WINDOW_BG.name()
-        text_color = Theme.TEXT_PRIMARY.name()
-        accent_color = Theme.ACCENT_NORMAL.name()
-        accent_selected = Theme.ACCENT_SELECTED.name()
+         # Build stylesheet from Theme
+        window_bg = Theme.windowBg.name()
+        text_color = Theme.textPrimary.name()
+        accent_color = Theme.accentNormal.name()
+        accent_selected = Theme.accentSelected.name()
 
         # Consistent Lookdev Styling using Theme constants
         self.setStyleSheet(f"""
             QDialog {{ background-color: {window_bg}; color: {text_color}; }}
             QTabWidget::pane {{ background: {window_bg}; }}
             QTabBar::tab {{
-                background: {Theme.COMBOBOX_BG.name()};
+                background: {Theme.comboboxBg.name()};
                 color: {text_color};
                 padding: 10px 20px;
                 border-top-left-radius: 4px;
@@ -66,12 +66,12 @@ class CozyDialog(QDialog):
         # Row 0, Col 0: Top left corner spacer
         main_layout.addWidget(self._create_spacer("top-left"), 0, 0)
 
-        # Row 0, Col 1: Top draggable bar
+         # Row 0, Col 1: Top draggable bar
         titlebar_container = QWidget()
-        titlebar_container.setFixedHeight(Theme.DIALOG_TOP_BAR_HEIGHT)
+        titlebar_container.setFixedHeight(Theme.dialogTopBarHeight)
         titlebar_container.setStyleSheet(f"""
-            background-color: {Theme.TOOLBAR_BG.name()};
-            border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            background-color: {Theme.toolbarBg.name()};
+            border-top: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};
         """)
 
         titlebar_layout = QHBoxLayout(titlebar_container)
@@ -104,12 +104,12 @@ class CozyDialog(QDialog):
         # Row 2, Col 0: Bottom left corner spacer
         main_layout.addWidget(self._create_spacer("bottom-left"), 2, 0)
 
-        # Row 2, Col 1: Bottom bar with buttons
+         # Row 2, Col 1: Bottom bar with buttons
         bottom_container = QWidget()
-        bottom_container.setFixedHeight(Theme.DIALOG_BOTTOM_BAR_HEIGHT)
+        bottom_container.setFixedHeight(Theme.dialogBottomBarHeight)
         bottom_container.setStyleSheet(f"""
-            background-color: {Theme.TOOLBAR_BG.name()};
-            border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};
+            background-color: {Theme.toolbarBg.name()};
+            border-bottom: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};
         """)
 
         bottom_layout = QHBoxLayout(bottom_container)
@@ -144,19 +144,19 @@ class CozyDialog(QDialog):
         # Build border based on position
         border_style = ""
         if position == "top-left":
-            border_style = f"border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()}; border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+            border_style = f"border-top: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()}; border-left: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};"
         elif position == "top-right":
-            border_style = f"border-top: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()}; border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+            border_style = f"border-top: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()}; border-right: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};"
         elif position == "bottom-left":
-            border_style = f"border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()}; border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+            border_style = f"border-bottom: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()}; border-left: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};"
         elif position == "bottom-right":
-            border_style = f"border-bottom: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()}; border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+            border_style = f"border-bottom: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()}; border-right: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};"
         elif position == "left":
-            border_style = f"border-left: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+            border_style = f"border-left: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};"
         elif position == "right":
-            border_style = f"border-right: {Theme.WINDOW_BORDER_WIDTH}px solid {Theme.TOOLBAR_BORDER.name()};"
+            border_style = f"border-right: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};"
 
-        spacer.setStyleSheet(f"background-color: {Theme.WINDOW_BG.name()}; {border_style}")
+        spacer.setStyleSheet(f"background-color: {Theme.windowBg.name()}; {border_style}")
         return spacer
 
     def _setup_content(self):
@@ -184,7 +184,7 @@ class CozyDialog(QDialog):
 
     def mousePressEvent(self, event):
         """Handle window dragging from the top bar."""
-        if event.button() == Qt.LeftButton and event.position().y() < Theme.DIALOG_TOP_BAR_HEIGHT:
+        if event.button() == Qt.LeftButton and event.position().y() < Theme.dialogTopBarHeight:
             self._dragging_window = True
             self._drag_pos = event.globalPosition().toPoint()
             event.accept()

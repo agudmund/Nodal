@@ -29,7 +29,7 @@ class DemoDialog(CozyDialog):
 
         label = QLabel("It's a happy little extra window ✨")
         label.setStyleSheet(f"""
-            color: {Theme.TEXT_PRIMARY.name()};
+            color: {Theme.textPrimary.name()};
             font-size: 16px;
             font-weight: bold;
         """)

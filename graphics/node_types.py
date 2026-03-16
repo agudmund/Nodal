@@ -109,10 +109,6 @@ class NodeBase(QGraphicsRectItem):
             if self.scene():
                 self.scene().set_dirty(True)
 
-        # B. THE PORT ANCHOR: Keep ports at the edges during resize
-        # elif change == QGraphicsRectItem.GraphicsItemChange.ItemScaleHasChanged:
-        #     self._update_port_positions()
-
         return super().itemChange(change, value)
 
     def _create_ports(self):
@@ -451,20 +447,20 @@ class WarmNode(NodeBase):
 
     def __init__(self, node_id=0, title="", full_text="", pos=QPointF(0, 0), 
                  width=None, height=None, uuid=None):
-        # Calculate minimum width based on title text if width not provided
+         # Calculate minimum width based on title text if width not provided
         if width is None:
-            title_font = QFont(Theme.NODE_TITLE_FONT_FAMILY, Theme.NODE_TITLE_FONT_SIZE, QFont.Bold)
+            title_font = QFont(Theme.nodeTitleFontFamily, Theme.nodeTitleFontSize, QFont.Bold)
             metrics = QFontMetrics(title_font)
             # Title width + emoji (50px) + padding (20px each side) + some breathing room (20px)
             title_width = metrics.horizontalAdvance(title) if title else 0
-            width = max(Theme.NODE_WIDTH, title_width + 90)  # 50 emoji + 40 padding/margins
+            width = max(Theme.nodeWidth, title_width + 90)  # 50 emoji + 40 padding/margins
 
         if height is None:
-            height = Theme.NODE_HEIGHT
+            height = Theme.nodeHeight
 
         super().__init__(node_id, title, full_text, pos, width, height, uuid)
         self.node_type = "warm"
-        self.setBrush(Theme.WARM_NODE_BG)
+        self.setBrush(Theme.warmNodeBg)
 
         # Random emoji for visual personality
         self.emoji = random.choice(["🪴", "💭", "🌸", "✨", "🤗", "😍", "☕", "💛", "❤", "📌", "💖", "🌼"])
@@ -475,14 +471,14 @@ class WarmNode(NodeBase):
         self.emoji_item.setPlainText(self.emoji)
         self.emoji_item.setPos(5, 3)
 
-        # QGraphicsTextItem for title
+         # QGraphicsTextItem for title
         self.title_item = QGraphicsTextItem(self)
-        self.title_item.setFont(QFont(Theme.NODE_TITLE_FONT_FAMILY, Theme.NODE_TITLE_FONT_SIZE, QFont.Bold))
+        self.title_item.setFont(QFont(Theme.nodeTitleFontFamily, Theme.nodeTitleFontSize, QFont.Bold))
         self.title_item.setDefaultTextColor(QColor("#a8d0ff"))
 
         # QGraphicsTextItem for body text
         self.text_item = QGraphicsTextItem(self)
-        self.text_item.setFont(QFont(Theme.NODE_BODY_FONT_FAMILY, Theme.NODE_BODY_FONT_SIZE))
+        self.text_item.setFont(QFont(Theme.nodeBodyFontFamily, Theme.nodeBodyFontSize))
         self.text_item.setDefaultTextColor(QColor("#ffffff"))
 
         # Layout update timer
@@ -582,10 +578,10 @@ class WarmNode(NodeBase):
             self.full_text = self._editor.get_text()
 
             # Recalculate width based on new title (same logic as __init__)
-            title_font = QFont(Theme.NODE_TITLE_FONT_FAMILY, Theme.NODE_TITLE_FONT_SIZE, QFont.Bold)
+            title_font = QFont(Theme.nodeTitleFontFamily, Theme.nodeTitleFontSize, QFont.Bold)
             metrics = QFontMetrics(title_font)
             title_width = metrics.horizontalAdvance(self.title) if self.title else 0
-            new_width = max(Theme.NODE_WIDTH, title_width + 90)
+            new_width = max(Theme.nodeWidth, title_width + 90)
 
             # Update node width if it changed
             rect = self.rect()
@@ -633,13 +629,13 @@ class AboutNode(NodeBase):
                  width=200, height=55, uuid=None):
         super().__init__(node_id, title, full_text, pos, width, height, uuid)
         self.node_type = "about"
-        self.setBrush(Theme.ABOUT_NODE_BG)
+        self.setBrush(Theme.aboutNodeBg)
 
     def paint_content(self, painter):
         """Simple text rendering for about nodes."""
         padding = 8
-        painter.setPen(Theme.TEXT_PRIMARY)
-        painter.setFont(QFont(Theme.BUTTON_FONT_FAMILY, 10, QFont.Bold))
+        painter.setPen(Theme.textPrimary)
+        painter.setFont(QFont(Theme.buttonFontFamily, 10, QFont.Bold))
         painter.drawText(
             padding, padding, 
             self.rect().width() - (padding * 2), self.rect().height() - (padding * 2),
@@ -685,14 +681,14 @@ class ImageNode(NodeBase):
         
         # Draw the caption if it exists
         if self.title:
-            painter.setFont(QFont(Theme.BUTTON_FONT_FAMILY, 8))
+            painter.setFont(QFont(Theme.buttonFontFamily, 8))
             painter.setPen(QColor(200, 200, 200, 150))
             painter.drawText(self.rect(), Qt.AlignBottom | Qt.AlignHCenter, self.title)
 
     def paint_content(self, painter):
         """Image nodes: show title as caption if needed."""
         if self.title and len(self.title) > 0:
-            painter.setFont(QFont(Theme.BUTTON_FONT_FAMILY, 8))
+            painter.setFont(QFont(Theme.buttonFontFamily, 8))
             painter.setPen(QColor(200, 200, 200, 150))
             painter.drawText(0, self.rect().height() - 15, self.rect().width(), 15, 
                            Qt.AlignCenter, self.title)

@@ -27,9 +27,9 @@ class Node(QGraphicsItem):
         self.ports_visible = ports_visible
 
         # Dimensions - allow override from session, otherwise use theme defaults
-        self.width = width if width is not None else Theme.NODE_WIDTH
-        self.height = height if height is not None else Theme.NODE_HEIGHT
-        self.border_radius = Theme.NODE_RADIUS
+        self.width = width if width is not None else Theme.nodeWidth
+        self.height = height if height is not None else Theme.nodeHeight
+        self.border_radius = Theme.nodeRadius
 
         self.setPos(x, y)
         self.setFlag(QGraphicsItem.ItemIsMovable)
@@ -52,14 +52,14 @@ class Node(QGraphicsItem):
         
         if self.isSelected():
             # Glowing Selection State
-            body_grad.setColorAt(0, Theme.adjust_brightness(Theme.ACCENT_SELECTED, 0.4))
-            body_grad.setColorAt(1, Theme.NODE_GRADIENT_BOTTOM)
-            pen = QPen(Theme.ACCENT_SELECTED, 2)
+            body_grad.setColorAt(0, Theme.adjust_brightness(Theme.accentSelected, 0.4))
+            body_grad.setColorAt(1, Theme.nodeGradientBottom)
+            pen = QPen(Theme.accentSelected, 2)
         else:
             # Solid Obsidian State
-            body_grad.setColorAt(0, Theme.NODE_GRADIENT_TOP)
-            body_grad.setColorAt(1, Theme.NODE_GRADIENT_BOTTOM)
-            pen = QPen(Theme.NODE_BORDER_NORMAL, 1)
+            body_grad.setColorAt(0, Theme.nodeGradientTop)
+            body_grad.setColorAt(1, Theme.nodeGradientBottom)
+            pen = QPen(Theme.nodeBorderNormal, 1)
 
         # 2. DRAW BODY
         painter.setRenderHint(QPainter.Antialiasing)
@@ -74,29 +74,29 @@ class Node(QGraphicsItem):
 
         # 4. TEXT RENDERING
         # Using the vertical offset from Theme to handle font-specific baseline shifts
-        painter.setFont(QFont(Theme.BUTTON_FONT_FAMILY, 11, QFont.Bold))
-        
+        painter.setFont(QFont(Theme.buttonFontFamily, 11, QFont.Bold))
+
         # Shadow/Drop-tint for readability
         painter.setPen(QColor(0, 0, 0, 150))
-        painter.drawText(0, Theme.BUTTON_TEXT_VERTICAL_OFFSET + 1, self.width, self.height, Qt.AlignCenter, self.title)
-        
+        painter.drawText(0, Theme.buttonTextVerticalOffset + 1, self.width, self.height, Qt.AlignCenter, self.title)
+
         # Main Text
-        painter.setPen(Theme.TEXT_PRIMARY)
-        painter.drawText(0, Theme.BUTTON_TEXT_VERTICAL_OFFSET, self.width, self.height, Qt.AlignCenter, self.title)
+        painter.setPen(Theme.textPrimary)
+        painter.drawText(0, Theme.buttonTextVerticalOffset, self.width, self.height, Qt.AlignCenter, self.title)
 
         # 5. THE PORTS (The interface points)
         painter.setRenderHint(QPainter.Antialiasing)
         
         # Output Port (Right side - Copper Core)
         painter.setPen(Qt.NoPen)
-        painter.setBrush(Theme.WIRE_CORE)
+        painter.setBrush(Theme.portOutputColor)
         painter.drawEllipse(QPointF(self.width, self.height/2), 
-                            Theme.SOCKET_RADIUS, Theme.SOCKET_RADIUS)
-        
+                            Theme.socketRadius, Theme.socketRadius)
+
         # Input Port (Left side - Subtle indentation/socket)
         painter.setBrush(QColor(0, 0, 0, 120))
         painter.drawEllipse(QPointF(0, self.height/2), 
-                            Theme.SOCKET_RADIUS, Theme.SOCKET_RADIUS)
+                            Theme.socketRadius, Theme.socketRadius)
 
     def itemChange(self, change, value):
         """This runs every time the node moves or changes state."""
@@ -109,7 +109,7 @@ class Node(QGraphicsItem):
 
     def get_socket_at(self, local_pos: QPointF):
         """Returns 'input', 'output', or None based on click location."""
-        margin = Theme.SOCKET_GRAB_MARGIN
+        margin = Theme.socketGrabMargin
 
         # Output Socket (Right side)
         if local_pos.x() > self.width - margin:

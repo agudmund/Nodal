@@ -2,91 +2,118 @@
   "version": "1.0",
   "nodes": [
     {
-      "node_id": 5,
-      "uuid": "ea908c22dc834d82bd4ccbd37566d752",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": 672.8623245638478,
-      "pos_y": 802.6076704534162,
-      "width": 178.0,
-      "height": 90.0,
-      "ports_visible": false
-    },
-    {
       "node_id": 4,
-      "uuid": "715ade5d74d743699bccfee9cd6d3527",
+      "uuid": "60a78f2bc7574de1a655c19a7f7b70d0",
       "type": "warm",
-      "title": "New Node",
+      "title": "The spellchecker doesnt have an option to add new words to dictionary",
       "full_text": "",
-      "pos_x": 346.14129414601797,
-      "pos_y": 927.0050244032112,
-      "width": 178.0,
-      "height": 90.0,
-      "ports_visible": true
-    },
-    {
-      "node_id": 2,
-      "uuid": "cfd6974a34184c28a99208bae8904624",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": 999.2695489265575,
-      "pos_y": 836.1235001222216,
-      "width": 178.0,
-      "height": 90.0,
-      "ports_visible": false
-    },
-    {
-      "node_id": 0,
-      "uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": -10.989810410593151,
-      "pos_y": 661.3218935343373,
-      "width": 178.0,
-      "height": 82.71606915130803,
-      "ports_visible": true
-    },
-    {
-      "node_id": 0,
-      "uuid": "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "some text",
-      "pos_x": 1020.2081153793054,
-      "pos_y": 638.1056242606478,
-      "width": 178.0,
-      "height": 145.1414389490152,
+      "pos_x": -1148.8489649438295,
+      "pos_y": 265.50694137018684,
+      "width": 1264.7531681482883,
+      "height": 73.39701153773404,
       "ports_visible": false
     },
     {
       "node_id": 3,
-      "uuid": "0d00e32f9e404b538ad5ee580b24f362",
+      "uuid": "0d80580d975b47a69a0cf5e7ce8d2a2e",
       "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": 877.7631645667763,
-      "pos_y": 998.5651771000287,
-      "width": 178.0,
-      "height": 90.0,
-      "ports_visible": true
-    }
-  ],
-  "connections": [
-    {
-      "start_node_uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
-      "end_node_uuid": "ea908c22dc834d82bd4ccbd37566d752"
+      "title": "cozy-tree Encoding and File Reading",
+      "full_text": "Opening .gitignore with utf-8 is smart, but some edge-case files might have different encodings.\nSuggestion: Use errors='ignore' in open() to handle rare malformed files gracefully.",
+      "pos_x": -606.2038963495368,
+      "pos_y": 76.6029884622659,
+      "width": 728.5322489124267,
+      "height": 144.32570455835065,
+      "ports_visible": false
     },
     {
-      "start_node_uuid": "715ade5d74d743699bccfee9cd6d3527",
-      "end_node_uuid": "0d00e32f9e404b538ad5ee580b24f362"
+      "node_id": 1,
+      "uuid": "1ad190bf049043288a09cf0fe9fe9a2c",
+      "type": "warm",
+      "title": "The Nodes",
+      "full_text": "They should auto resize on creating new nodes accordingly with the title width",
+      "pos_x": -371.84803809692875,
+      "pos_y": -78.99653844515551,
+      "width": 620.0190770093982,
+      "height": 111.54285313508205,
+      "ports_visible": false
+    },
+    {
+      "node_id": 2,
+      "uuid": "8140f9bf2dd742508188ce5409c41f49",
+      "type": "warm",
+      "title": "cozy-tree .gitignore patterns",
+      "full_text": "Current implementation uses fnmatch, which handles basic patterns (*, ?, []) but falls short on advanced Git syntax like ** (recursive), ! (negate), or trailing / for directories only.\nSuggestion: Consider integrating a library like pathspec (from GitPython or standalone) for accurate matching. It's lightweight and handles full .gitignore parsing. For example:Pythonfrom pathspec import PathSpec\n\n# In _load_gitignore_patterns:\npatterns = PathSpec.from_lines('gitwildmatch', f.readlines())\n# Then in _should_ignore:\nif patterns.match_file(rel_path):\n    return TrueThis would make it \"rock-solid\" as promised, without much added complexity. Since your environment has no pip, you could implement a basic ** handler manually if needed, but pathspec might not be available\u2014stick to fnmatch for now if simplicity is key.\n",
+      "pos_x": 144.72497529067596,
+      "pos_y": 64.18522114007502,
+      "width": 649.1955367885255,
+      "height": 397.0,
+      "ports_visible": false
+    },
+    {
+      "node_id": 3,
+      "uuid": "53a032c9a46748a2a1a2d08052c5c216",
+      "type": "warm",
+      "title": "About",
+      "full_text": "",
+      "pos_x": 291.76602609061575,
+      "pos_y": -77.14967036049936,
+      "width": 200.0,
+      "height": 50.0,
+      "ports_visible": false
+    },
+    {
+      "node_id": 5,
+      "uuid": "32820bd9272e4de8bcf51f9735478c3d",
+      "type": "warm",
+      "title": "Current version does not remember window_geometry on launch",
+      "full_text": "",
+      "pos_x": -1093.9410234079824,
+      "pos_y": 362.0727909127429,
+      "width": 1093.578588991867,
+      "height": 83.79988651409116,
+      "ports_visible": false
+    },
+    {
+      "node_id": 6,
+      "uuid": "c64e7c4e3d6d421fadbdcdf97276f01d",
+      "type": "warm",
+      "title": "Areas For Improvement",
+      "full_text": "",
+      "pos_x": -441.13434545975366,
+      "pos_y": -375.25064451446576,
+      "width": 487.75422515038673,
+      "height": 81.25179031796048,
+      "ports_visible": false
+    },
+    {
+      "node_id": 7,
+      "uuid": "43a3f1c492b94daf9a35aee65586c9f0",
+      "type": "warm",
+      "title": "The app very much needs to be able to play the theme song",
+      "full_text": "",
+      "pos_x": -710.3981667144085,
+      "pos_y": -601.546834717846,
+      "width": 1083.5720423947294,
+      "height": 81.25179031796046,
+      "ports_visible": false
+    },
+    {
+      "node_id": 8,
+      "uuid": "efff66a082d442ac97d2fa2d3f03cfb6",
+      "type": "warm",
+      "title": "practical and pleasurable",
+      "full_text": "",
+      "pos_x": 114.1418057863076,
+      "pos_y": -469.8476257805788,
+      "width": 559.3669435691779,
+      "height": 86.98080779146375,
+      "ports_visible": false
     }
   ],
+  "connections": [],
   "viewport": {
-    "center_x": 545.8280020422519,
-    "center_y": 863.5816204479827,
-    "scale": 1.2750211060894017
+    "center_x": -404.5450659485938,
+    "center_y": 601.787289953939,
+    "scale": 1.2431341365506465
   }
 }

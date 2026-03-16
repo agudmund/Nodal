@@ -41,7 +41,7 @@ def enable_blur(hwnd):
         data.SizeOfData = ctypes.sizeof(accent)
         data.Data = ctypes.cast(ctypes.pointer(accent), ctypes.c_void_p)
         # Convert QColor to a Windows-friendly Hex (ABGR format)
-        tint = Theme.FROST_COLOR
+        tint = Theme.frostColor
         # Windows expects: 0x AABBGGRR
         windows_color = (tint.alpha() << 24) | (tint.blue() << 16) | (tint.green() << 8) | tint.red()
         accent.GradientColor = windows_color
@@ -188,7 +188,7 @@ class NodeScene(QGraphicsScene):
                 self.addItem(new_conn)
 
     def drawBackground(self, painter, rect):
-        bg_color = Theme.get_alpha(Theme.FROST_COLOR, Theme.CANVAS_OPACITY)
+        bg_color = Theme.get_alpha(Theme.frostColor, Theme.frostColor.alpha())
         painter.setBrush(bg_color) 
         painter.setPen(Qt.NoPen)
         painter.drawRect(rect)

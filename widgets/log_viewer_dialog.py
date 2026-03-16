@@ -45,12 +45,12 @@ class LogViewerDialog(QDialog):
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         # Build stylesheet from Theme
-        window_bg = Theme.WINDOW_BG.name()
-        text_color = Theme.TEXT_PRIMARY.name()
-        accent_color = Theme.ACCENT_NORMAL.name()
+        window_bg = Theme.windowBg.name()
+        text_color = Theme.textPrimary.name()
+        accent_color = Theme.accentNormal.name()
 
         self.setStyleSheet(f"""
-            QDialog {{ background-color: {window_bg}; border: {Theme.WINDOW_BORDER_WIDTH}px solid {accent_color}; }}
+            QDialog {{ background-color: {window_bg}; border: {Theme.windowBorderWidth}px solid {accent_color}; }}
             QLabel {{ color: {text_color}; font-family: 'Segoe UI', sans-serif; font-size: 11px; }}
             QTextBrowser {{ 
                 background-color: {window_bg}; 
@@ -61,7 +61,7 @@ class LogViewerDialog(QDialog):
                 line-height: 1.5;
             }}
             QLineEdit {{ 
-                background-color: {Theme.COMBOBOX_BG.name()}; 
+                background-color: {Theme.comboboxBg.name()}; 
                 border: 1px solid {accent_color}; 
                 padding: 5px; 
                 color: {text_color}; 
@@ -74,7 +74,7 @@ class LogViewerDialog(QDialog):
                 padding: 6px 12px;
                 border-radius: 4px;
             }}
-            QPushButton:hover {{ background-color: {Theme.BUTTON_BG_HOVER.name()}; border: 1px solid {Theme.ACCENT_SELECTED.name()}; }}
+            QPushButton:hover {{ background-color: {Theme.buttonBgHover.name()}; border: 1px solid {Theme.accentSelected.name()}; }}
         """)
 
         main_layout = QHBoxLayout(self)

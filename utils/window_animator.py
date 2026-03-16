@@ -65,9 +65,9 @@ class WindowAnimator:
         # Create parallel animation group (shrink + fade happen simultaneously)
         self._minimize_animation = QParallelAnimationGroup()
 
-        # Animate geometry shrink (to bottom-right area, like taskbar)
+         # Animate geometry shrink (to bottom-right area, like taskbar)
         geom_anim = QPropertyAnimation(window, b"geometry")
-        geom_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
+        geom_anim.setDuration(Theme.windowAnimationDuration)
         geom_anim.setEasingCurve(QEasingCurve.InOutCubic)
 
         # Start from current geometry
@@ -128,10 +128,10 @@ class WindowAnimator:
         ))
         geom_anim.setKeyValueAt(1.0, end_geom)
 
-        # Animate opacity fade out
+         # Animate opacity fade out
         # Opacity can use simple easing; it's not render-intensive like geometry
         opacity_anim = QPropertyAnimation(window, b"windowOpacity")
-        opacity_anim.setDuration(Theme.WINDOW_ANIMATION_DURATION)
+        opacity_anim.setDuration(Theme.windowAnimationDuration)
         opacity_anim.setStartValue(1.0)
         opacity_anim.setEndValue(0.0)
         opacity_anim.setEasingCurve(QEasingCurve.InOutCubic)
@@ -176,14 +176,14 @@ class WindowAnimator:
         target_geom = self._pre_minimize_geometry
 
         geom_anim = QPropertyAnimation(window, b"geometry")
-        geom_anim.setDuration(Theme.WINDOW_RESTORE_ANIMATION_DURATION)
+        geom_anim.setDuration(Theme.windowRestoreAnimationDuration)
         geom_anim.setStartValue(current_geom)
         geom_anim.setEndValue(target_geom)
         geom_anim.setEasingCurve(QEasingCurve.InOutCubic)
 
         # Animate opacity fade in
         opacity_anim = QPropertyAnimation(window, b"windowOpacity")
-        opacity_anim.setDuration(Theme.WINDOW_RESTORE_ANIMATION_DURATION)
+        opacity_anim.setDuration(Theme.windowRestoreAnimationDuration)
         opacity_anim.setStartValue(0.0)
         opacity_anim.setEndValue(1.0)
         opacity_anim.setEasingCurve(QEasingCurve.InOutCubic)

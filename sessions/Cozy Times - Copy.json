@@ -1,0 +1,92 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "node_id": 3,
+      "uuid": "0d00e32f9e404b538ad5ee580b24f362",
+      "type": "warm",
+      "title": "New Node",
+      "full_text": "",
+      "pos_x": 877.7631645667763,
+      "pos_y": 998.5651771000287,
+      "width": 178.0,
+      "height": 90.0,
+      "ports_visible": true
+    },
+    {
+      "node_id": 0,
+      "uuid": "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c",
+      "type": "warm",
+      "title": "New Node",
+      "full_text": "some text",
+      "pos_x": 1020.2081153793054,
+      "pos_y": 638.1056242606478,
+      "width": 178.0,
+      "height": 145.1414389490152,
+      "ports_visible": false
+    },
+    {
+      "node_id": 0,
+      "uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
+      "type": "warm",
+      "title": "New Node",
+      "full_text": "",
+      "pos_x": -10.989810410593151,
+      "pos_y": 661.3218935343373,
+      "width": 178.0,
+      "height": 82.71606915130803,
+      "ports_visible": true
+    },
+    {
+      "node_id": 2,
+      "uuid": "cfd6974a34184c28a99208bae8904624",
+      "type": "warm",
+      "title": "New Node",
+      "full_text": "",
+      "pos_x": 999.2695489265575,
+      "pos_y": 836.1235001222216,
+      "width": 178.0,
+      "height": 90.0,
+      "ports_visible": false
+    },
+    {
+      "node_id": 4,
+      "uuid": "715ade5d74d743699bccfee9cd6d3527",
+      "type": "warm",
+      "title": "New Node",
+      "full_text": "",
+      "pos_x": 346.14129414601797,
+      "pos_y": 927.0050244032112,
+      "width": 178.0,
+      "height": 90.0,
+      "ports_visible": true
+    },
+    {
+      "node_id": 5,
+      "uuid": "ea908c22dc834d82bd4ccbd37566d752",
+      "type": "warm",
+      "title": "New Node",
+      "full_text": "",
+      "pos_x": 672.8623245638478,
+      "pos_y": 802.6076704534162,
+      "width": 178.0,
+      "height": 90.0,
+      "ports_visible": false
+    }
+  ],
+  "connections": [
+    {
+      "start_node_uuid": "715ade5d74d743699bccfee9cd6d3527",
+      "end_node_uuid": "0d00e32f9e404b538ad5ee580b24f362"
+    },
+    {
+      "start_node_uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
+      "end_node_uuid": "ea908c22dc834d82bd4ccbd37566d752"
+    }
+  ],
+  "viewport": {
+    "center_x": 545.8280020422519,
+    "center_y": 863.5816204479827,
+    "scale": 1.2750211060894017
+  }
+}

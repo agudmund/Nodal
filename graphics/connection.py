@@ -1,21 +1,25 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+-Cozy times nodal playground - connection.py bezier connection rendering
+-Visual connections between nodes with dynamic bezier curves and hover effects
+-Built using a single shared braincell by Yours Truly and various Intelligences
+"""
+
 from PySide6.QtWidgets import QGraphicsPathItem
-from PySide6.QtGui import QPainterPath, QPen, QColor, QLinearGradient, QPainter
+from PySide6.QtGui import QPainterPath, QPen, QColor, QLinearGradient, QPainter, QBrush
 from PySide6.QtCore import Qt, QPointF
 from utils.theme import Theme
-
-# graphics/connection.py
-
-# graphics/connection.py
 
 class Connection(QGraphicsPathItem):
     def __init__(self, start_node, end_node=None):
         super().__init__()
-        self.start_node = start_node
-        self.end_node = end_node
+
         self.floating_point = None 
+        self.start_node = start_node
         self.start_node.connections.append(self)
-        if self.end_node:
-            self.end_node.connections.append(self)
+        self.end_node = end_node        
+        if self.end_node:  self.end_node.connections.append(self)
         
         self.setZValue(-1)
         self.update_path()
@@ -40,10 +44,8 @@ class Connection(QGraphicsPathItem):
 
         path.moveTo(p1)
         
-        # Calculate 'Rubbery' Tension
-        dx = abs(p2.x() - p1.x()) * 0.5
-        # Ensure the wire stays 'Springy' even when ports are vertically aligned
-        dx = max(dx, 50) 
+        dx = abs(p2.x() - p1.x()) * 0.5 # Calculate 'Rubbery' Tension
+        dx = max(dx, 50) # Ensure the wire stays 'Springy' even when ports are vertically aligned
         
         ctrl1 = QPointF(p1.x() + dx, p1.y())
         ctrl2 = QPointF(p2.x() - dx, p2.y())
@@ -56,21 +58,15 @@ class Connection(QGraphicsPathItem):
 
         painter.setRenderHint(QPainter.Antialiasing)
         
-        # Pull the colors directly from your Bedrock Theme
-        # We use the Core for the Mint (Output) and Glow for the Copper (Input) 
-        # Or use specific new variables if you've added them to Theme
-        color_start = Theme.WIRE_CORE # Electrical Mint-ish
-        color_end = Theme.WIRE_GLOW  # Warm Copper-ish
-        
         p1 = self.path().pointAtPercent(0)
         p2 = self.path().pointAtPercent(1)
         
         grad = QLinearGradient(p1, p2)
-        grad.setColorAt(0, color_start)
-        grad.setColorAt(1, color_end)
+        grad.setColorAt(0, Theme.wireStart)
+        grad.setColorAt(1, Theme.wireEnd)
         
         # Drawing the "Glow" line first (thicker, lower alpha)
-        glow_pen = QPen(grad, 6, Qt.SolidLine, Qt.RoundCap)
+        glow_pen = QPen(QBrush(grad), 6, Qt.SolidLine, Qt.RoundCap)
         painter.setPen(glow_pen)
         painter.drawPath(self.path())
         
