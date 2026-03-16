@@ -8,10 +8,12 @@
 
 import ctypes
 import sys
+import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsScene
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QColor, QPainter, QTransform
 from utils.theme import Theme
+from utils.motivational_messages import MOTIVATIONAL_MESSAGES
 from graphics.node_types import WarmNode, NodeBase
 
 def enable_blur(hwnd):
@@ -117,7 +119,7 @@ class NodeScene(QGraphicsScene):
         node_b.connections.append(conn)
         return conn
 
-    def add_node(self, x: float, y: float, title: str = "Node") -> 'WarmNode':
+    def add_node(self, x: float, y: float, title: str = None) -> 'WarmNode':
         """
         Add a node to the scene at the specified coordinates.
         Coordinates are clamped to the scene bounds (0-2000).
@@ -125,11 +127,15 @@ class NodeScene(QGraphicsScene):
         Args:
             x: X coordinate
             y: Y coordinate
-            title: Node title label
+            title: Node title label (if None, selects random motivational message)
 
         Returns:
             WarmNode: The created and added node
         """
+
+        # Use random motivational message if no title provided
+        if title is None:
+            title = random.choice(MOTIVATIONAL_MESSAGES)
 
         # Create a WarmNode with auto-incremented node_id
         node_id = len([item for item in self.items() if isinstance(item, NodeBase)])

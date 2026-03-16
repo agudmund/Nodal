@@ -675,7 +675,7 @@ class NodalApp(QMainWindow):
 
     def create_new_node(self):
         view_center = self.view.mapToScene(self.view.viewport().width() // 2, self.view.viewport().height() // 2)
-        self.scene.add_node(view_center.x(), view_center.y(), "New Node")
+        self.scene.add_node(view_center.x(), view_center.y())
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and event.position().y() < self.handle_height_top:
