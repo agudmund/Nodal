@@ -7,8 +7,8 @@
       "type": "warm",
       "title": "Boundless Joy",
       "full_text": "",
-      "pos_x": 517.6384899417675,
-      "pos_y": 579.5982485863124,
+      "pos_x": 465.0903402052546,
+      "pos_y": 609.401676795081,
       "width": 233.0,
       "height": 90.0,
       "ports_visible": false
@@ -43,8 +43,8 @@
       "type": "warm",
       "title": "New Node",
       "full_text": "",
-      "pos_x": 68.224564565344,
-      "pos_y": 657.4003898226572,
+      "pos_x": -134.1250269573469,
+      "pos_y": 573.4802103927042,
       "width": 178.0,
       "height": 82.71606915130803,
       "ports_visible": true
@@ -59,7 +59,7 @@
       "pos_y": 836.1235001222216,
       "width": 178.0,
       "height": 90.0,
-      "ports_visible": false
+      "ports_visible": true
     },
     {
       "node_id": 4,
@@ -83,7 +83,7 @@
       "pos_y": 802.6076704534162,
       "width": 178.0,
       "height": 90.0,
-      "ports_visible": false
+      "ports_visible": true
     }
   ],
   "connections": [
@@ -94,6 +94,10 @@
     {
       "start_node_uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
       "end_node_uuid": "ea908c22dc834d82bd4ccbd37566d752"
+    },
+    {
+      "start_node_uuid": "ea908c22dc834d82bd4ccbd37566d752",
+      "end_node_uuid": "cfd6974a34184c28a99208bae8904624"
     }
   ],
   "viewport": {

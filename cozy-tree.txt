@@ -1,5 +1,5 @@
 ✨ Cozy Snapshot — clean tree respecting .gitignore 🌱
-Generated: 2026-03-16 11:54:51
+Generated: 2026-03-16 12:06:40
 Location:  C:\Users\thisg\Desktop\Cozy Times\Nodal
 Mode:      with cozy emojis
 ────────────────────────────────────────────────────────────
@@ -38,7 +38,8 @@ Mode:      with cozy emojis
 │   ├── 📄 node_types.py
 │   ├── 📄 note_editor.py
 │   ├── 📄 port.py
-│   └── 📄 scene.py
+│   ├── 📄 scene.py
+│   └── 📄 theme.py
 ├── 📁 resources/
 │   └── 📁 icons/
 │       ├── 📄 app_icon.ico
@@ -58,7 +59,6 @@ Mode:      with cozy emojis
 │   ├── 📄 session_manager.py
 │   ├── 📄 settings.py
 │   ├── 📄 spellchecker.py
-│   ├── 📄 theme.py
 │   └── 📄 window_animator.py
 ├── 📁 widgets/
 │   ├── 📄 __init__.py
@@ -69,6 +69,7 @@ Mode:      with cozy emojis
 ├── 📄 .gitattributes
 ├── 📄 .gitignore
 ├── 📄 build.py
+├── 📄 cozy-tree.txt
 ├── 📄 LICENSE.txt
 ├── 📄 main.py
 ├── 📄 main_window.py

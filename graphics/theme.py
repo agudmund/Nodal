@@ -34,8 +34,8 @@ class Theme:
     nodeRadius = 10
 
     # --- Ports (Connection Points) ---
-    portInputColor = QColor(180, 140, 120)     # Warm/copper for inputs
-    portOutputColor = QColor(140, 190, 160)    # Cool/mint for outputs
+    portInputColor = QColor("#282828")
+    portOutputColor = QColor("#8cbea0")
     portGlowDarkness = 140                      # Glow effect darkness factor
     portSize = 20                               # Diameter in pixels
     portBorderColor = QColor(60, 60, 80, 100)  # Port border
@@ -48,10 +48,6 @@ class Theme:
     # --- Colors: Scene & Mica ---
     frostColor = QColor(30, 30, 35, 150)
     gridColor = QColor(200, 200, 200, 30)
-
-    # --- Colors: Node Aesthetics ---
-    nodeGradientTop = QColor(55, 55, 60, 255)
-    nodeGradientBottom = QColor(25, 25, 30, 255)
 
     # --- Colors: The Nerve System ---
     wireStart = QColor(portOutputColor.red(), portOutputColor.green(), portOutputColor.blue(), 25)
