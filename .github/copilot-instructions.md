@@ -17,16 +17,16 @@
 - When refactoring Nodal's node system, align with the existing BaseNode implementation in the Cozy Times project: use `QGraphicsRectItem`, implement resize handles in the bottom-right corner, add smooth port toggle animations, include hover scale pulse effects, and use `paint_content()` for type-specific rendering instead of overriding `_paint_text()`.
 - User prefers camelCase for Python attribute/constant names (e.g., windowBorderWidth, accentSelected) but prefers "Capitalised Names With Spaces" (title case with spaces) in text documents, markdown files, and documentation (e.g., "Window Border Width", "Accent Selected"). This naming convention distinction should be applied to all future refactoring, documentation, and code style guidance.
 
+## Documentation Standards
+- All external documentation (reports, audits, summaries, analysis documents) must be stored in the `./Documents/` folder at the project root.
+- Documentation files should use "Title Case With Spaces" naming convention (e.g., "Final Theme Refactoring Report.md", "Docstring Compliance Report.md").
+- Documentation is generated for significant refactoring work, audits, and verification processes.
+- Each document should include a brief summary at the top explaining its purpose and scope.
+- Documentation serves as historical reference and verification records for major code changes.
+
 ## Git Integration
 - User has GitHub repository set up and linked to their Visual Studio project with Git integration working. For future sessions, remember that Git is already configured and working - no need to ask about initialization or remote setup. Just proceed with git commands via terminal.
 - Git workflow: Commit changes locally automatically after implementation, but ONLY push to remote GitHub when user explicitly asks. This preserves GitHub as a stable revert point. Do not auto-push - wait for user approval.
-
-## Documentation Standards
-- All external documentation (reports, audits, summaries, analysis documents) must be stored in the `./Documents/` folder at the project root
-- Documentation files should use "Title Case With Spaces" naming convention (e.g., "Final Theme Refactoring Report.md", "Docstring Compliance Report.md")
-- Documentation is generated for significant refactoring work, audits, and verification processes
-- Each document should include a brief summary at the top explaining its purpose and scope
-- Documentation serves as historical reference and verification records for major code changes
 
 ## Terminal Commands
 - Always use PowerShell commands exclusively. Do not use Unix/bash commands. The development environment is Windows-based with PowerShell as the shell.

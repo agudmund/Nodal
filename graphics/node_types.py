@@ -11,7 +11,7 @@ import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsTextItem, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTimer
 from PySide6.QtGui import QColor, QPen, QFont, QPainter, QBrush, QFontMetrics, QTextDocument, QPainterPath, QTransform
-from utils.theme import Theme
+from .theme import Theme
 from utils.logger import setup_logger
 from . import Port
 logger = setup_logger()

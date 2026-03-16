@@ -7,8 +7,8 @@
 """
 
 from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsDropShadowEffect
-from PySide6.QtGui import QColor, QBrush, QPen
-
+from PySide6.QtGui import QBrush, QPen
+from .theme import Theme
 
 class Port(QGraphicsEllipseItem):
     """A warm connection port for input/output on nodes 🌿"""
@@ -17,21 +17,21 @@ class Port(QGraphicsEllipseItem):
         super().__init__(-10, -10, 20, 20, parent_node)
 
         # Explicitly anchor the identity
-        self.is_output = is_output 
+        self.is_output = is_output
         self.parent_node = parent_node
 
-        # Color based on port type (input=warm/copper, output=cool/mint)
-        base_color = QColor(180, 140, 120) if not is_output else QColor(140, 190, 160)
+        # Color based on port type — single source of truth via Theme
+        base_color = Theme.portOutputColor if is_output else Theme.portInputColor
         self.setBrush(QBrush(base_color.lighter(115)))
-        self.setPen(QPen(QColor(60, 60, 80, 100), 1))
+        self.setPen(QPen(Theme.portBorderColor, 1))
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsMovable, False)
 
-        # Connection tracking (for future wire/edge system)
+        # Connection tracking
         self.edge = None
 
         # Glow effect around port
         glow = QGraphicsDropShadowEffect()
-        glow.setBlurRadius(12)
-        glow.setColor(base_color.darker(140))
+        glow.setBlurRadius(Theme.portGlowBlurRadius)
+        glow.setColor(base_color.darker(Theme.portGlowDarkness))
         glow.setOffset(0, 0)
         self.setGraphicsEffect(glow)

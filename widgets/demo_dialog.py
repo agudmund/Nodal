@@ -8,7 +8,7 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Qt
-from utils.theme import Theme
+from graphics.theme import Theme
 from widgets.cozy_dialog import CozyDialog
 from widgets import CozyButton
 

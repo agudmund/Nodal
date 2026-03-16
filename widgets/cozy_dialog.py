@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QLabel
 )
 from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint
-from utils.theme import Theme
+from graphics.theme import Theme
 
 
 class CozyDialog(QDialog):

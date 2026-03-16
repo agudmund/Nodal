@@ -12,7 +12,7 @@ import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsScene
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QColor, QPainter, QTransform
-from utils.theme import Theme
+from .theme import Theme
 from utils.motivational_messages import MOTIVATIONAL_MESSAGES
 from graphics.node_types import WarmNode, NodeBase
 

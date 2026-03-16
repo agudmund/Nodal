@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSettings, Signal
 from utils.logger import setup_logger
 from utils.settings import Settings
-from utils.theme import Theme
+from graphics.theme import Theme
 from widgets.cozy_dialog import CozyDialog
 from widgets.log_viewer_dialog import LogViewerDialog
 from widgets import CozyButton

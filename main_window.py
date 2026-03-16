@@ -11,8 +11,8 @@ from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QG
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform
 from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect
 from graphics.scene import NodeScene, enable_blur
+from graphics.theme import Theme
 from widgets import CozyButton
-from utils.theme import Theme
 from utils.logger import setup_logger
 from utils.settings import Settings
 from utils.session_manager import SessionManager

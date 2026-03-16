@@ -10,7 +10,7 @@ import uuid
 from PySide6.QtWidgets import QGraphicsItem
 from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QLinearGradient, QColor, QPen, QBrush, QPainter, QFont
-from utils.theme import Theme
+from .theme import Theme
 
 class Node(QGraphicsItem):
     def __init__(self, x: float, y: float, title: str = "Node", node_uuid: str = None, 

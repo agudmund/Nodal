@@ -9,5 +9,6 @@ from .port import Port
 from .connection import Connection
 from .node_types import NodeBase, WarmNode, ImageNode
 from .scene import NodeScene
+from .theme import Theme
 
-__all__ = ['Port', 'Connection', 'NodeBase', 'WarmNode', 'ImageNode', 'NodeScene']
+__all__ = ['Port', 'Connection', 'NodeBase', 'WarmNode', 'ImageNode', 'NodeScene', 'Theme']

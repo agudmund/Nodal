@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
-from utils.theme import Theme
+from graphics.theme import Theme
 
 # We use the same path logic to find the file
 def get_log_file_path():
