@@ -15,6 +15,7 @@
   ```
   The three lines in the docstring are: file/purpose, extended description, and static credit line (with "Intelligences" capitalized, no comma before "and").
 - When refactoring Nodal's node system, align with the existing BaseNode implementation in the Cozy Times project: use `QGraphicsRectItem`, implement resize handles in the bottom-right corner, add smooth port toggle animations, include hover scale pulse effects, and use `paint_content()` for type-specific rendering instead of overriding `_paint_text()`.
+- User prefers camelCase for Python attribute/constant names (e.g., windowBorderWidth, accentSelected) but prefers "Capitalised Names With Spaces" (title case with spaces) in text documents, markdown files, and documentation (e.g., "Window Border Width", "Accent Selected"). This naming convention distinction should be applied to all future refactoring, documentation, and code style guidance.
 
 ## Git Integration
 - User has GitHub repository set up and linked to their Visual Studio project with Git integration working. For future sessions, remember that Git is already configured and working - no need to ask about initialization or remote setup. Just proceed with git commands via terminal.
