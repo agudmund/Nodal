@@ -14,12 +14,13 @@ from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QColor, QPainter, QTransform
 from .theme import Theme
 from utils.motivational_messages import MOTIVATIONAL_MESSAGES
-from graphics.node_types import WarmNode, NodeBase
+from .BaseNode import BaseNode
+from .node_types import WarmNode
 
 def enable_blur(hwnd):
     """Enable Windows blur effect on the window (Windows only)."""
-    # if sys.platform != "win32":
-    #     return  # Silently skip on non-Windows platforms
+    if sys.platform != "win32":
+        return  # Silently skip on non-Windows platforms
 
     if not hwnd or sys.platform != "win32":
         return
@@ -93,7 +94,7 @@ class NodeScene(QGraphicsScene):
 
     def get_session_data(self) -> dict:
         # 1. Gather Nodes (Existing)
-        nodes_data = [item.to_dict() for item in self.items() if isinstance(item, NodeBase)]
+        nodes_data = [item.to_dict() for item in self.items() if isinstance(item, BaseNode)]
         
         # 2. Gather Connections (The New Nerve Ledger)
         from graphics.connection import Connection
@@ -138,7 +139,7 @@ class NodeScene(QGraphicsScene):
             title = random.choice(MOTIVATIONAL_MESSAGES)
 
         # Create a WarmNode with auto-incremented node_id
-        node_id = len([item for item in self.items() if isinstance(item, NodeBase)])
+        node_id = len([item for item in self.items() if isinstance(item, BaseNode)])
         node = WarmNode(node_id=node_id, title=title, pos=QPointF(x, y))
         node.setZValue(10) 
         self.addItem(node)

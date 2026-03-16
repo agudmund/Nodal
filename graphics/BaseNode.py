@@ -387,12 +387,10 @@ class BaseNode(QGraphicsRectItem):
     @staticmethod
     def from_dict(data: dict) -> 'BaseNode':
         """
-        Factory — routes to the correct subclass based on node type.
+        Factory - routes to the correct subclass based on node type.
         Import subclasses here locally to avoid circular imports.
         """
-        from .warmNode import WarmNode
-        from .imageNode import ImageNode
-        from .aboutNode import AboutNode
+        from .node_types import WarmNode, ImageNode, AboutNode
 
         node_type = data.get("type", "node")
 

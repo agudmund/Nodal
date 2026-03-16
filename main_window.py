@@ -213,7 +213,7 @@ class NodeGraphicsView(QGraphicsView):
 
     def delete_selected_nodes(self):
         """Delete all selected nodes from the scene."""
-        from graphics.node_types import NodeBase
+        from graphics.BaseNode import BaseNode
         scene = self.scene()
         if not scene:
             return
@@ -222,7 +222,7 @@ class NodeGraphicsView(QGraphicsView):
         selected_items = scene.selectedItems()
 
         # Filter for nodes only (exclude other graphics items)
-        nodes_to_delete = [item for item in selected_items if isinstance(item, NodeBase)]
+        nodes_to_delete = [item for item in selected_items if isinstance(item, BaseNode)]
 
         # Remove each node
         for node in nodes_to_delete:

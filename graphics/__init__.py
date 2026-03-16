@@ -12,4 +12,4 @@ from .node_types import WarmNode, ImageNode
 from .scene import NodeScene
 from .theme import Theme
 
-__all__ = ['Port', 'Connection', 'NodeBase', 'WarmNode', 'ImageNode', 'NodeScene', 'Theme']
+__all__ = ['Port', 'Connection', 'BaseNode', 'WarmNode', 'ImageNode', 'NodeScene', 'Theme']

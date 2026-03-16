@@ -29,7 +29,6 @@
     <Compile Include="benchmarks\profiler.py" />
     <Compile Include="benchmarks\run_benchmarks.py" />
     <Compile Include="benchmarks\__init__.py" />
-    <Compile Include="graphics\node.py" />
     <Compile Include="graphics\node_types.py" />
     <Compile Include="graphics\note_editor.py" />
     <Compile Include="graphics\port.py" />
@@ -161,9 +160,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".github\copilot-instructions.md" />
+    <Content Include="Documents\BaseNode Refactoring Audit Report.md" />
     <Content Include="requirements.txt" />
     <Content Include="sessions\ActionPlan.json" />
     <Content Include="update_pyproj.ps1" />
+    <Content Include="utils\Docstring Compliance Report.md" />
     <Content Include="utils\FINAL_THEME_REFACTORING_REPORT.md" />
     <Content Include="utils\REFACTORING_COMPLETION_REPORT.md" />
     <Content Include="utils\SECOND_PASS_FIX_SUMMARY.md" />

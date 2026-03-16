@@ -9,6 +9,8 @@
 from PySide6.QtGui import QColor
 
 class Theme:
+
+    primaryBorder = QColor("#6b5a47")
     # --- Sizing & Spacing ---
     windowBorderWidth = 1
     handleHeightTop = 65                # Top toolbar/title bar height (draggable area)
@@ -26,7 +28,7 @@ class Theme:
     # --- UI Scaffolding ---
     windowBg = QColor("#1e1e1e")
     toolbarBg = QColor("#1e1e1e")
-    toolbarBorder = QColor("#6b5a47")   # Consider changing to accentNormal?
+    toolbarBorder = primaryBorder   # Consider changing to accentNormal?
 
     # --- Node Dimensions ---
     nodeWidth = 140
@@ -34,7 +36,7 @@ class Theme:
     nodeRadius = 10
 
     # --- Ports (Connection Points) ---
-    portInputColor = QColor("#282828")
+    portInputColor = primaryBorder
     portOutputColor = QColor("#8cbea0")
     portGlowDarkness = 140                      # Glow effect darkness factor
     portSize = 20                               # Diameter in pixels
@@ -66,7 +68,7 @@ class Theme:
     buttonFontBold = False
     buttonTextVerticalOffset = -2
     buttonBorderWidth = 2
-    buttonBorderEnabled = True
+    buttonBorderEnabled = False
     buttonMinWidth = 160
     buttonMinHeight = 75
 
@@ -78,17 +80,20 @@ class Theme:
 
     # --- Button Colors ---
     buttonBg = QColor("#1e1e1e")
-    buttonBorder = QColor("#1e1e1e")
+    buttonBorder = primaryBorder
     buttonBgHover = QColor("#1e1e1e")
     buttonBorderHover = QColor("#1e1e1e")
     buttonBgInactive = QColor("#1f1f1f")
     buttonBorderInactive = QColor("#4a4a4a")
 
+    shadowColor = QColor("#282828")
+    resizeHandleColor = primaryBorder
+
     # --- ComboBox Styling ---
     comboboxBg = QColor("#1e1e1e")
     comboboxBgOpen = QColor("#2a2a3a")
     comboboxText = QColor("#e0e0ff")
-    comboboxBorder = QColor("#6b5a47")
+    comboboxBorder = primaryBorder
     comboboxBorderRadius = 8
     comboboxPadding = "6px 10px"
     comboboxFontFamily = "Segoe UI"

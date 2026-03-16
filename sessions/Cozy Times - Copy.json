@@ -2,15 +2,27 @@
   "version": "1.0",
   "nodes": [
     {
+      "node_id": 9,
+      "uuid": "e1ee5f7349c6463a874a3e0c37ff9dd6",
+      "type": "warm",
+      "title": "Practical and pleasurable",
+      "full_text": "",
+      "pos_x": 218.03560636941108,
+      "pos_y": 1072.9234155156635,
+      "width": 365.0,
+      "height": 90.0,
+      "ports_visible": false
+    },
+    {
       "node_id": 6,
       "uuid": "b03829fe12c648c087f97137d9bac942",
       "type": "warm",
       "title": "Boundless Joy",
       "full_text": "",
-      "pos_x": 465.0903402052546,
-      "pos_y": 609.401676795081,
-      "width": 233.0,
-      "height": 90.0,
+      "pos_x": 589.7941582366803,
+      "pos_y": 622.7347894147931,
+      "width": 236.0469046230167,
+      "height": 94.87383037315249,
       "ports_visible": false
     },
     {
@@ -30,7 +42,7 @@
       "uuid": "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c",
       "type": "warm",
       "title": "New Node",
-      "full_text": "some text",
+      "full_text": "",
       "pos_x": 1020.2081153793054,
       "pos_y": 638.1056242606478,
       "width": 178.0,
@@ -43,8 +55,8 @@
       "type": "warm",
       "title": "New Node",
       "full_text": "",
-      "pos_x": -134.1250269573469,
-      "pos_y": 573.4802103927042,
+      "pos_x": -128.63492176099487,
+      "pos_y": 626.028360129217,
       "width": 178.0,
       "height": 82.71606915130803,
       "ports_visible": true
@@ -67,10 +79,10 @@
       "type": "warm",
       "title": "New Node",
       "full_text": "",
-      "pos_x": 346.14129414601797,
-      "pos_y": 927.0050244032112,
-      "width": 178.0,
-      "height": 90.0,
+      "pos_x": 180.65383751311958,
+      "pos_y": 945.0439414769394,
+      "width": 181.00011568810183,
+      "height": 93.07019588269827,
       "ports_visible": true
     },
     {
@@ -79,14 +91,42 @@
       "type": "warm",
       "title": "New Node",
       "full_text": "",
-      "pos_x": 672.8623245638478,
-      "pos_y": 802.6076704534162,
+      "pos_x": 648.5490015514315,
+      "pos_y": 831.6267979198486,
       "width": 178.0,
       "height": 90.0,
       "ports_visible": true
+    },
+    {
+      "node_id": 7,
+      "uuid": "bea9f9c2c1454a9a999ebdcf03b5564e",
+      "type": "warm",
+      "title": "Intentional",
+      "full_text": "",
+      "pos_x": -61.175457902208976,
+      "pos_y": 765.4775245199471,
+      "width": 212.6880012761466,
+      "height": 93.48259798490642,
+      "ports_visible": true
+    },
+    {
+      "node_id": 8,
+      "uuid": "808a994c491f41f2bbbe5586848a3c65",
+      "type": "warm",
+      "title": "Inner Peace",
+      "full_text": "",
+      "pos_x": 203.91819300736302,
+      "pos_y": 567.0494367089362,
+      "width": 211.0,
+      "height": 90.0,
+      "ports_visible": false
     }
   ],
   "connections": [
+    {
+      "start_node_uuid": "bea9f9c2c1454a9a999ebdcf03b5564e",
+      "end_node_uuid": "ea908c22dc834d82bd4ccbd37566d752"
+    },
     {
       "start_node_uuid": "715ade5d74d743699bccfee9cd6d3527",
       "end_node_uuid": "0d00e32f9e404b538ad5ee580b24f362"
@@ -101,8 +141,8 @@
     }
   ],
   "viewport": {
-    "center_x": 545.8280020422519,
-    "center_y": 863.5816204479827,
+    "center_x": 567.7884228276603,
+    "center_y": 858.0915152516303,
     "scale": 1.2750211060894017
   }
 }
