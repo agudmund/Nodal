@@ -40,6 +40,7 @@
     <Compile Include="test_autoload_fix.py" />
     <Compile Include="utils\check_sessions.py" />
     <Compile Include="utils\logger.py" />
+    <Compile Include="utils\motivational_messages.py" />
     <Compile Include="utils\resource_monitor.py" />
     <Compile Include="utils\session_manager.py" />
     <Compile Include="utils\spellchecker.py" />
