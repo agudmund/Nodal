@@ -29,11 +29,20 @@
     <Compile Include="benchmarks\profiler.py" />
     <Compile Include="benchmarks\run_benchmarks.py" />
     <Compile Include="benchmarks\__init__.py" />
-    <Compile Include="graphics\node_types.py" />
-    <Compile Include="graphics\note_editor.py" />
-    <Compile Include="graphics\port.py" />
-    <Compile Include="graphics\scene.py" />
+
+
+
+
     <Compile Include="graphics\__init__.py" />
+    <Compile Include="graphics\AboutNode.py" />
+    <Compile Include="graphics\BaseNode.py" />
+    <Compile Include="graphics\Connection.py" />
+    <Compile Include="graphics\ImageNode.py" />
+    <Compile Include="graphics\NoteEditor.py" />
+    <Compile Include="graphics\Port.py" />
+    <Compile Include="graphics\Scene.py" />
+    <Compile Include="graphics\Theme.py" />
+    <Compile Include="graphics\WarmNode.py" />
     <Compile Include="main.py" />
     <Compile Include="main_window.py" />
     <Compile Include="test_autoload_fix.py" />
@@ -70,27 +79,27 @@
       <xmlns>
       </xmlns>
     </Compile>
-    <Compile Include="graphics\connection.py">
+
       <xmlns>
       </xmlns>
     </Compile>
-    <Compile Include="graphics\node.py">
+
       <xmlns>
       </xmlns>
     </Compile>
-    <Compile Include="graphics\node_types.py">
+
       <xmlns>
       </xmlns>
     </Compile>
-    <Compile Include="graphics\note_editor.py">
+
       <xmlns>
       </xmlns>
     </Compile>
-    <Compile Include="graphics\port.py">
+
       <xmlns>
       </xmlns>
     </Compile>
-    <Compile Include="graphics\scene.py">
+
       <xmlns>
       </xmlns>
     </Compile>
