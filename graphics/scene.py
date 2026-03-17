@@ -15,7 +15,7 @@ from PySide6.QtGui import QColor, QPainter, QTransform
 from .theme import Theme
 from utils.motivational_messages import MOTIVATIONAL_MESSAGES
 from .BaseNode import BaseNode
-from .node_types import WarmNode
+from .WarmNode import WarmNode
 
 def enable_blur(hwnd):
     """Enable Windows blur effect on the window (Windows only)."""
@@ -35,11 +35,11 @@ def enable_blur(hwnd):
         accent = AccentPolicy()
         # Change the AccentState to 5 for Mica
         # And we need to add a "Flag" to tell Windows we want to use our own tint
-        # In scene.py -> enable_blur
+        # In scene.py -> enable_blur 
         accent.AccentState = 5  # Keep Mica
         accent.AccentFlags = 0  # Tell Windows to stay out of the tinting business
         accent.GradientColor = 0x00000000 # Fully transparent
-        data = WindowCompositionAttributeData()
+        data = WindowCompositionAttributeData() 
         data.Attribute = 19 
         data.SizeOfData = ctypes.sizeof(accent)
         data.Data = ctypes.cast(ctypes.pointer(accent), ctypes.c_void_p)
@@ -190,7 +190,7 @@ class NodeScene(QGraphicsScene):
         Args:
             data: Dictionary with 'nodes' and 'connections' lists from session
         """
-        from graphics import node_types
+        # from graphics import node_types
         from graphics.connection import Connection
 
         self.clear_nodes()
@@ -200,7 +200,7 @@ class NodeScene(QGraphicsScene):
         for node_data in data.get("nodes", []):
             node_type = node_data.get("type", "warm")
             # ... (your existing factory logic) ...
-            new_node = node_types.WarmNode.from_dict(node_data)
+            new_node = WarmNode.from_dict(node_data)
             self.addItem(new_node)
             node_map[new_node.uuid] = new_node
 

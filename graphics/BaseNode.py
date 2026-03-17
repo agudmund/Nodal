@@ -10,7 +10,7 @@ import uuid as _uuid
 import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTimer
-from PySide6.QtGui import QColor, QPen, QPainter, QBrush, QPainterPath
+from PySide6.QtGui import QPen, QPainter, QBrush, QPainterPath
 from .theme import Theme
 from .port import Port
 from utils.logger import setup_logger
@@ -76,16 +76,16 @@ class BaseNode(QGraphicsRectItem):
 
         # Hover animation
         self.pulse_anim = QVariantAnimation()
-        pulse_duration = random.randint(400, 600)
+        pulse_duration = random.randint(Theme.nodePulseMin, Theme.nodePulseMax)
         self.pulse_anim.setDuration(pulse_duration)
         self.pulse_anim.setStartValue(1.0)
-        self.pulse_anim.setEndValue(1.025)
+        self.pulse_anim.setEndValue(Theme.nodePulseScale)
         self.pulse_anim.setEasingCurve(QEasingCurve.OutQuad)
         self.pulse_anim.valueChanged.connect(self.setScale)
 
         # Pen styling
         self.normal_pen = QPen(Theme.primaryBorder, Theme.nodeBorderWidth)
-        self.hover_pen = QPen(self.normal_pen.color().lighter(125), 2)
+        self.hover_pen = QPen(self.normal_pen.color().lighter(Theme.nodeHoverLighten), Theme.nodeBorderWidth)
         self.current_pen = self.normal_pen
 
         # UI State
@@ -99,14 +99,14 @@ class BaseNode(QGraphicsRectItem):
 
         # Visuals
         self.setBrush(Theme.nodeDefaultBg)
-        self.round_radius = 18
+        self.round_radius = Theme.nodeRoundRadius
         self.setPen(self.current_pen)
 
         # Drop shadow
         shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(15)
-        shadow.setColor(QColor(0, 0, 0, 150))
-        shadow.setOffset(5, 5)
+        shadow.setBlurRadius(Theme.nodeShadowBlur)
+        shadow.setColor(Theme.nodeShadowColor)
+        shadow.setOffset(Theme.nodeShadowOffsetX, Theme.nodeShadowOffsetY)
         self.setGraphicsEffect(shadow)
 
         self.setTransformOriginPoint(self.rect().center())
@@ -131,7 +131,7 @@ class BaseNode(QGraphicsRectItem):
                 self._update_throttle_timer = QTimer()
                 self._update_throttle_timer.setSingleShot(True)
                 self._update_throttle_timer.timeout.connect(self._execute_pending_update)
-                self._update_throttle_timer.start(16)  # ~60 FPS throttle
+                self._update_throttle_timer.start(Theme.nodeUpdateThrottle)
         return super().itemChange(change, value)
 
     def _execute_pending_update(self):
@@ -159,9 +159,9 @@ class BaseNode(QGraphicsRectItem):
     def _update_port_positions(self):
         """Position ports outside the node edges, centered vertically."""
         rect = self.rect()
-        center_y = int(rect.height() - 25)
-        self.input_port.setPos(-3, center_y)
-        self.output_port.setPos(int(rect.width()) + 3, center_y)
+        center_y = int(rect.height() + Theme.portVerticalOffset)
+        self.input_port.setPos(-Theme.portHorizontalNudge, center_y)
+        self.output_port.setPos(int(rect.width()) + Theme.portHorizontalNudge, center_y)
 
     def toggle_ports(self):
         """Toggle port visibility."""
@@ -346,7 +346,7 @@ class BaseNode(QGraphicsRectItem):
         painter.drawRoundedRect(rect, self.round_radius, self.round_radius)
 
         # 2. LOD GATE - only process at detail levels that matter
-        if lod < 0.3:
+        if lod < Theme.nodeLodThreshold:
             # At very low LOD, hide details
             if self.graphicsEffect():
                 self.graphicsEffect().setEnabled(False)
@@ -363,9 +363,9 @@ class BaseNode(QGraphicsRectItem):
         # Only recreate path if rect changed (avoid recreating every frame)
         if not self._resize_handle_path or self._last_paint_rect != rect:
             self._resize_handle_path = QPainterPath()
-            self._resize_handle_path.moveTo(rect.right(), rect.bottom() - 12)
+            self._resize_handle_path.moveTo(rect.right(), rect.bottom() - Theme.nodeResizeHandleSize)
             self._resize_handle_path.lineTo(rect.right(), rect.bottom())
-            self._resize_handle_path.lineTo(rect.right() - 12, rect.bottom())
+            self._resize_handle_path.lineTo(rect.right() - Theme.nodeResizeHandleSize, rect.bottom())
             self._resize_handle_path.closeSubpath()
             self._last_paint_rect = rect
 
@@ -389,8 +389,7 @@ class BaseNode(QGraphicsRectItem):
 
     def boundingRect(self):
         """Include shadow margins in bounding rect."""
-        shadow_margin = 22
-        return self.rect().adjusted(-shadow_margin, -shadow_margin, shadow_margin, shadow_margin)
+        return self.rect().adjusted(-Theme.nodeShadowMargin, -Theme.nodeShadowMargin, Theme.nodeShadowMargin, Theme.nodeShadowMargin)
 
     # -------------------------------------------------------------------------
     # SERIALIZATION
@@ -422,7 +421,9 @@ class BaseNode(QGraphicsRectItem):
         Returns:
             Appropriate BaseNode subclass instance (WarmNode, ImageNode, AboutNode, or BaseNode)
         """
-        from .node_types import WarmNode, ImageNode, AboutNode
+        from .WarmNode import WarmNode
+        from .imageNode import ImageNode
+        from .aboutNode import AboutNode
 
         node_type = data.get("type", "node")
 

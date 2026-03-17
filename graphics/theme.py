@@ -37,6 +37,30 @@ class Theme:
     nodeWidth = 140
     nodeHeight = 90
     nodeRadius = 10
+    nodeRoundRadius = 18                 # Corner rounding radius for node body
+    nodeShadowBlur = 15                  # Drop shadow blur radius
+    nodeShadowColor = QColor(0, 0, 0, 150) # Drop shadow color
+    nodeShadowOffsetX = 5.0              # Drop shadow horizontal offset
+    nodeShadowOffsetY = 5.0              # Drop shadow vertical offset
+    nodeShadowMargin = 22                # Bounding rect shadow margin for click detection
+    nodeLodThreshold = 0.3              # LOD gate — below this zoom level detail is hidden
+    nodeResizeHandleSize = 12            # Resize triangle size in pixels
+
+    # --- Node Border ---
+    nodeBorderWidth = 1                  # Border thickness — normal state
+    nodeBorderSelectedScale = 1.25       # Selected border thickness multiplier
+    nodeBorderSelected = accentNormal
+    nodeDefaultBg = QColor(30, 30, 30, 200) # BaseNode default brush — subclasses override
+
+    # --- Node Hover Animation ---
+    nodePulseMin = 400                   # Minimum pulse animation duration in ms
+    nodePulseMax = 600                   # Maximum pulse animation duration in ms
+    nodePulseScale = 1.025               # Peak scale during pulse — subtle breath effect
+    nodeHoverLighten = 125               # Hover pen lightness factor
+
+    # --- Node Port Positioning ---
+    portVerticalOffset = -25             # Port vertical nudge from node bottom edge
+    portHorizontalNudge = 3.0           # Port horizontal nudge outside node edge
 
     # --- Ports (Connection Points) ---
     portInputColor = primaryBorder       # Input port blends into node border by design
@@ -63,17 +87,16 @@ class Theme:
     aboutNodeBg = QColor(40, 40, 50, 200)       # Meta/info nodes (darker)
     imageNodeBg = QColor(30, 30, 30, 200)       # Image display nodes
     imageCaptionColor = QColor("#a8d0ff")        # Caption text on image nodes — matches WarmNode title tone
-    nodeBorderSelected = accentNormal
     shadowColor = QColor("#282828")             # Node drop shadow
-    nodeDefaultBg = QColor(30, 30, 30, 200)     # BaseNode default brush — subclasses override
-    nodeBorderWidth = 1                      # Border thickness — normal state
-    nodeBorderSelectedScale = 1.25           # Selected border thickness multiplier
 
     # --- Node Typography ---
     nodeTitleFontFamily = "Chandler42"
     nodeTitleFontSize = 13
     nodeBodyFontFamily = "Lato"
     nodeBodyFontSize = 9
+
+    # --- Node Update Throttle ---
+    nodeUpdateThrottle = 16              # ms — batches connection redraws to ~60 FPS
 
     # --- Button Styling ---
     buttonFontFamily = "Reey"
