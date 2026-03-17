@@ -10,7 +10,7 @@ import uuid as _uuid
 import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTimer
-from PySide6.QtGui import QPen, QPainter, QBrush, QPainterPath
+from PySide6.QtGui import QColor, QPen, QPainter, QBrush
 from .Theme import Theme
 from .Port import Port
 from utils.logger import setup_logger
@@ -85,7 +85,7 @@ class BaseNode(QGraphicsRectItem):
 
         # Pen styling
         self.normal_pen = QPen(Theme.primaryBorder, Theme.nodeBorderWidth)
-        self.hover_pen = QPen(self.normal_pen.color().lighter(Theme.nodeHoverLighten), Theme.nodeBorderWidth)
+        self.hover_pen = QPen(Theme.lighten(Theme.primaryBorder), Theme.nodeBorderWidth)
         self.current_pen = self.normal_pen
 
         # UI State
@@ -113,9 +113,6 @@ class BaseNode(QGraphicsRectItem):
 
         # Cache paint objects to avoid recreating every frame
         self._selected_pen = QPen(Theme.textPrimary, Theme.nodeBorderWidth * Theme.nodeBorderSelectedScale, Qt.SolidLine)
-        self._resize_handle_path = None
-        self._resize_handle_brush = Theme.primaryBorder
-        self._last_paint_rect = None
 
     # -------------------------------------------------------------------------
     # KINEMATICS
@@ -225,8 +222,6 @@ class BaseNode(QGraphicsRectItem):
             self.temp_connection.update_path(event.scenePos())
             event.accept()
             return
-
-        super().mouseMoveEvent(event)
 
         if self._is_resizing:
             delta = event.pos() - self._resize_start_pos
@@ -356,23 +351,19 @@ class BaseNode(QGraphicsRectItem):
         if self.graphicsEffect():
             self.graphicsEffect().setEnabled(True)
 
-        # 3. RESIZE HANDLE (cached path)
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(self._resize_handle_brush)
-
-        # Only recreate path if rect changed (avoid recreating every frame)
-        if not self._resize_handle_path or self._last_paint_rect != rect:
-            self._resize_handle_path = QPainterPath()
-            self._resize_handle_path.moveTo(rect.right(), rect.bottom() - Theme.nodeResizeHandleSize)
-            self._resize_handle_path.lineTo(rect.right(), rect.bottom())
-            self._resize_handle_path.lineTo(rect.right() - Theme.nodeResizeHandleSize, rect.bottom())
-            self._resize_handle_path.closeSubpath()
-            self._last_paint_rect = rect
-
-        painter.drawPath(self._resize_handle_path)
+        # 3. CORNER TAPER — resize grip, isolated for future asset replacement
+        self._draw_corner_taper(painter)
 
         # 4. SPECIALIST HANDOFF
         self.paint_content(painter)
+
+    def _draw_corner_taper(self, painter):
+        """Resize grip — diagonal lines simulating border thickness fading into corner."""
+        painter.setPen(QPen(QColor(255, 255, 255, 40), 2))
+        br = self.rect().bottomRight()
+        for i in range(3):
+            offset = (i + 1) * 5
+            painter.drawLine(br.x() - offset, br.y() - 2, br.x() - 2, br.y() - offset)
 
     def paint_content(self, painter):
         """Override in subclasses to draw type-specific content."""

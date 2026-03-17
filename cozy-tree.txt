@@ -1,5 +1,5 @@
 ✨ Cozy Snapshot — clean tree respecting .gitignore 🌱
-Generated: 2026-03-16 12:06:40
+Generated: 2026-03-17 04:03:38
 Location:  C:\Users\thisg\Desktop\Cozy Times\Nodal
 Mode:      with cozy emojis
 ────────────────────────────────────────────────────────────
@@ -26,20 +26,36 @@ Mode:      with cozy emojis
 │   ├── 📄 Nodal.exe
 │   └── 📄 nodal_config.ini
 ├── 📁 Documents/
+│   ├── 📄 BaseNode Refactoring - Implementation Summary.md
+│   ├── 📄 BaseNode Refactoring Audit Report.md
 │   ├── 📄 Docstring Compliance Report.md
+│   ├── 📄 Docstring Update Summary.md
 │   ├── 📄 Final Theme Refactoring Report.md
+│   ├── 📄 Graphics Module Import Validation Report.md
+│   ├── 📄 Graphics Module Refactoring Final Status.md
+│   ├── 📄 Graphics Module Renaming Completion Report.md
+│   ├── 📄 How to Run update_pyproj.md
+│   ├── 📄 Nodal PyProj Update Instructions.md
+│   ├── 📄 Performance Optimization Implementation.md
+│   ├── 📄 Performance Optimization Summary.md
+│   ├── 📄 Performance Regression Fix.md
+│   ├── 📄 PyProj Update Script - Complete Guide.md
+│   ├── 📄 Quick Reference - File Changes.md
 │   ├── 📄 Refactoring Completion Report.md
 │   ├── 📄 Second Pass Fix Summary.md
-│   └── 📄 Theme Reference Audit.md
+│   ├── 📄 Theme Reference Audit.md
+│   └── 📄 VS Not Reloading - Quick Fix.md
 ├── 📁 graphics/
 │   ├── 📄 __init__.py
-│   ├── 📄 connection.py
-│   ├── 📄 node.py
-│   ├── 📄 node_types.py
-│   ├── 📄 note_editor.py
-│   ├── 📄 port.py
-│   ├── 📄 scene.py
-│   └── 📄 theme.py
+│   ├── 📄 AboutNode.py
+│   ├── 📄 BaseNode.py
+│   ├── 📄 Connection.py
+│   ├── 📄 ImageNode.py
+│   ├── 📄 NoteEditor.py
+│   ├── 📄 Port.py
+│   ├── 📄 Scene.py
+│   ├── 📄 Theme.py
+│   └── 📄 WarmNode.py
 ├── 📁 resources/
 │   └── 📁 icons/
 │       ├── 📄 app_icon.ico
@@ -70,19 +86,22 @@ Mode:      with cozy emojis
 ├── 📄 .gitignore
 ├── 📄 build.py
 ├── 📄 cozy-tree.txt
+├── 📄 FINAL_SOLUTION_RELOAD_STEPS.txt
 ├── 📄 LICENSE.txt
 ├── 📄 main.py
 ├── 📄 main_window.py
 ├── 📄 Nodal.exe
 ├── 📄 Nodal.lnk
 ├── 📄 Nodal.pyproj
+├── 📄 Nodal.pyproj.backup
+├── 📄 Nodal.pyproj.original
 ├── 📄 Nodal.slnx
 ├── 📄 Nodal.spec
 ├── 📄 nodal_config.ini
 ├── 📄 README.md
 ├── 📄 requirements.txt
 ├── 📄 setup_env.ps1
-└── 📄 update_pyproj.ps1
+└── 📄 UPDATE_SCRIPT_READY.txt
 
 ────────────────────────────────────────────────────────────
 Saved by cozy-snapshot.py  •  gentle sibling to cozy-tree.py

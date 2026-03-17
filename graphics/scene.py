@@ -198,9 +198,7 @@ class NodeScene(QGraphicsScene):
 
         # 1. First Pass: Create all Nodes
         for node_data in data.get("nodes", []):
-            node_type = node_data.get("type", "warm")
-            # ... (your existing factory logic) ...
-            new_node = WarmNode.from_dict(node_data)
+            new_node = BaseNode.from_dict(node_data)
             self.addItem(new_node)
             node_map[new_node.uuid] = new_node
 
@@ -218,6 +216,3 @@ class NodeScene(QGraphicsScene):
         painter.setBrush(bg_color) 
         painter.setPen(Qt.NoPen)
         painter.drawRect(rect)
-
-
-        

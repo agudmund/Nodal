@@ -21,8 +21,8 @@ class WarmNode(BaseNode):
     Supports manual editing, smart title fallback, responsive wrapping, and bulk import.
     """
 
-    MIN_WIDTH  = 180
-    MIN_HEIGHT = 60
+    MIN_WIDTH  = Theme.nodeMinWidth
+    MIN_HEIGHT = Theme.nodeMinHeight
     MAX_HEIGHT = 1000
     MARGIN     = 20
 
