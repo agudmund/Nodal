@@ -1,0 +1,90 @@
+✨ Cozy Snapshot — clean tree respecting .gitignore 🌱
+Generated: 2026-03-17 15:11:37
+Location:  C:\Users\thisg\Desktop\Cozy Times\Nodal
+Mode:      with cozy emojis
+────────────────────────────────────────────────────────────
+
+├── 📁 .github/
+│   └── 📄 copilot-instructions.md
+├── 📁 benchmarks/
+│   ├── 📄 __init__.py
+│   ├── 📄 performance_tests.py
+│   ├── 📄 profiler.py
+│   └── 📄 run_benchmarks.py
+├── 📁 Documents/
+│   ├── 📄 BaseNode Refactoring - Implementation Summary.md
+│   ├── 📄 BaseNode Refactoring Audit Report.md
+│   ├── 📄 Docstring Compliance Report.md
+│   ├── 📄 Docstring Update Summary.md
+│   ├── 📄 Final Theme Refactoring Report.md
+│   ├── 📄 Graphics Module Import Validation Report.md
+│   ├── 📄 Graphics Module Refactoring Final Status.md
+│   ├── 📄 Graphics Module Renaming Completion Report.md
+│   ├── 📄 How to Run update_pyproj.md
+│   ├── 📄 Nodal PyProj Update Instructions.md
+│   ├── 📄 Performance Optimization Implementation.md
+│   ├── 📄 Performance Optimization Summary.md
+│   ├── 📄 Performance Regression Fix.md
+│   ├── 📄 PyProj Update Script - Complete Guide.md
+│   ├── 📄 Quick Reference - File Changes.md
+│   ├── 📄 Refactoring Completion Report.md
+│   ├── 📄 Second Pass Fix Summary.md
+│   ├── 📄 Theme Reference Audit.md
+│   └── 📄 VS Not Reloading - Quick Fix.md
+├── 📁 graphics/
+│   ├── 📄 __init__.py
+│   ├── 📄 AboutNode.py
+│   ├── 📄 BaseNode.py
+│   ├── 📄 Connection.py
+│   ├── 📄 ImageNode.py
+│   ├── 📄 NoteEditor.py
+│   ├── 📄 Port.py
+│   ├── 📄 Scene.py
+│   ├── 📄 Theme.py
+│   └── 📄 WarmNode.py
+├── 📁 resources/
+│   └── 📁 icons/
+│       ├── 📄 app_icon.ico
+│       ├── 📄 iconic.png
+│       └── 📄 tester.png
+├── 📁 sessions/
+│   ├── 📄 Cleanup.json
+│   ├── 📄 Cozy Times - Copy.json
+│   ├── 📄 Cozy Times.json
+│   └── 📄 Cuddly, Duddly, And Fuddly, The Wuddlies.json
+├── 📁 utils/
+│   ├── 📄 __init__.py
+│   ├── 📄 check_sessions.py
+│   ├── 📄 logger.py
+│   ├── 📄 motivational_messages.py
+│   ├── 📄 resource_monitor.py
+│   ├── 📄 session_manager.py
+│   ├── 📄 settings.py
+│   ├── 📄 spellchecker.py
+│   └── 📄 window_animator.py
+├── 📁 widgets/
+│   ├── 📄 __init__.py
+│   ├── 📄 cozy_dialog.py
+│   ├── 📄 demo_dialog.py
+│   ├── 📄 log_viewer_dialog.py
+│   └── 📄 settings_dialog.py
+├── 📄 .gitattributes
+├── 📄 .gitignore
+├── 📄 build.py
+├── 📄 LICENSE.txt
+├── 📄 main.py
+├── 📄 main_window.py
+├── 📄 Nodal.exe
+├── 📄 Nodal.lnk
+├── 📄 Nodal.pyproj
+├── 📄 Nodal.slnx
+├── 📄 Nodal.spec
+├── 📄 nodal_config.ini
+├── 📄 README.md
+├── 📄 requirements.txt
+└── 📄 setup_env.ps1
+
+────────────────────────────────────────────────────────────
+Saved by cozy-snapshot.py  •  gentle sibling to cozy-tree.py
+Hidden: .git, __pycache__, gitignored items, empty folders
+Double-click or run anytime — add --print to see live ♡

@@ -9,7 +9,7 @@
 from pathlib import Path
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform
-from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect
+from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect, QDateTime
 from graphics.Scene import NodeScene, enable_blur
 from graphics.Theme import Theme
 from widgets import CozyButton
@@ -32,7 +32,7 @@ class NodeGraphicsView(QGraphicsView):
     def __init__(self, scene):
         super().__init__(scene)
 
-        # --- 1. THE FOUNDATION (Ledger & Anchors) ---
+        # --- 1. The Foundation (Ledger & Anchors) ---
         self._first_interact_done = False
         self.viewport_locked = False
         self.setInteractive(True)
@@ -43,7 +43,7 @@ class NodeGraphicsView(QGraphicsView):
         self.setResizeAnchor(QGraphicsView.NoAnchor)
         self.setSceneRect(-5000, -5000, 10000, 10000)
 
-        # --- 2. KILL THE FRAME (The Zero-Point Directive) ---
+        # --- 2. Disable The Frame (The Zero-Point Directive) ---
         self.setFrameShape(QGraphicsView.NoFrame)
         self.setLineWidth(0)
         self.setContentsMargins(0, 0, 0, 0)
@@ -52,7 +52,7 @@ class NodeGraphicsView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        # --- 3. THE NAVIGATOR (Internal State) ---
+        # --- 3. The Navigator (Internal State) ---
         self.current_zoom = 1.0
         self.zoom_speed = 0.002
         self.min_zoom = 0.1
@@ -63,7 +63,7 @@ class NodeGraphicsView(QGraphicsView):
         self._last_zoom_pos = None
         self._alt_right_pressed = False
 
-        # --- 4. THE MICA CORE (Transparency & Quality) ---
+        # --- 4. The Mica Core (Transparency & Quality) ---
         # Use a BspTree to make finding nodes faster in a large scene
         self.scene().setItemIndexMethod(QGraphicsScene.BspTreeIndex)
 
@@ -124,13 +124,11 @@ class NodeGraphicsView(QGraphicsView):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
-            # ACCOUNTABILITY: We use position() for sub-pixel accuracy.
+            # We use position() for sub-pixel accuracy.
             self._last_pan_pos = event.position() 
             self.setCursor(Qt.ClosedHandCursor)
             event.accept()
             return # Skip super() to prevent the 'Camera Operator' from flinching
-        
-        
 
         # Alt + Right Mouse Button = Zoom mode
         if event.modifiers() == Qt.KeyboardModifier.AltModifier and event.button() == Qt.MouseButton.RightButton:
@@ -258,6 +256,11 @@ class NodalApp(QMainWindow):
 
         self.init_ui()
         enable_blur(int(self.winId()))
+
+    def _update_patience(self, value):
+        self.click_patience = value
+        if hasattr(self, 'debug_label'):
+            self.debug_label.setText(f"Patience: {value}ms")
 
     # Example for a Panning function in MainWindow
     def pan_view(self, delta_x, delta_y):
@@ -461,6 +464,26 @@ class NodalApp(QMainWindow):
         # The Blur Intensity Slider
         self.blur_slider = self._create_blur_slider()
         bottom_toolbar_layout.insertWidget(1, self.blur_slider)
+
+        # In NodalApp.__init__
+        self.click_count = 0
+        self.click_patience = 350 # Default starting point
+        self.is_collapsed = False
+        self.was_maximized = False
+        self.original_height = 800
+        self.click_timer = QTimer(self)
+        self.click_timer.setSingleShot(True)
+        self.click_timer.timeout.connect(self._execute_curtain_logic)
+
+        # In NodalApp.init_ui (add to the bottom bar layout)
+        self.patience_slider = QSlider(Qt.Horizontal)
+        self.patience_slider.setRange(200, 800)
+        self.patience_slider.setValue(self.click_patience)
+        self.patience_slider.setFixedWidth(100)
+        self.patience_slider.setToolTip("Curtain Triple-Click Timing")
+        self.patience_slider.valueChanged.connect(self._update_patience)
+        # ... add self.patience_slider to your bottom_layout ...
+        bottom_toolbar_layout.addWidget(self.patience_slider)
 
         # Settings button
         self.btn_settings = CozyButton("Settings")
@@ -680,12 +703,80 @@ class NodalApp(QMainWindow):
         self.scene.add_node(view_center.x(), view_center.y())
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton and event.position().y() < self.handle_height_top:
+        """THE CURTAIN SENSOR: Every single press counts."""
+        if event.button() == Qt.LeftButton and event.position().y() < Theme.handleHeightTop:
+            self._increment_and_wait()
+            
+            # Keep dragging alive
             self._dragging_window = True
             self._drag_pos = event.globalPosition().toPoint()
             event.accept()
+            return
+        super().mousePressEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        """THE INTERCEPTOR: Catching the OS 'Double Click' event."""
+        if event.position().y() < Theme.handleHeightTop:
+            # Crucial: Increment here too, because the OS might skip the Press event!
+            self._increment_and_wait()
+            event.accept()
+            return
+        super().mouseDoubleClickEvent(event)
+
+    def _increment_and_wait(self):
+        """The Rolling Timer: Dials back the caffeine."""
+        self.click_timer.stop()
+        self.click_count += 1
+        # Now, even at 400ms, it will feel responsive because we aren't losing clicks
+        self.click_timer.start(self.click_patience)
+
+    def _execute_curtain_logic(self):
+        """The Decision Maker: Runs once the clicking stops."""
+        # Use a small buffer; sometimes the OS sends extra events
+        if self.click_count == 2:
+            if self.isMaximized(): self.showNormal()
+            else: self.showMaximized()
+        elif self.click_count >= 3:
+            self.toggle_curtains()
+        
+        self.click_count = 0
+
+    def toggle_curtains(self):
+        """Animate the window into a sleek HUD strip."""
+        self.curtain_anim = QPropertyAnimation(self, b"geometry")
+        self.curtain_anim.setDuration(450)
+        self.curtain_anim.setEasingCurve(QEasingCurve.OutExpo)
+
+        start_rect = self.geometry()
+        
+        if not self.is_collapsed:
+            # --- PULL CURTAINS ---
+            self.original_height = self.height()
+            # Collapse to exactly the draggable top-bar height
+            end_rect = QRect(start_rect.x(), start_rect.y(), start_rect.width(), Theme.handleHeightTop)
+            
+            # Fade out the canvas to keep the HUD clean
+            self.view.hide()
+            if hasattr(self, 'bottom_bar_widget'): self.bottom_bar_widget.hide()
+            logger.info(f"Curtains Pulled: Window height -> {Theme.handleHeightTop}px")
         else:
-            super().mousePressEvent(event)
+            # --- OPEN CURTAINS ---
+            end_rect = QRect(start_rect.x(), start_rect.y(), start_rect.width(), self.original_height)
+            self.view.show()
+            if hasattr(self, 'bottom_bar_widget'): self.bottom_bar_widget.show()
+            logger.info("Curtains Opened: Restoration complete.")
+
+        self.curtain_anim.setStartValue(start_rect)
+        self.curtain_anim.setEndValue(end_rect)
+        self.curtain_anim.start()
+        
+        self.is_collapsed = not self.is_collapsed
+
+    def _handle_multi_click(self):
+        """The Rolling Timer: Restarts on every tap."""
+        self.click_timer.stop() # Cancel the previous click's deadline
+        self.click_count += 1
+        self.click_timer.start(self.click_patience) # Start a fresh window of patience
 
     def mouseMoveEvent(self, event):
         """Move window when dragging the top bar."""
@@ -702,16 +793,6 @@ class NodalApp(QMainWindow):
         self._dragging_window = False
         super().mouseReleaseEvent(event)
 
-    def mouseDoubleClickEvent(self, event):
-        """Toggle maximize/restore on double-click of title bar."""
-        if event.position().y() < self.handle_height_top:
-            if self.isMaximized():
-                self.showNormal()
-            else:
-                self.showMaximized()
-            event.accept()
-        else:
-            super().mouseDoubleClickEvent(event)
 
     def minimize_with_animation(self):
         """Minimize window with custom shrink + fade animation."""
