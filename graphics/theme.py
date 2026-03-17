@@ -78,7 +78,7 @@ class Theme:
     # --- Hover & Pulse Animation ---
     nodePulseMin   = 400    # Minimum pulse animation duration in ms
     nodePulseMax   = 600    # Maximum pulse animation duration in ms
-    nodePulseScale = 1.025  # Peak scale during pulse — subtle breath effect
+    nodePulseScale = 1.05  # Peak scale during pulse — subtle breath effect
 
     # --- Node Type Colors ---
     warmNodeBg        = QColor("#2a2a3a")       # Primary thought/text nodes

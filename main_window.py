@@ -77,16 +77,6 @@ class NodeGraphicsView(QGraphicsView):
             pass
         self.setRenderHint(QPainter.Antialiasing)
 
-    def wheelEvent(self, event):
-        """
-        PURPOSE: Provide stepped zooming via the mouse wheel.
-        ACCOUNTABILITY: zoom_factor is relative. No cache update needed as the 
-        ledger will be naturally captured during the next save.
-        """
-        zoom_factor = 1.25 if event.angleDelta().y() > 0 else 0.8
-        self.apply_zoom(zoom_factor)
-        # The cache call is removed because the Ledger is the only truth now.
-
     def apply_zoom(self, factor):
         new_zoom = self.current_zoom * factor
 
@@ -233,7 +223,6 @@ class NodeGraphicsView(QGraphicsView):
         if nodes_to_delete:
             self.viewport().update()
 
-
 class NodalApp(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -246,10 +235,10 @@ class NodalApp(QMainWindow):
         self.handle_height_top = Theme.handleHeightTop
         self._dragging_window = False
         self._drag_pos = None
-        self._current_session = None  # Track current loaded session
-        self._animator = WindowAnimator()  # Manages minimize/restore animations
-        self._first_show = True  # Flag to trigger fade in on first show
-        self.anim = None  # Store fade in animation
+        self._current_session = None        # Track current loaded session
+        self._animator = WindowAnimator()   # Manages minimize/restore animations
+        self._first_show = True             # Flag to trigger fade in on first show
+        self.anim = None                    # Store fade in animation
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -257,58 +246,129 @@ class NodalApp(QMainWindow):
         self.init_ui()
         enable_blur(int(self.winId()))
 
-    def _update_patience(self, value):
-        self.click_patience = value
-        if hasattr(self, 'debug_label'):
-            self.debug_label.setText(f"Patience: {value}ms")
+    def init_ui(self):
+        self.setWindowTitle("Nodal")
+        self.setGeometry(100, 100, 1200, 800)
 
-    # Example for a Panning function in MainWindow
-    def pan_view(self, delta_x, delta_y):
-        self.view_pan_x += delta_x
-        self.view_pan_y += delta_y
-        self.view.centerOn(self.view_pan_x, self.view_pan_y)
+        # Main central widget with grid layout
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        self.grid_layout = QGridLayout(central_widget)
+        self.grid_layout.setContentsMargins(0, 0, 0, 0)
+        self.grid_layout.setSpacing(0)
 
-    def _create_toolbar(self, border_position="bottom", height=None):
-        """
-        Create a toolbar container with consistent styling.
+        self.setStyleSheet(f"""QMainWindow {{   background-color: {Theme.windowBg.name()};
+                                                border: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};}}""")
 
-        Args:
-            border_position: "top", "bottom", or None for no border
-            height: Fixed height of the toolbar. Defaults to handleHeightTop if None.
+        self._setupTopToolbar()     # The Collapsable Titlebar
+        self._setupCentralGrid()    # Cental Grid Space Things
+        self._setupBottomToolbar()  # Bottom Toolbar Things 
+        self._setup_patience()      # Timers for the double click versus the triple click
+        self.show()                 # Render The Actual Window Now That It Has Gone Through All These Steps Of Actually Getting Here
+        self.auto_load()            # Auto-load the last session
 
-        Returns:
-            tuple: (container QWidget, layout QHBoxLayout)
-        """
-        container = QWidget()
-        if height is None:
-            height = Theme.handleHeightTop
-        container.setFixedHeight(height)
+    # =========================================================================
+    # The Pile Of Mess It Takes To Build A Qt Window
+    # The Mess, is Extraordinary, and has to be seen to be believed.
+    # But if you don't have any particular reason to believe it, then dont go look.
+    # =========================================================================
+    def _setup_patience(self):
+        """Timers for the double click versus the triple click"""
+        self.click_count = 0
+        self.click_patience = 350 # Default starting point
+        self.is_collapsed = False
+        self.was_maximized = False
+        self.original_height = 800
+        self.click_timer = QTimer(self)
+        self.click_timer.setSingleShot(True)
+        self.click_timer.timeout.connect(self._execute_curtain_logic)
 
-        border_style = ""
-        if border_position:
-            border_style = f"border-{border_position}: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};"
 
-        container.setStyleSheet(f"""
-            background-color: {Theme.toolbarBg.name()};
-            {border_style}
-        """)
+    def _setupTopToolbar(self):
+        """The collapsable title bar"""
+        self.grid_layout.addWidget(self._create_spacer(), 0, 0)
 
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(15, 0, 15, 0)
+        self.toolbar_container, self.toolbar_layout = self._create_toolbar(border_position="bottom", height=Theme.handleHeightTop)
 
-        return container, layout
+        self.toolbar_layout.addStretch()
+        self.toolbar_layout.addWidget(self.setup_project_selector())
+        self.toolbar_layout.addStretch()
+
+        self.grid_layout.addWidget(self.toolbar_container, 0, 1)
+        self.grid_layout.addWidget(self._create_spacer(), 0, 2)
+
+    def _setupCentralGrid(self):
+        """The central area holding the actual nodal canvas"""
+        self.grid_layout.addWidget(self._create_spacer(), 1, 0)
+
+        self.scene = NodeScene()
+        self.view = NodeGraphicsView(self.scene)
+        self.view.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.view.setTransformationAnchor(QGraphicsView.NoAnchor)
+        self.view.setResizeAnchor(QGraphicsView.NoAnchor)
+
+        # Initialize Ledger
+        self.view_pan_x = 0.0
+        self.view_pan_y = 0.0
+        self.view_zoom = 1.0
+
+        self.view.setStyleSheet(f"border: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};")
+        self.grid_layout.addWidget(self.view, 1, 1)
+
+        # Row 1, Col 2: Right spacer
+        self.grid_layout.addWidget(self._create_spacer(), 1, 2)
+
+    def _setupBottomToolbar(self):
+        """The lower toolbar with all the buttons"""
+
+        # Row 2, Col 0: Bottom left spacer
+        self.grid_layout.addWidget(self._create_spacer(), 2, 0)
+
+        # Row 2, Col 1: Bottom toolbar with border-top
+        self.bottom_toolbar_container, self.bottom_toolbar_layout = self._create_toolbar(border_position="top", height=Theme.handleHeightBottom)
+
+        # New Node button (left-aligned)
+        self.btn_new_node = CozyButton("Node")
+        self.btn_new_node.clicked.connect(self.create_new_node)
+        self.bottom_toolbar_layout.addWidget(self.btn_new_node)
+
+        # Stretch to push exit button to the right
+        self.bottom_toolbar_layout.addStretch()
+
+        # The Blur Intensity Slider
+        self.blur_slider = self._create_blur_slider()
+        self.bottom_toolbar_layout.insertWidget(1, self.blur_slider)
+
+        # Settings button
+        self.btn_settings = CozyButton("Settings")
+        self.btn_settings.clicked.connect(self.open_settings_window)
+        self.bottom_toolbar_layout.addWidget(self.btn_settings)
+
+        # Exit button (right-aligned)
+        # Note: "Exid" is intentional stylization, not a typo - it's an exit button named exid
+        self.btn_exit = CozyButton("Exid")
+        # self.btn_exit.clicked.connect(lambda: (self.save_session(), self.close()))
+        self.btn_exit.clicked.connect(lambda: self.safe_exit())
+        self.bottom_toolbar_layout.addWidget(self.btn_exit)
+
+        self.grid_layout.addWidget(self.bottom_toolbar_container, 2, 1)
+
+        # Row 2, Col 2: Bottom right spacer
+        self.grid_layout.addWidget(self._create_spacer(), 2, 2)
+
+        # Set row/column stretch to make canvas expandable
+        self.grid_layout.setRowStretch(1, 1)
+        self.grid_layout.setColumnStretch(1, 1)
+
+    # =========================================================================
+    # Utility Helpers
+    # =========================================================================
 
     def open_settings_window(self):
         """Open the application settings dialog."""
         # We keep a reference so it doesn't get garbage collected
         self.settings_window = SettingsDialog(self)
         self.settings_window.show()
-
-    def open_demo_window(self):
-        """Open the proof-of-concept demo dialog."""
-        # We keep a reference so it doesn't get garbage collected
-        self.demo_window = DemoDialog(self)
-        self.demo_window.show()
 
     def open_log_viewer(self):
         """Open the application log viewer dialog."""
@@ -383,144 +443,6 @@ class NodalApp(QMainWindow):
         slider.valueChanged.connect(self.update_blur_intensity)
         return slider
 
-    def init_ui(self):
-        self.setWindowTitle("Nodal")
-        self.setGeometry(100, 100, 1200, 800)
-
-        # Main central widget with grid layout
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        grid_layout = QGridLayout(central_widget)
-        grid_layout.setContentsMargins(0, 0, 0, 0)
-        grid_layout.setSpacing(0)
-
-        self.setStyleSheet(f"""
-            QMainWindow {{
-                background-color: {Theme.windowBg.name()};
-                border: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};
-            }}
-        """)
-
-        # Row 0, Col 0: Top left spacer
-        grid_layout.addWidget(self._create_spacer(), 0, 0)
-
-        # Row 0, Col 1: Top toolbar with border-bottom
-        self.toolbar_container, self.toolbar_layout = self._create_toolbar(border_position="bottom", height=Theme.handleHeightTop)
-
-        self.toolbar_layout.addStretch()
-        self.toolbar_layout.addWidget(self.setup_project_selector())
-        self.toolbar_layout.addStretch()
-
-        # Viewport position label (top right)
-        from PySide6.QtWidgets import QLabel
-        self.debug_label = QLabel("Y: 0")
-        self.debug_label.setText("Zoom: 1.00x")
-        self.debug_label.setStyleSheet("color: rgba(255, 255, 255, 150); font-family: 'Consolas';")
-        
-        self.toolbar_layout.addWidget(self.debug_label)
-
-        grid_layout.addWidget(self.toolbar_container, 0, 1)
-
-        # Row 0, Col 2: Top right spacer
-        grid_layout.addWidget(self._create_spacer(), 0, 2)
-
-        # Row 1, Col 0: Left spacer
-        grid_layout.addWidget(self._create_spacer(), 1, 0)
-
-        # Row 1, Col 1: Canvas (expands) with border
-        self.scene = NodeScene()
-        # main_window.py -> MainWindow.init_ui
-        self.view = NodeGraphicsView(self.scene)
-        # Force the 'Example.py' level of reliability:
-        self.view.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        self.view.setTransformationAnchor(QGraphicsView.NoAnchor)
-        self.view.setResizeAnchor(QGraphicsView.NoAnchor)
-
-        # Initialize Ledger
-        self.view_pan_x = 0.0
-        self.view_pan_y = 0.0
-        self.view_zoom = 1.0
-
-        self.view.setStyleSheet(f"border: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};")
-        grid_layout.addWidget(self.view, 1, 1)
-
-        # Row 1, Col 2: Right spacer
-        grid_layout.addWidget(self._create_spacer(), 1, 2)
-
-        # Row 2, Col 0: Bottom left spacer
-        grid_layout.addWidget(self._create_spacer(), 2, 0)
-
-        # Row 2, Col 1: Bottom toolbar with border-top
-        self.bottom_toolbar_container, bottom_toolbar_layout = self._create_toolbar(border_position="top", height=Theme.handleHeightBottom)
-
-        # New Node button (left-aligned)
-        self.btn_new_node = CozyButton("Node")
-        self.btn_new_node.clicked.connect(self.create_new_node)
-        bottom_toolbar_layout.addWidget(self.btn_new_node)
-
-        # Stretch to push exit button to the right
-        bottom_toolbar_layout.addStretch()
-
-        # The Blur Intensity Slider
-        self.blur_slider = self._create_blur_slider()
-        bottom_toolbar_layout.insertWidget(1, self.blur_slider)
-
-        # In NodalApp.__init__
-        self.click_count = 0
-        self.click_patience = 350 # Default starting point
-        self.is_collapsed = False
-        self.was_maximized = False
-        self.original_height = 800
-        self.click_timer = QTimer(self)
-        self.click_timer.setSingleShot(True)
-        self.click_timer.timeout.connect(self._execute_curtain_logic)
-
-        # In NodalApp.init_ui (add to the bottom bar layout)
-        self.patience_slider = QSlider(Qt.Horizontal)
-        self.patience_slider.setRange(200, 800)
-        self.patience_slider.setValue(self.click_patience)
-        self.patience_slider.setFixedWidth(100)
-        self.patience_slider.setToolTip("Curtain Triple-Click Timing")
-        self.patience_slider.valueChanged.connect(self._update_patience)
-        # ... add self.patience_slider to your bottom_layout ...
-        bottom_toolbar_layout.addWidget(self.patience_slider)
-
-        # Settings button
-        self.btn_settings = CozyButton("Settings")
-        self.btn_settings.clicked.connect(self.open_settings_window)
-        bottom_toolbar_layout.addWidget(self.btn_settings)
-
-        # Demo button
-        self.btn_demo = CozyButton("Demo")
-        self.btn_demo.clicked.connect(self.open_demo_window)
-        bottom_toolbar_layout.addWidget(self.btn_demo)
-
-        # Wait button (minimize - left of exit)
-        self.btn_wait = CozyButton("Wait")
-        self.btn_wait.clicked.connect(self.minimize_with_animation)
-        bottom_toolbar_layout.addWidget(self.btn_wait)
-
-        # Exit button (right-aligned)
-        # Note: "Exid" is intentional stylization, not a typo - it's an exit button named exid
-        self.btn_exit = CozyButton("Exid")
-        # self.btn_exit.clicked.connect(lambda: (self.save_session(), self.close()))
-        self.btn_exit.clicked.connect(lambda: self.safe_exit())
-        bottom_toolbar_layout.addWidget(self.btn_exit)
-
-        grid_layout.addWidget(self.bottom_toolbar_container, 2, 1)
-
-        # Row 2, Col 2: Bottom right spacer
-        grid_layout.addWidget(self._create_spacer(), 2, 2)
-
-        # Set row/column stretch to make canvas expandable
-        grid_layout.setRowStretch(1, 1)
-        grid_layout.setColumnStretch(1, 1)
-
-        self.show()
-
-        # Auto-load the last session (AFTER scene is fully initialized)
-        self.auto_load()
-
     def setup_project_selector(self):
         """The Project Selector Combo Box"""
 
@@ -557,6 +479,42 @@ class NodalApp(QMainWindow):
         self.project_selector.currentIndexChanged.connect(self.on_session_changed)
 
         return self.project_selector
+
+    def _create_toolbar(self, border_position="bottom", height=None):
+        """
+        Create a toolbar container with consistent styling.
+
+        Args:
+            border_position: "top", "bottom", or None for no border
+            height: Fixed height of the toolbar. Defaults to handleHeightTop if None.
+
+        Returns:
+            tuple: (container QWidget, layout QHBoxLayout)
+
+        Note: This belongs in our reusable window util class as an app default applied to all windows
+        """
+        container = QWidget()
+        if height is None:
+            height = Theme.handleHeightTop
+        container.setFixedHeight(height)
+
+        border_style = ""
+        if border_position:
+            border_style = f"border-{border_position}: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};"
+
+        container.setStyleSheet(f"""
+            background-color: {Theme.toolbarBg.name()};
+            {border_style}
+        """)
+
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(15, 0, 15, 0)
+
+        return container, layout
+
+    # =========================================================================
+    # Node And Session Stuff
+    # =========================================================================
 
     def auto_load(self):
         """Auto-load the last session if available."""
@@ -646,6 +604,20 @@ class NodalApp(QMainWindow):
         self.scene.set_dirty(False)
         
         logger.info(f"✅ Archived '{session_name}' at {self._last_saved_viewport}")
+    def populate_sessions(self):
+        """Populate with session names from sessions/ directory"""
+        # Block signals during population to avoid loading before scene is initialized
+        self.project_selector.blockSignals(True)
+
+        session_names = SessionManager.get_available_sessions()
+        if session_names:
+            self.project_selector.addItems(session_names)
+        else:
+            self.project_selector.addItem("No sessions found")
+        
+        self.project_selector.blockSignals(False)
+
+        return session_names
 
     def on_session_changed(self, index: int):
         """Handle combobox selection change with auto-save for the outgoing session."""
@@ -670,20 +642,13 @@ class NodalApp(QMainWindow):
         # 3. Bring the new characters and camera onto the stage
         self.load_session(new_session_name)
 
-    def populate_sessions(self):
-        """Populate with session names from sessions/ directory"""
-        # Block signals during population to avoid loading before scene is initialized
-        self.project_selector.blockSignals(True)
+    def create_new_node(self):
+        view_center = self.view.mapToScene(self.view.viewport().width() // 2, self.view.viewport().height() // 2)
+        self.scene.add_node(view_center.x(), view_center.y())
 
-        session_names = SessionManager.get_available_sessions()
-        if session_names:
-            self.project_selector.addItems(session_names)
-        else:
-            self.project_selector.addItem("No sessions found")
-        
-        self.project_selector.blockSignals(False)
-
-        return session_names
+    # =========================================================================
+    # The Glorious and Prestigious Mica
+    # =========================================================================
 
     def update_blur_intensity(self, value):
        Theme.frostColor.setAlpha(value)
@@ -698,30 +663,10 @@ class NodalApp(QMainWindow):
        self.blur_slider.setToolTip(f"Optimized Smudge: {int(blur_radius)}px")
        self.view.viewport().update()
 
-    def create_new_node(self):
-        view_center = self.view.mapToScene(self.view.viewport().width() // 2, self.view.viewport().height() // 2)
-        self.scene.add_node(view_center.x(), view_center.y())
-
-    def mousePressEvent(self, event):
-        """THE CURTAIN SENSOR: Every single press counts."""
-        if event.button() == Qt.LeftButton and event.position().y() < Theme.handleHeightTop:
-            self._increment_and_wait()
-            
-            # Keep dragging alive
-            self._dragging_window = True
-            self._drag_pos = event.globalPosition().toPoint()
-            event.accept()
-            return
-        super().mousePressEvent(event)
-
-    def mouseDoubleClickEvent(self, event):
-        """THE INTERCEPTOR: Catching the OS 'Double Click' event."""
-        if event.position().y() < Theme.handleHeightTop:
-            # Crucial: Increment here too, because the OS might skip the Press event!
-            self._increment_and_wait()
-            event.accept()
-            return
-        super().mouseDoubleClickEvent(event)
+    # =========================================================================
+    # Curtains, The Window Rollup Thing
+    # Should be ported to the resuable window default for the other dialogs
+    # =========================================================================
 
     def _increment_and_wait(self):
         """The Rolling Timer: Dials back the caffeine."""
@@ -772,11 +717,30 @@ class NodalApp(QMainWindow):
         
         self.is_collapsed = not self.is_collapsed
 
-    def _handle_multi_click(self):
-        """The Rolling Timer: Restarts on every tap."""
-        self.click_timer.stop() # Cancel the previous click's deadline
-        self.click_count += 1
-        self.click_timer.start(self.click_patience) # Start a fresh window of patience
+    # =========================================================================
+    # Things I haven't sorted and tidied up yet
+    # =========================================================================
+
+    def minimize_with_animation(self):
+        """Minimize window with custom shrink + fade animation."""
+        self._animator.minimize(self)
+
+    def establish_granite_center(self):
+        """
+        PURPOSE: Match the Viewport's physical camera to the Ledger's coordinates.
+        CLAIM: Geometry is now stable. centerOn() will finally be accurate.
+        """
+        # We move the 'Camera Operator' to look at the spot defined in our Ledger.
+        # This kills the 'First Click Snap' by ensuring the View is already 
+        # perfectly aligned before the user ever touches the mouse.
+        self.view.centerOn(self.view_pan_x, self.view_pan_y)
+        
+        # Log it for accountability
+        logger.debug(f"Handshake Successful: Camera synced to Ledger at ({self.view_pan_x}, {self.view_pan_y})")
+
+    # =========================================================================
+    # Mouse and Hover Events
+    # =========================================================================
 
     def mouseMoveEvent(self, event):
         """Move window when dragging the top bar."""
@@ -793,19 +757,40 @@ class NodalApp(QMainWindow):
         self._dragging_window = False
         super().mouseReleaseEvent(event)
 
+    def mousePressEvent(self, event):
+        """THE CURTAIN SENSOR: Every single press counts."""
+        if event.button() == Qt.LeftButton and event.position().y() < Theme.handleHeightTop:
+            self._increment_and_wait()
+            
+            # Keep dragging alive
+            self._dragging_window = True
+            self._drag_pos = event.globalPosition().toPoint()
+            event.accept()
+            return
+        super().mousePressEvent(event)
 
-    def minimize_with_animation(self):
-        """Minimize window with custom shrink + fade animation."""
-        self._animator.minimize(self)
+    def mouseDoubleClickEvent(self, event):
+        """THE INTERCEPTOR: Catching the OS 'Double Click' event."""
+        if event.position().y() < Theme.handleHeightTop:
+            # Crucial: Increment here too, because the OS might skip the Press event!
+            self._increment_and_wait()
+            event.accept()
+            return
+        super().mouseDoubleClickEvent(event)
 
-    def changeEvent(self, event):
-        """Handle window state changes to animate restore."""
-        if event.type() == QEvent.WindowStateChange:
-            if not (self.windowState() & Qt.WindowMinimized) and self._animator.is_minimized:
-                # Window is being restored from minimized state
-                logger.info("Window restored, starting restore animation")
-                self._animator.restore(self)
-        super().changeEvent(event)
+    def wheelEvent(self, event):
+        """
+        PURPOSE: Provide stepped zooming via the mouse wheel.
+        ACCOUNTABILITY: zoom_factor is relative. No cache update needed as the 
+        ledger will be naturally captured during the next save.
+        """
+        zoom_factor = 1.25 if event.angleDelta().y() > 0 else 0.8
+        self.apply_zoom(zoom_factor)
+        # The cache call is removed because the Ledger is the only truth now.
+
+    # =========================================================================
+    # App Core Events
+    # =========================================================================
 
     def showEvent(self, event):
         """
@@ -818,7 +803,7 @@ class NodalApp(QMainWindow):
         if hasattr(self, "anim") and self.anim is not None:
             self.anim.stop()
         
-        # 2. START THE FADE
+        # 2. Start The Fade
         if self.windowOpacity() < 1.0:
             self.anim = QPropertyAnimation(self, b"windowOpacity")
             self.anim.setDuration(600)
@@ -827,40 +812,18 @@ class NodalApp(QMainWindow):
             self.anim.setEasingCurve(QEasingCurve.InOutQuad)
             self.anim.start()
 
-        # 3. THE HANDSHAKE: Schedule the Granite Sync
+        # 3. The Handsome Handshake: Schedule the Granite Sync
         from PySide6.QtCore import QTimer
         QTimer.singleShot(100, self.establish_granite_center)
 
-    def establish_granite_center(self):
-        """
-        PURPOSE: Match the Viewport's physical camera to the Ledger's coordinates.
-        CLAIM: Geometry is now stable. centerOn() will finally be accurate.
-        """
-        # We move the 'Camera Operator' to look at the spot defined in our Ledger.
-        # This kills the 'First Click Snap' by ensuring the View is already 
-        # perfectly aligned before the user ever touches the mouse.
-        self.view.centerOn(self.view_pan_x, self.view_pan_y)
-        
-        # Log it for accountability
-        logger.debug(f"Handshake Successful: Camera synced to Ledger at ({self.view_pan_x}, {self.view_pan_y})")
-
-    def safe_exit(self):
-        """Ensures the camera and nodes are saved if either has moved."""
-        # If _current_session is None or empty, fall back to Settings
-        session_name = self._current_session or Settings.get("session/last_loaded", "latest_session")
-        
-        current_view = (self.view_pan_x, self.view_pan_y, self.view_zoom)
-        last_view = getattr(self, "_last_saved_viewport", (0.0, 0.0, 1.0))
-        
-        camera_moved = current_view != last_view
-
-        if self.scene.is_dirty() or camera_moved:
-            logger.info(f"Exit: Changes detected in '{session_name}'. Saving...")
-            self.save_session(session_name)
-        else:
-            logger.info("Exit: Ledger is balanced. No save required.")
-        
-        self.close()
+    def changeEvent(self, event):
+        """Handle window state changes to animate restore."""
+        if event.type() == QEvent.WindowStateChange:
+            if not (self.windowState() & Qt.WindowMinimized) and self._animator.is_minimized:
+                # Window is being restored from minimized state
+                logger.info("Window restored, starting restore animation")
+                self._animator.restore(self)
+        super().changeEvent(event)
 
     def closeEvent(self, event):
         # 1. Save Geometry immediately while the window is still valid
@@ -887,3 +850,21 @@ class NodalApp(QMainWindow):
         # 5. When the animation finishes, THEN call the real close
         self.anim.finished.connect(self.close) 
         self.anim.start()
+
+    def safe_exit(self):
+        """Ensures the camera and nodes are saved if either has moved."""
+        # If _current_session is None or empty, fall back to Settings
+        session_name = self._current_session or Settings.get("session/last_loaded", "latest_session")
+        
+        current_view = (self.view_pan_x, self.view_pan_y, self.view_zoom)
+        last_view = getattr(self, "_last_saved_viewport", (0.0, 0.0, 1.0))
+        
+        camera_moved = current_view != last_view
+
+        if self.scene.is_dirty() or camera_moved:
+            logger.info(f"Exit: Changes detected in '{session_name}'. Saving...")
+            self.save_session(session_name)
+        else:
+            logger.info("Exit: Ledger is balanced. No save required.")
+        
+        self.close()
