@@ -46,8 +46,9 @@ class BaseNode(QGraphicsRectItem):
         self.ports_visible = False
         self.connections = []
 
-        # Look at the ledger and manifest the ports if needed
-        QTimer.singleShot(0, self._sync_port_visibility)
+        # Throttle itemChange updates to prevent excessive connection redraws
+        self._update_throttle_timer = None
+        self._pending_update = False
 
         self.setPos(pos)
 
@@ -111,20 +112,38 @@ class BaseNode(QGraphicsRectItem):
 
         self.setTransformOriginPoint(self.rect().center())
 
+        # Cache paint objects to avoid recreating every frame
+        self._selected_pen = QPen(QColor("#a8d0ff"), 2.5, Qt.SolidLine)
+        self._resize_handle_path = None
+        self._resize_handle_brush = QColor(255, 255, 255, 30)
+        self._last_paint_rect = None
+
     # -------------------------------------------------------------------------
     # KINEMATICS
     # -------------------------------------------------------------------------
 
     def itemChange(self, change, value):
-        """THE CENTRAL NERVE HUB — wire updates, dirty flags, IK kinematics."""
+        """Throttled update handler for node position changes to prevent excessive redraws."""
         if change == QGraphicsRectItem.GraphicsItemChange.ItemPositionHasChanged:
-            if hasattr(self, 'connections'):
-                for conn in self.connections:
-                    conn.update_path()
             self._last_scene_pos = self.scenePos()
+            # Throttle connection updates - batch them together
+            self._pending_update = True
+            if not self._update_throttle_timer:
+                self._update_throttle_timer = QTimer()
+                self._update_throttle_timer.setSingleShot(True)
+                self._update_throttle_timer.timeout.connect(self._execute_pending_update)
+                self._update_throttle_timer.start(16)  # ~60 FPS throttle
+        return super().itemChange(change, value)
+
+    def _execute_pending_update(self):
+        """Execute batched connection updates after throttle period."""
+        if self._pending_update and hasattr(self, 'connections'):
+            for conn in self.connections:
+                conn.update_path()
             if self.scene():
                 self.scene().set_dirty(True)
-        return super().itemChange(change, value)
+            self._pending_update = False
+        self._update_throttle_timer = None
 
     # -------------------------------------------------------------------------
     # PORTS
@@ -151,34 +170,22 @@ class BaseNode(QGraphicsRectItem):
         self._animate_ports()
 
     def _animate_ports(self):
-        """Fade ports in/out."""
+        """Toggle port visibility with optional animation."""
         if self._port_anim and self._port_anim.state() == QAbstractAnimation.Running:
             self._port_anim.stop()
-        if self.ports_visible:
-            self.input_port.show()
-            self.output_port.show()
-        else:
-            self.input_port.hide()
-            self.output_port.hide()
+        # Simply show/hide ports instead of recreating them
+        if self.input_port:
+            self.input_port.setVisible(self.ports_visible)
+        if self.output_port:
+            self.output_port.setVisible(self.ports_visible)
 
     def _sync_port_visibility(self):
-        """Rebuild ports based on current visibility state and connection ledger."""
-        # Clear existing ports
-        existing_ports = [item for item in self.childItems() if isinstance(item, Port)]
-        for p in existing_ports:
-            if self.scene():
-                self.scene().removeItem(p)
-
-        if self.ports_visible:
-            # Output (Mint) — always visible if toggled
-            self.output_port = Port(self, is_output=True)
-            self.output_port.setPos(self.rect().width(), self.rect().height() / 2)
-
-            # Input (Copper) — only visible if a nerve is attached
-            has_incoming = any(c.end_node == self for c in self.connections)
-            if has_incoming:
-                self.input_port = Port(self, is_output=False)
-                self.input_port.setPos(0, self.rect().height() / 2)
+        """Sync port visibility states with current configuration."""
+        # Ports are already created in _create_ports() - just manage visibility
+        if self.input_port:
+            self.input_port.setVisible(self.ports_visible)
+        if self.output_port:
+            self.output_port.setVisible(self.ports_visible)
 
 
     # -------------------------------------------------------------------------
@@ -324,7 +331,7 @@ class BaseNode(QGraphicsRectItem):
 
     def paint(self, painter, option, widget):
         """
-        THE UNIFIED PAINT PIPELINE
+        THE UNIFIED PAINT PIPELINE - optimized to reuse cached objects.
         Shell → Glow → LOD gate → Resize handle → Specialist handoff
         """
         lod = option.levelOfDetailFromTransform(painter.worldTransform())
@@ -333,32 +340,37 @@ class BaseNode(QGraphicsRectItem):
         # 1. BODY
         painter.setRenderHint(QPainter.Antialiasing)
         if self.isSelected():
-            painter.setPen(QPen(QColor("#a8d0ff"), 2.5, Qt.SolidLine))
+            painter.setPen(self._selected_pen)  # Use cached pen
         else:
             painter.setPen(self.pen())
         painter.setBrush(self.brush())
         painter.drawRoundedRect(rect, self.round_radius, self.round_radius)
 
-        # 2. LOD GATE
+        # 2. LOD GATE - only process at detail levels that matter
         if lod < 0.3:
-            for child in self.childItems():
-                if not isinstance(child, Port):
-                    child.hide()
-                else:
-                    child.setGraphicsEffect(None)
+            # At very low LOD, hide details
             if self.graphicsEffect():
                 self.graphicsEffect().setEnabled(False)
             return
 
-        # 3. RESIZE HANDLE (The Triangle)
+        # Re-enable graphics effect at normal LOD
+        if self.graphicsEffect():
+            self.graphicsEffect().setEnabled(True)
+
+        # 3. RESIZE HANDLE (cached path)
         painter.setPen(Qt.NoPen)
-        painter.setBrush(QColor(255, 255, 255, 30))
-        handle_path = QPainterPath()
-        handle_path.moveTo(rect.right(), rect.bottom() - 12)
-        handle_path.lineTo(rect.right(), rect.bottom())
-        handle_path.lineTo(rect.right() - 12, rect.bottom())
-        handle_path.closeSubpath()
-        painter.drawPath(handle_path)
+        painter.setBrush(self._resize_handle_brush)
+
+        # Only recreate path if rect changed (avoid recreating every frame)
+        if not self._resize_handle_path or self._last_paint_rect != rect:
+            self._resize_handle_path = QPainterPath()
+            self._resize_handle_path.moveTo(rect.right(), rect.bottom() - 12)
+            self._resize_handle_path.lineTo(rect.right(), rect.bottom())
+            self._resize_handle_path.lineTo(rect.right() - 12, rect.bottom())
+            self._resize_handle_path.closeSubpath()
+            self._last_paint_rect = rect
+
+        painter.drawPath(self._resize_handle_path)
 
         # 4. SPECIALIST HANDOFF
         self.paint_content(painter)
