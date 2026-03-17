@@ -98,7 +98,9 @@ class NodeScene(QGraphicsScene):
         Returns:
             Dictionary with version, serialized nodes, and connection metadata.
         """
-        
+        # 1. Gather Nodes (Existing)
+        nodes_data = [item.to_dict() for item in self.items() if isinstance(item, BaseNode)]
+
         # 2. Gather Connections (The New Nerve Ledger)
         from graphics.connection import Connection
         conns_data = []
@@ -108,7 +110,7 @@ class NodeScene(QGraphicsScene):
                     "start_node_uuid": item.start_node.uuid,
                     "end_node_uuid": item.end_node.uuid if item.end_node else None
                 })
-                
+
         return {
             "version": "1.0",
             "nodes": nodes_data,
@@ -188,6 +190,8 @@ class NodeScene(QGraphicsScene):
         Args:
             data: Dictionary with 'nodes' and 'connections' lists from session
         """
+        from graphics import node_types
+        from graphics.connection import Connection
 
         self.clear_nodes()
         node_map = {} # To keep track of UUIDs during the build
@@ -204,7 +208,7 @@ class NodeScene(QGraphicsScene):
         for conn_data in data.get("connections", []):
             start_node = node_map.get(conn_data.get("start_node_uuid"))
             end_node = node_map.get(conn_data.get("end_node_uuid"))
-            
+
             if start_node and end_node:
                 new_conn = Connection(start_node, end_node)
                 self.addItem(new_conn)
