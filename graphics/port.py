@@ -32,6 +32,6 @@ class Port(QGraphicsEllipseItem):
         # Glow effect around port
         glow = QGraphicsDropShadowEffect()
         glow.setBlurRadius(Theme.portGlowBlurRadius)
-        glow.setColor(base_color.darker(Theme.portGlowDarkness))
+        glow.setColor(Theme.primaryBorder)
         glow.setOffset(0, 0)
         self.setGraphicsEffect(glow)

@@ -130,7 +130,7 @@ class NodeGraphicsView(QGraphicsView):
             event.accept()
             return # Skip super() to prevent the 'Camera Operator' from flinching
         
-        super().mousePressEvent(event)
+        
 
         # Alt + Right Mouse Button = Zoom mode
         if event.modifiers() == Qt.KeyboardModifier.AltModifier and event.button() == Qt.MouseButton.RightButton:
@@ -138,6 +138,8 @@ class NodeGraphicsView(QGraphicsView):
             self.last_zoom_pos = event.pos()
             self.setCursor(Qt.SizeVerCursor)
             event.accept()
+
+        super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
         # Don't process pan/zoom during viewport restoration to prevent interference

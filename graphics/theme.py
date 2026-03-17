@@ -104,6 +104,7 @@ class Theme:
     # --- Port Sizing & Glow ---
     portSize           = 20    # Diameter in pixels
     portGlowBlurRadius = 12    # Glow effect blur radius
+    # portGlowDarkness   = QColor("#8cbea0")
 
     # --- Port Positioning ---
     portVerticalOffset  = -25   # Port vertical nudge from node bottom edge
@@ -188,6 +189,18 @@ class Theme:
             int(color1.blue()  + (color2.blue()  - color1.blue())  * t),
             int(color1.alpha() + (color2.alpha() - color1.alpha()) * t)
         )
+
+    # In Theme.py
+    resizeGripImage = "resources/icons/tester.png"
+    _resizeGripPixmap = None  # Loaded on first use after QApplication exists
+
+    @staticmethod
+    def getResizeGripPixmap():
+        """Lazy load resize grip pixmap — safe to call after QApplication is created."""
+        if Theme._resizeGripPixmap is None:
+            from PySide6.QtGui import QPixmap
+            Theme._resizeGripPixmap = QPixmap(Theme.resizeGripImage)
+        return Theme._resizeGripPixmap
 
     @staticmethod
     def get_alpha(color: QColor, alpha: int) -> QColor:

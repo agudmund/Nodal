@@ -358,12 +358,15 @@ class BaseNode(QGraphicsRectItem):
         self.paint_content(painter)
 
     def _draw_corner_taper(self, painter):
-        """Resize grip — diagonal lines simulating border thickness fading into corner."""
-        painter.setPen(QPen(QColor(255, 255, 255, 40), 2))
-        br = self.rect().bottomRight()
-        for i in range(3):
-            offset = (i + 1) * 5
-            painter.drawLine(br.x() - offset, br.y() - 2, br.x() - 2, br.y() - offset)
+        """Resize grip — swap Theme.resizeGripImage for any asset anytime."""
+        pixmap = Theme.getResizeGripPixmap()
+        if pixmap and not pixmap.isNull():
+            br = self.rect().bottomRight()
+            painter.drawPixmap(
+                int(br.x()) - pixmap.width(),
+                int(br.y()) - pixmap.height(),
+                pixmap
+            )
 
     def paint_content(self, painter):
         """Override in subclasses to draw type-specific content."""
