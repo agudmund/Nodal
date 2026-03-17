@@ -55,8 +55,8 @@
       "type": "warm",
       "title": "Phase 8: Test image loading",
       "full_text": "",
-      "pos_x": 750.0,
-      "pos_y": 2500.0,
+      "pos_x": 840.9474454390212,
+      "pos_y": 2578.478844048188,
       "width": 300.0,
       "height": 200.0,
       "ports_visible": false
@@ -67,8 +67,8 @@
       "type": "warm",
       "title": "Phase 8: Test port interactions",
       "full_text": "",
-      "pos_x": 400.0,
-      "pos_y": 2500.0,
+      "pos_x": 425.5526987021799,
+      "pos_y": 2560.142665532256,
       "width": 300.0,
       "height": 200.0,
       "ports_visible": false
@@ -91,8 +91,8 @@
       "type": "warm",
       "title": "Phase 7: Verify cozy/ folder is clean",
       "full_text": "",
-      "pos_x": 750.0,
-      "pos_y": 2150.0,
+      "pos_x": 753.0796202448356,
+      "pos_y": 2253.1672782019914,
       "width": 300.0,
       "height": 200.0,
       "ports_visible": false
@@ -103,8 +103,8 @@
       "type": "warm",
       "title": "Phase 7: Check glow_frames.py usage",
       "full_text": "",
-      "pos_x": 400.0,
-      "pos_y": 2150.0,
+      "pos_x": 383.8319937146133,
+      "pos_y": 2193.8845884889065,
       "width": 300.0,
       "height": 200.0,
       "ports_visible": false
@@ -352,8 +352,8 @@
   ],
   "connections": [],
   "viewport": {
-    "center_x": 310.4837028993713,
-    "center_y": -90.26607192012823,
-    "scale": 1.2988614445913829
+    "center_x": 603.0476261587501,
+    "center_y": 2814.5857240210266,
+    "scale": 1.363424771321806
   }
 }

@@ -28,7 +28,8 @@ class BaseNode(QGraphicsRectItem):
     Subclasses can override mouseDoubleClickEvent() for custom double-click behavior.
     """
 
-    def __init__(self, node_id, title, full_text, pos=QPointF(0, 0), width=300, height=200, uuid=None):
+    def __init__(self, node_id: int, title: str, pos: QPointF = QPointF(0, 0), 
+             width: float = 300.0, height: float = 200.0, uuid: str = None):
         """
         Initialize a BaseNode with identification, positioning, and visual properties.
 
@@ -85,7 +86,7 @@ class BaseNode(QGraphicsRectItem):
         self.pulse_anim.valueChanged.connect(self.setScale)
 
         # Pen styling
-        self.normal_pen = QPen(QColor("#444444"), 2)
+        self.normal_pen = QPen(Theme.primaryBorder, Theme.nodeBorderWidth)
         self.hover_pen = QPen(self.normal_pen.color().lighter(125), 2)
         self.current_pen = self.normal_pen
 
@@ -99,7 +100,7 @@ class BaseNode(QGraphicsRectItem):
         self.setAcceptHoverEvents(True)
 
         # Visuals
-        self.setBrush(QColor(30, 30, 30, 200))
+        self.setBrush(Theme.nodeDefaultBg)
         self.round_radius = 18
         self.setPen(self.current_pen)
 
@@ -113,9 +114,9 @@ class BaseNode(QGraphicsRectItem):
         self.setTransformOriginPoint(self.rect().center())
 
         # Cache paint objects to avoid recreating every frame
-        self._selected_pen = QPen(QColor("#a8d0ff"), 2.5, Qt.SolidLine)
+        self._selected_pen = QPen(Theme.accentSelected, Theme.nodeBorderWidth * Theme.nodeBorderSelectedScale, Qt.SolidLine)
         self._resize_handle_path = None
-        self._resize_handle_brush = QColor(255, 255, 255, 30)
+        self._resize_handle_brush = Theme.primaryBorder
         self._last_paint_rect = None
 
     # -------------------------------------------------------------------------

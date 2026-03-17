@@ -152,6 +152,7 @@
   <ItemGroup>
     <Folder Include=".github\" />
     <Folder Include="benchmarks\" />
+    <Folder Include="Documents\" />
     <Folder Include="graphics\" />
     <Folder Include="resources\" />
     <Folder Include="sessions\" />
@@ -160,7 +161,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".github\copilot-instructions.md" />
+    <Content Include="Documents\BaseNode Refactoring - Implementation Summary.md" />
     <Content Include="Documents\BaseNode Refactoring Audit Report.md" />
+    <Content Include="Documents\Docstring Update Summary.md" />
+    <Content Include="Documents\Performance Optimization Implementation.md" />
+    <Content Include="Documents\Performance Optimization Summary.md" />
+    <Content Include="Documents\Performance Regression Fix.md" />
     <Content Include="requirements.txt" />
     <Content Include="sessions\ActionPlan.json" />
     <Content Include="update_pyproj.ps1" />

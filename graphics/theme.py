@@ -10,25 +10,28 @@ from PySide6.QtGui import QColor
 
 class Theme:
 
+    # --- Primary Border (The Consistent Line) ---
+    # Single source of truth for all border and line colors across the app
     primaryBorder = QColor("#6b5a47")
+
     # --- Sizing & Spacing ---
     windowBorderWidth = 1
-    handleHeightTop = 65                # Top toolbar/title bar height (draggable area)
-    handleHeightBottom = 100            # Bottom toolbar/button bar height
-    dialogTopBarHeight = 35             # Utility dialog top bar height (text only)
-    dialogBottomBarHeight = 85          # Utility dialog bottom bar height (button bar)
-    windowAnimationDuration = 500       # Milliseconds for minimize animation
+    handleHeightTop = 65                 # Top toolbar/title bar height (draggable area)
+    handleHeightBottom = 100             # Bottom toolbar/button bar height
+    dialogTopBarHeight = 35              # Utility dialog top bar height (text only)
+    dialogBottomBarHeight = 85           # Utility dialog bottom bar height (button bar)
+    windowAnimationDuration = 500        # Milliseconds for minimize animation
     windowRestoreAnimationDuration = 200 # Milliseconds for restore animation (half of minimize)
 
     # --- Branding (The Soul) ---
-    accentNormal = QColor("#3498db")    # Primary Action Blue
-    accentSelected = QColor("#00d2ff")  # Glowing Signal Blue
-    textPrimary = QColor("#d2d1cf")
+    accentNormal = QColor("#3498db")     # Primary Action Blue
+    accentSelected = QColor("#00d2ff")   # Glowing Signal Blue
+    textPrimary = QColor("#d2d1cf")      # Primary ivory/warm white — buttons, labels, general UI text
 
     # --- UI Scaffolding ---
     windowBg = QColor("#1e1e1e")
     toolbarBg = QColor("#1e1e1e")
-    toolbarBorder = primaryBorder   # Consider changing to accentNormal?
+    toolbarBorder = primaryBorder
 
     # --- Node Dimensions ---
     nodeWidth = 140
@@ -36,12 +39,12 @@ class Theme:
     nodeRadius = 10
 
     # --- Ports (Connection Points) ---
-    portInputColor = primaryBorder
-    portOutputColor = QColor("#8cbea0")
-    portGlowDarkness = 140                      # Glow effect darkness factor
-    portSize = 20                               # Diameter in pixels
-    portBorderColor = QColor(60, 60, 80, 100)  # Port border
-    portGlowBlurRadius = 12                     # Glow effect blur
+    portInputColor = primaryBorder       # Input port blends into node border by design
+    portOutputColor = QColor("#8cbea0")  # Cool/mint for outputs
+    portGlowDarkness = 140               # Glow effect darkness factor
+    portSize = 20                        # Diameter in pixels
+    portBorderColor = primaryBorder      # Future-proofed to stay consistent with node borders
+    portGlowBlurRadius = 12              # Glow effect blur
 
     # --- Sockets (Legacy - for backward compatibility) ---
     socketRadius = 5
@@ -59,24 +62,28 @@ class Theme:
     warmNodeBg = QColor("#2a2a3a")              # Primary thought/text nodes
     aboutNodeBg = QColor(40, 40, 50, 200)       # Meta/info nodes (darker)
     imageNodeBg = QColor(30, 30, 30, 200)       # Image display nodes
-    nodeBorderNormal = QColor(255, 255, 255, 40)
+    imageCaptionColor = QColor("#a8d0ff")        # Caption text on image nodes — matches WarmNode title tone
     nodeBorderSelected = accentNormal
-
-    # --- Button Styling ---
-    buttonFontFamily = "Reey"
-    buttonFontSize = 22
-    buttonFontBold = False
-    buttonTextVerticalOffset = -2
-    buttonBorderWidth = 2
-    buttonBorderEnabled = False
-    buttonMinWidth = 160
-    buttonMinHeight = 75
+    shadowColor = QColor("#282828")             # Node drop shadow
+    nodeDefaultBg = QColor(30, 30, 30, 200)     # BaseNode default brush — subclasses override
+    nodeBorderWidth = 1                      # Border thickness — normal state
+    nodeBorderSelectedScale = 5.25           # Selected border thickness multiplier
 
     # --- Node Typography ---
     nodeTitleFontFamily = "Chandler42"
     nodeTitleFontSize = 13
     nodeBodyFontFamily = "Lato"
     nodeBodyFontSize = 9
+
+    # --- Button Styling ---
+    buttonFontFamily = "Reey"
+    buttonFontSize = 22
+    buttonFontBold = False
+    buttonTextVerticalOffset = -2
+    buttonBorderWidth = 1
+    buttonBorderEnabled = False
+    buttonMinWidth = 160
+    buttonMinHeight = 75
 
     # --- Button Colors ---
     buttonBg = QColor("#1e1e1e")
@@ -85,9 +92,6 @@ class Theme:
     buttonBorderHover = QColor("#1e1e1e")
     buttonBgInactive = QColor("#1f1f1f")
     buttonBorderInactive = QColor("#4a4a4a")
-
-    shadowColor = QColor("#282828")
-    resizeHandleColor = primaryBorder
 
     # --- ComboBox Styling ---
     comboboxBg = QColor("#1e1e1e")
@@ -104,7 +108,7 @@ class Theme:
 
     # --- Slider Styling ---
     sliderHandleImage = "resources/icons/tester.png"
-    
+
     @staticmethod
     def lerp(color1: QColor, color2: QColor, t: float) -> QColor:
         """Linear interpolation between two colors."""

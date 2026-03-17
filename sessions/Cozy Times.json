@@ -6,6 +6,7 @@
       "uuid": "60a78f2bc7574de1a655c19a7f7b70d0",
       "type": "warm",
       "title": "The spellchecker doesnt have an option to add new words to dictionary",
+      "full_text": "",
       "pos_x": -1148.8489649438295,
       "pos_y": 265.50694137018684,
       "width": 1264.7531681482883,
@@ -17,6 +18,7 @@
       "uuid": "0d80580d975b47a69a0cf5e7ce8d2a2e",
       "type": "warm",
       "title": "cozy-tree Encoding and File Reading",
+      "full_text": "",
       "pos_x": -606.2038963495368,
       "pos_y": 76.6029884622659,
       "width": 728.5322489124267,
@@ -28,8 +30,9 @@
       "uuid": "1ad190bf049043288a09cf0fe9fe9a2c",
       "type": "warm",
       "title": "The Nodes",
-      "pos_x": -536.7538145313354,
-      "pos_y": -89.45397792636179,
+      "full_text": "",
+      "pos_x": -676.1653296212411,
+      "pos_y": -120.72385046989204,
       "width": 620.0190770093982,
       "height": 111.54285313508205,
       "ports_visible": false
@@ -39,10 +42,11 @@
       "uuid": "8140f9bf2dd742508188ce5409c41f49",
       "type": "warm",
       "title": "cozy-tree .gitignore patterns",
-      "pos_x": 144.72497529067596,
-      "pos_y": 64.18522114007502,
-      "width": 649.1955367885255,
-      "height": 397.0,
+      "full_text": "",
+      "pos_x": 250.2607951250909,
+      "pos_y": 109.78711859938994,
+      "width": 652.9728331802677,
+      "height": 400.1102090350633,
       "ports_visible": false
     },
     {
@@ -50,6 +54,7 @@
       "uuid": "53a032c9a46748a2a1a2d08052c5c216",
       "type": "warm",
       "title": "About",
+      "full_text": "",
       "pos_x": 291.76602609061575,
       "pos_y": -77.14967036049936,
       "width": 200.0,
@@ -61,6 +66,7 @@
       "uuid": "32820bd9272e4de8bcf51f9735478c3d",
       "type": "warm",
       "title": "Current version does not remember window_geometry on launch",
+      "full_text": "",
       "pos_x": -1093.9410234079824,
       "pos_y": 362.0727909127429,
       "width": 1093.578588991867,
@@ -72,6 +78,7 @@
       "uuid": "c64e7c4e3d6d421fadbdcdf97276f01d",
       "type": "warm",
       "title": "Areas For Improvement",
+      "full_text": "",
       "pos_x": -441.13434545975366,
       "pos_y": -375.25064451446576,
       "width": 487.75422515038673,
@@ -83,6 +90,7 @@
       "uuid": "43a3f1c492b94daf9a35aee65586c9f0",
       "type": "warm",
       "title": "The app very much needs to be able to play the theme song",
+      "full_text": "",
       "pos_x": -710.3981667144085,
       "pos_y": -601.546834717846,
       "width": 1083.5720423947294,
@@ -94,6 +102,7 @@
       "uuid": "efff66a082d442ac97d2fa2d3f03cfb6",
       "type": "warm",
       "title": "practical and pleasurable",
+      "full_text": "",
       "pos_x": 114.1418057863076,
       "pos_y": -469.8476257805788,
       "width": 559.3669435691779,
@@ -105,6 +114,6 @@
   "viewport": {
     "center_x": 62.01761859753215,
     "center_y": 227.73272389540668,
-    "scale": 1.2431341365506465
+    "scale": 0.7675119227489658
   }
 }
