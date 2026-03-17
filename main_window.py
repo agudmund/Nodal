@@ -647,7 +647,6 @@ class NodalApp(QMainWindow):
 
     def populate_sessions(self):
         """Populate with session names from sessions/ directory"""
-        print('populate_sessions')
         # Block signals during population to avoid loading before scene is initialized
         self.project_selector.blockSignals(True)
 

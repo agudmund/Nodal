@@ -67,7 +67,7 @@ class Theme:
     shadowColor = QColor("#282828")             # Node drop shadow
     nodeDefaultBg = QColor(30, 30, 30, 200)     # BaseNode default brush — subclasses override
     nodeBorderWidth = 1                      # Border thickness — normal state
-    nodeBorderSelectedScale = 5.25           # Selected border thickness multiplier
+    nodeBorderSelectedScale = 1.25           # Selected border thickness multiplier
 
     # --- Node Typography ---
     nodeTitleFontFamily = "Chandler42"

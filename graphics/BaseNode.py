@@ -36,7 +36,6 @@ class BaseNode(QGraphicsRectItem):
         Args:
             node_id: Unique identifier for this node in the scene
             title: Node title/label text
-            full_text: Extended content text for node-specific rendering
             pos: Scene position as QPointF (default: origin)
             width: Node width in pixels (default: 300)
             height: Node height in pixels (default: 200)
@@ -56,7 +55,6 @@ class BaseNode(QGraphicsRectItem):
         # Identification
         self.node_id = node_id
         self.title = title
-        self.full_text = full_text
         self.uuid = uuid or _uuid.uuid4().hex
         self.node_type = "node"
 
@@ -114,7 +112,7 @@ class BaseNode(QGraphicsRectItem):
         self.setTransformOriginPoint(self.rect().center())
 
         # Cache paint objects to avoid recreating every frame
-        self._selected_pen = QPen(Theme.accentSelected, Theme.nodeBorderWidth * Theme.nodeBorderSelectedScale, Qt.SolidLine)
+        self._selected_pen = QPen(Theme.textPrimary, Theme.nodeBorderWidth * Theme.nodeBorderSelectedScale, Qt.SolidLine)
         self._resize_handle_path = None
         self._resize_handle_brush = Theme.primaryBorder
         self._last_paint_rect = None
@@ -405,7 +403,6 @@ class BaseNode(QGraphicsRectItem):
             "uuid": self.uuid,
             "type": self.node_type,
             "title": self.title,
-            "full_text": self.full_text,
             "pos_x": self.pos().x(),
             "pos_y": self.pos().y(),
             "width": self.rect().width(),
@@ -444,7 +441,6 @@ class BaseNode(QGraphicsRectItem):
         node = BaseNode(
             node_id=data.get("node_id", 0),
             title=data.get("title", "Node"),
-            full_text=data.get("full_text", ""),
             pos=QPointF(data.get("pos_x", 0), data.get("pos_y", 0)),
             width=data.get("width", 300),
             height=data.get("height", 200),

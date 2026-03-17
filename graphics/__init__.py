@@ -9,7 +9,7 @@ from .port import Port
 from .connection import Connection
 from .BaseNode import BaseNode
 from .WarmNode import WarmNode
-from .node_types import WarmNode, ImageNode
+from .node_types import ImageNode
 from .scene import NodeScene
 from .theme import Theme
 

@@ -2,145 +2,153 @@
   "version": "1.0",
   "nodes": [
     {
-      "node_id": 8,
-      "uuid": "808a994c491f41f2bbbe5586848a3c65",
-      "type": "warm",
-      "title": "Inner Peace",
-      "full_text": "",
-      "pos_x": 262.33565512872724,
-      "pos_y": 517.8866916391098,
-      "width": 211.0,
-      "height": 90.0,
-      "ports_visible": false
-    },
-    {
-      "node_id": 7,
-      "uuid": "bea9f9c2c1454a9a999ebdcf03b5564e",
-      "type": "warm",
-      "title": "Intentional",
-      "full_text": "",
-      "pos_x": -29.036888569497847,
-      "pos_y": 738.8497685659694,
-      "width": 212.6880012761466,
-      "height": 93.48259798490642,
-      "ports_visible": true
-    },
-    {
-      "node_id": 5,
-      "uuid": "ea908c22dc834d82bd4ccbd37566d752",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": 331.3676769695402,
-      "pos_y": 698.6520448900284,
-      "width": 180.99386024553377,
-      "height": 92.62097659465985,
-      "ports_visible": true
-    },
-    {
-      "node_id": 4,
-      "uuid": "715ade5d74d743699bccfee9cd6d3527",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": 228.59559977664196,
-      "pos_y": 913.5454944674159,
-      "width": 181.00011568810183,
-      "height": 93.07019588269827,
-      "ports_visible": true
-    },
-    {
-      "node_id": 2,
-      "uuid": "cfd6974a34184c28a99208bae8904624",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": 1000.8958555277859,
-      "pos_y": 824.7393539136219,
-      "width": 178.0,
-      "height": 90.0,
-      "ports_visible": true
-    },
-    {
-      "node_id": 0,
-      "uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "this text is still not loaded on nodes",
-      "pos_x": -119.37912896698583,
-      "pos_y": 603.6601942103617,
-      "width": 177.71854022598453,
-      "height": 85.29247779587934,
-      "ports_visible": false
-    },
-    {
-      "node_id": 0,
-      "uuid": "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": 1020.2081153793054,
-      "pos_y": 638.1056242606478,
-      "width": 178.0,
-      "height": 145.1414389490152,
-      "ports_visible": false
-    },
-    {
-      "node_id": 3,
-      "uuid": "0d00e32f9e404b538ad5ee580b24f362",
-      "type": "warm",
-      "title": "New Node",
-      "full_text": "",
-      "pos_x": 612.4161327853765,
-      "pos_y": 839.9734132687122,
-      "width": 178.42153806538943,
-      "height": 89.83231756354371,
-      "ports_visible": true
-    },
-    {
-      "node_id": 6,
-      "uuid": "b03829fe12c648c087f97137d9bac942",
+      "node_id": 11,
+      "uuid": "a8cd493aac3b4c3ea343688cda6ddc38",
       "type": "warm",
       "title": "Boundless Joy",
-      "full_text": "",
-      "pos_x": 695.4644593016168,
-      "pos_y": 579.5410897094174,
-      "width": 236.0469046230167,
-      "height": 94.87383037315249,
-      "ports_visible": false
-    },
-    {
-      "node_id": 9,
-      "uuid": "e1ee5f7349c6463a874a3e0c37ff9dd6",
-      "type": "warm",
-      "title": "Practical and pleasurable",
-      "full_text": "yay",
-      "pos_x": 546.8144006315687,
-      "pos_y": 978.3667940560873,
-      "width": 365.0,
+      "pos_x": 930.2473759027175,
+      "pos_y": 487.07882706794396,
+      "width": 233.0,
       "height": 90.0,
-      "ports_visible": false
+      "ports_visible": false,
+      "full_text": ""
     },
     {
       "node_id": 10,
       "uuid": "cec6d825531647b78d5d23e2d3fd4064",
       "type": "warm",
       "title": "Gentle",
-      "full_text": "",
       "pos_x": -69.01846532556897,
       "pos_y": 892.534244778381,
       "width": 156.0,
       "height": 90.0,
-      "ports_visible": false
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 9,
+      "uuid": "e1ee5f7349c6463a874a3e0c37ff9dd6",
+      "type": "warm",
+      "title": "Practical and pleasurable",
+      "pos_x": 707.0056008525786,
+      "pos_y": 989.7509402646872,
+      "width": 365.0,
+      "height": 90.0,
+      "ports_visible": false,
+      "full_text": "yay"
+    },
+    {
+      "node_id": 6,
+      "uuid": "b03829fe12c648c087f97137d9bac942",
+      "type": "warm",
+      "title": "Boundless Joy",
+      "pos_x": 641.7963414610753,
+      "pos_y": 592.5515425192456,
+      "width": 236.0469046230167,
+      "height": 94.87383037315249,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 3,
+      "uuid": "0d00e32f9e404b538ad5ee580b24f362",
+      "type": "warm",
+      "title": "New Node",
+      "pos_x": 612.4161327853765,
+      "pos_y": 839.9734132687122,
+      "width": 178.42153806538943,
+      "height": 89.83231756354371,
+      "ports_visible": true,
+      "full_text": ""
+    },
+    {
+      "node_id": 0,
+      "uuid": "b6b9e9d9-cfa9-4af3-a28e-84c8fc95b22c",
+      "type": "warm",
+      "title": "New Node",
+      "pos_x": 1049.4816342014187,
+      "pos_y": 642.1713907637193,
+      "width": 178.0,
+      "height": 145.1414389490152,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 0,
+      "uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
+      "type": "warm",
+      "title": "New Node",
+      "pos_x": -119.37912896698583,
+      "pos_y": 603.6601942103617,
+      "width": 177.71854022598453,
+      "height": 85.29247779587934,
+      "ports_visible": false,
+      "full_text": "this text is still not loaded on nodes"
+    },
+    {
+      "node_id": 2,
+      "uuid": "cfd6974a34184c28a99208bae8904624",
+      "type": "warm",
+      "title": "New Node",
+      "pos_x": 1000.8958555277859,
+      "pos_y": 824.7393539136219,
+      "width": 178.0,
+      "height": 90.0,
+      "ports_visible": true,
+      "full_text": ""
+    },
+    {
+      "node_id": 4,
+      "uuid": "715ade5d74d743699bccfee9cd6d3527",
+      "type": "warm",
+      "title": "New Node",
+      "pos_x": 228.59559977664196,
+      "pos_y": 913.5454944674159,
+      "width": 181.00011568810183,
+      "height": 93.07019588269827,
+      "ports_visible": true,
+      "full_text": ""
+    },
+    {
+      "node_id": 5,
+      "uuid": "ea908c22dc834d82bd4ccbd37566d752",
+      "type": "warm",
+      "title": "New Node",
+      "pos_x": 281.76532563207013,
+      "pos_y": 691.3336651845001,
+      "width": 180.99386024553377,
+      "height": 92.62097659465985,
+      "ports_visible": true,
+      "full_text": ""
+    },
+    {
+      "node_id": 7,
+      "uuid": "bea9f9c2c1454a9a999ebdcf03b5564e",
+      "type": "warm",
+      "title": "Intentional",
+      "pos_x": -29.036888569497847,
+      "pos_y": 738.8497685659694,
+      "width": 212.6880012761466,
+      "height": 93.48259798490642,
+      "ports_visible": true,
+      "full_text": ""
+    },
+    {
+      "node_id": 8,
+      "uuid": "808a994c491f41f2bbbe5586848a3c65",
+      "type": "warm",
+      "title": "Inner Peace",
+      "pos_x": 275.3461079385554,
+      "pos_y": 522.7656114427954,
+      "width": 211.0,
+      "height": 90.0,
+      "ports_visible": false,
+      "full_text": ""
     }
   ],
   "connections": [
     {
-      "start_node_uuid": "ea908c22dc834d82bd4ccbd37566d752",
-      "end_node_uuid": "cfd6974a34184c28a99208bae8904624"
-    },
-    {
-      "start_node_uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
+      "start_node_uuid": "bea9f9c2c1454a9a999ebdcf03b5564e",
       "end_node_uuid": "ea908c22dc834d82bd4ccbd37566d752"
     },
     {
@@ -148,13 +156,17 @@
       "end_node_uuid": "0d00e32f9e404b538ad5ee580b24f362"
     },
     {
-      "start_node_uuid": "bea9f9c2c1454a9a999ebdcf03b5564e",
+      "start_node_uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec",
       "end_node_uuid": "ea908c22dc834d82bd4ccbd37566d752"
+    },
+    {
+      "start_node_uuid": "ea908c22dc834d82bd4ccbd37566d752",
+      "end_node_uuid": "cfd6974a34184c28a99208bae8904624"
     }
   ],
   "viewport": {
-    "center_x": 580.0385871531587,
-    "center_y": 800.0610248227135,
+    "center_x": 601.9937262697441,
+    "center_y": 789.4900319147278,
     "scale": 1.2297804107104904
   }
 }
