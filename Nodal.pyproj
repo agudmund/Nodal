@@ -88,21 +88,6 @@
       </xmlns>
     </Compile>
 
-      <xmlns>
-      </xmlns>
-    </Compile>
-
-      <xmlns>
-      </xmlns>
-    </Compile>
-
-      <xmlns>
-      </xmlns>
-    </Compile>
-
-      <xmlns>
-      </xmlns>
-    </Compile>
     <Compile Include="graphics\__init__.py">
       <xmlns>
       </xmlns>
