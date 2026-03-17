@@ -7,7 +7,7 @@
 """
 
 from PySide6.QtCore import QPropertyAnimation, QParallelAnimationGroup, QEasingCurve, QRect
-from graphics.theme import Theme
+from graphics.Theme import Theme
 from utils.logger import setup_logger
 
 logger = setup_logger()

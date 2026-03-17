@@ -10,7 +10,7 @@ if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
 from benchmarks.profiler import time_function, benchmark_suite
-from graphics.scene import NodeScene
+from graphics.Scene import NodeScene
 from utils.logger import setup_logger
 
 from PySide6.QtWidgets import QApplication

@@ -12,7 +12,7 @@ import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsScene
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QColor, QPainter, QTransform
-from .theme import Theme
+from .Theme import Theme
 from utils.motivational_messages import MOTIVATIONAL_MESSAGES
 from .BaseNode import BaseNode
 from .WarmNode import WarmNode
@@ -102,7 +102,7 @@ class NodeScene(QGraphicsScene):
         nodes_data = [item.to_dict() for item in self.items() if isinstance(item, BaseNode)]
 
         # 2. Gather Connections (The New Nerve Ledger)
-        from graphics.connection import Connection
+        from graphics.Connection import Connection
         conns_data = []
         for item in self.items():
             if isinstance(item, Connection):
@@ -191,7 +191,7 @@ class NodeScene(QGraphicsScene):
             data: Dictionary with 'nodes' and 'connections' lists from session
         """
         # from graphics import node_types
-        from graphics.connection import Connection
+        from graphics.Connection import Connection
 
         self.clear_nodes()
         node_map = {} # To keep track of UUIDs during the build

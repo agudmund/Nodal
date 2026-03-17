@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QGraphicsTextItem
 from PySide6.QtCore import Qt, QRectF, QPointF, QSizeF, QTimer
 from PySide6.QtGui import QFont, QFontMetrics, QPainterPath, QTextDocument
 from .BaseNode import BaseNode
-from .theme import Theme
+from .Theme import Theme
 
 
 class WarmNode(BaseNode):
@@ -30,9 +30,8 @@ class WarmNode(BaseNode):
     # INITIALISATION
     # -------------------------------------------------------------------------
 
-    def __init__(self, node_id: int = 0, title: str = "", full_text: str = "", 
-             pos: QPointF = QPointF(0, 0), width: float = None, height: float = None, 
-             uuid: str = None):
+    def __init__(self, node_id=0, title="", full_text="", pos=QPointF(0, 0),
+                 width=None, height=None, uuid=None):
 
         # Smart title fallback — derive from first sentence if title is empty
         # Critical for bulk markdown import where naming thousands of nodes is impractical
@@ -48,14 +47,7 @@ class WarmNode(BaseNode):
         if height is None:
             height = Theme.nodeHeight
 
-        super().__init__(
-            node_id=node_id,
-            title=resolved_title,
-            pos=pos,
-            width=width,
-            height=height,
-            uuid=uuid
-        )
+        super().__init__(node_id, resolved_title, pos, width, height, uuid)
         self.node_type = "warm"
         self.full_text = full_text
         self.setBrush(Theme.warmNodeBg)
@@ -244,7 +236,7 @@ class WarmNode(BaseNode):
 
     def on_double_click(self, event):
         """Open the note editor on left double-click."""
-        from graphics.note_editor import CozyNoteEditor
+        from graphics.NoteEditor import CozyNoteEditor
 
         main_window = None
         for view in self.scene().views():
@@ -342,9 +334,9 @@ class WarmNode(BaseNode):
             node_id=data.get("node_id", 0),
             title=data.get("title", ""),
             full_text=data.get("full_text", ""),
-            pos=QPointF(data.get("pos_x", 0), data.get("pos_y", 0)),
-            width=data.get("width"),
-            height=data.get("height"),
+            pos=QPointF(data.get("pos_x", 0.0), data.get("pos_y", 0.0)),
+            width=float(data["width"]) if data.get("width") is not None else None,
+            height=float(data["height"]) if data.get("height") is not None else None,
             uuid=data.get("uuid")
         )
         node.ports_visible = data.get("ports_visible", False)

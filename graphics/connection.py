@@ -9,7 +9,7 @@
 from PySide6.QtWidgets import QGraphicsPathItem
 from PySide6.QtGui import QPainterPath, QPen, QColor, QLinearGradient, QPainter, QBrush
 from PySide6.QtCore import Qt, QPointF
-from .theme import Theme
+from .Theme import Theme
 
 class Connection(QGraphicsPathItem):
     def __init__(self, start_node, end_node=None):

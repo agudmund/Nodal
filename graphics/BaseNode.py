@@ -11,8 +11,8 @@ import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTimer
 from PySide6.QtGui import QPen, QPainter, QBrush, QPainterPath
-from .theme import Theme
-from .port import Port
+from .Theme import Theme
+from .Port import Port
 from utils.logger import setup_logger
 
 logger = setup_logger()
@@ -422,8 +422,8 @@ class BaseNode(QGraphicsRectItem):
             Appropriate BaseNode subclass instance (WarmNode, ImageNode, AboutNode, or BaseNode)
         """
         from .WarmNode import WarmNode
-        from .imageNode import ImageNode
-        from .aboutNode import AboutNode
+        from .ImageNode import ImageNode
+        from .AboutNode import AboutNode
 
         node_type = data.get("type", "node")
 
@@ -442,10 +442,10 @@ class BaseNode(QGraphicsRectItem):
         node = BaseNode(
             node_id=data.get("node_id", 0),
             title=data.get("title", "Node"),
-            pos=QPointF(data.get("pos_x", 0), data.get("pos_y", 0)),
-            width=data.get("width", 300),
-            height=data.get("height", 200),
+            pos=QPointF(data.get("pos_x", 0.0), data.get("pos_y", 0.0)),
+            width=float(data.get("width", 300.0)),
+            height=float(data.get("height", 200.0)),
             uuid=data.get("uuid")
-        );
+        )
         node.ports_visible = data.get("ports_visible", False)
         return node

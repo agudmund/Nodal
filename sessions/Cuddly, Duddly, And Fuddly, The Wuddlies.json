@@ -78,8 +78,8 @@
       "uuid": "6bd1a4fa3a94421aaf1ff7c5e6cbeaa0",
       "type": "warm",
       "title": "We definately need a way to copy paste nodes from one session to another",
-      "pos_x": 24.818836045711578,
-      "pos_y": -523.8774191216611,
+      "pos_x": 158.37437328115152,
+      "pos_y": -561.1075025103014,
       "width": 881.0,
       "height": 72.79020234291795,
       "ports_visible": true,
@@ -174,8 +174,8 @@
       "uuid": "4af1a92aef9048fc8db35db83c5282b8",
       "type": "warm",
       "title": "Endless Potential",
-      "pos_x": 632.7758479786947,
-      "pos_y": -1138.2023657277007,
+      "pos_x": 1263.3234507672541,
+      "pos_y": -1265.8483659173244,
       "width": 277.0,
       "height": 90.0,
       "ports_visible": false,
@@ -229,8 +229,8 @@
     }
   ],
   "viewport": {
-    "center_x": 571.1192374634754,
-    "center_y": -510.0458740502875,
-    "scale": 1.692179932619292
+    "center_x": 662.5592381390878,
+    "center_y": -343.5409667508842,
+    "scale": 1.5173409588003726
   }
 }

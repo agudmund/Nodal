@@ -8,7 +8,7 @@
 
 from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsDropShadowEffect
 from PySide6.QtGui import QBrush, QPen
-from .theme import Theme
+from .Theme import Theme
 
 class Port(QGraphicsEllipseItem):
     """A warm connection port for input/output on nodes 🌿"""

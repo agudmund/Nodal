@@ -10,8 +10,8 @@ from pathlib import Path
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform
 from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect
-from graphics.scene import NodeScene, enable_blur
-from graphics.theme import Theme
+from graphics.Scene import NodeScene, enable_blur
+from graphics.Theme import Theme
 from widgets import CozyButton
 from utils.logger import setup_logger
 from utils.settings import Settings

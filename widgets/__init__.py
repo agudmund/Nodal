@@ -9,7 +9,7 @@
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtGui import QFont, QColor
 from PySide6.QtCore import Qt
-from graphics.theme import Theme
+from graphics.Theme import Theme
 
 class CozyButton(QPushButton):
     """
