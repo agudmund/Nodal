@@ -234,24 +234,43 @@ class WarmNode(BaseNode):
     # DOUBLE CLICK — opens note editor
     # -------------------------------------------------------------------------
 
-    def on_double_click(self, event):
-        """Open the note editor on left double-click."""
-        from graphics.NoteEditor import CozyNoteEditor
+    def mouseDoubleClickEvent(self, event):
+        """
+        PURPOSE: The 'Thought Editor' Handshake.
+        CLAIM: Only WarmNodes can manifest the CozyNoteEditor.
+        """
+        if event.button() == Qt.MouseButton.LeftButton:
+            # We look for the main window (the NodalApp) through the scene's views
+            scene = self.scene()
+            if scene and scene.views():
+                main_window = scene.views()[0].window()
+                
+                # We ask the window to open the editor for THIS node
+                if hasattr(main_window, "open_node_editor"):
+                    main_window.open_node_editor(self)
+                    event.accept()
+                    return
 
-        main_window = None
-        for view in self.scene().views():
-            main_window = view.window()
-            break
+        super().mouseDoubleClickEvent(event)
 
-        self._editor = CozyNoteEditor(
-            self.node_id, self.title, self.full_text, parent=main_window
-        )
-        self._editor.show()
-        self._editor.raise_()
-        self._editor.activateWindow()
-        self._editor.accepted.connect(self._on_editor_accepted)
-        self._editor.rejected.connect(self._on_editor_rejected)
-        self._editor.setModal(False)
+    # def on_double_click(self, event):
+    #     """Open the note editor on left double-click."""
+    #     from graphics.NoteEditor import CozyNoteEditor
+
+    #     main_window = None
+    #     for view in self.scene().views():
+    #         main_window = view.window()
+    #         break
+
+    #     self._editor = CozyNoteEditor(
+    #         self.node_id, self.title, self.full_text, parent=main_window
+    #     )
+    #     self._editor.show()
+    #     self._editor.raise_()
+    #     self._editor.activateWindow()
+    #     self._editor.accepted.connect(self._on_editor_accepted)
+    #     self._editor.rejected.connect(self._on_editor_rejected)
+    #     self._editor.setModal(False)
 
     def _on_editor_accepted(self):
         """Apply changes from the note editor."""

@@ -7,7 +7,7 @@
 """
 
 from pathlib import Path
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene, QDialog
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform
 from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect, QDateTime
 from graphics.Scene import NodeScene, enable_blur
@@ -226,6 +226,8 @@ class NodeGraphicsView(QGraphicsView):
 class NodalApp(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.active_editors = {} # Dictionary: {node_id: editor_instance}
 
         self._last_saved_viewport = (0.0, 0.0, 1.0)
         self.view_pan_x = 0.0
@@ -688,6 +690,7 @@ class NodalApp(QMainWindow):
 
     def toggle_curtains(self):
         """Animate the window into a sleek HUD strip."""
+        self.setMinimumHeight(0)
         self.curtain_anim = QPropertyAnimation(self, b"geometry")
         self.curtain_anim.setDuration(450)
         self.curtain_anim.setEasingCurve(QEasingCurve.OutExpo)
@@ -702,13 +705,13 @@ class NodalApp(QMainWindow):
             
             # Fade out the canvas to keep the HUD clean
             self.view.hide()
-            if hasattr(self, 'bottom_bar_widget'): self.bottom_bar_widget.hide()
+            if hasattr(self, 'bottom_toolbar_container'): self.bottom_toolbar_container.hide()
             logger.info(f"Curtains Pulled: Window height -> {Theme.handleHeightTop}px")
         else:
             # --- OPEN CURTAINS ---
             end_rect = QRect(start_rect.x(), start_rect.y(), start_rect.width(), self.original_height)
             self.view.show()
-            if hasattr(self, 'bottom_bar_widget'): self.bottom_bar_widget.show()
+            if hasattr(self, 'bottom_toolbar_container'): self.bottom_toolbar_container.show()
             logger.info("Curtains Opened: Restoration complete.")
 
         self.curtain_anim.setStartValue(start_rect)
@@ -720,6 +723,51 @@ class NodalApp(QMainWindow):
     # =========================================================================
     # Things I haven't sorted and tidied up yet
     # =========================================================================
+
+    def open_node_editor(self, node):
+        """Launch or focus an editor for a specific node."""
+        from graphics.NoteEditor import CozyNoteEditor
+        
+        # 1. CHECK THE REGISTRY: If this node is already being edited, just bring it to front
+        if node.node_id in self.active_editors:
+            existing_editor = self.active_editors[node.node_id]
+            existing_editor.raise_()
+            existing_editor.activateWindow()
+            return
+
+        # 2. CREATE NEW: Otherwise, manifest a new window
+        editor = CozyNoteEditor(
+            node_id=node.node_id,
+            current_title=node.title,
+            current_text=node.full_text,
+            parent=self
+        )
+        
+        # 3. REGISTER: Tie the editor to the node_id
+        self.active_editors[node.node_id] = editor
+        
+        # 4. THE HANDSHAKE: Update node on Save, and Cleanup on Close
+        editor.finished.connect(lambda result: self._handle_editor_finished(node, result))
+        
+        editor.show()
+
+    def _handle_editor_finished(self, node, result):
+        """Sync data and purge the registry when a window closes."""
+        editor = self.active_editors.get(node.node_id)
+        
+        if result == QDialog.Accepted and editor:
+            # Sync the soul back to the node
+            # node.title = editor.title_input.text()
+            # node.full_text = editor.text_edit.toPlainText()
+            
+            node._sync_content_layout()
+            node.update()
+            self.scene.set_dirty(True)
+            logger.info(f"💾 Parallel Sync: Node {node.node_id} updated.")
+
+        # 5. PURGE: Remove from registry so it can be re-opened later
+        if node.node_id in self.active_editors:
+            del self.active_editors[node.node_id]
 
     def minimize_with_animation(self):
         """Minimize window with custom shrink + fade animation."""
