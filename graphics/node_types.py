@@ -111,12 +111,19 @@ class WarmNode(BaseNode):
             # Show body text
             self.text_item.setVisible(True)
 
-            doc = QTextDocument()
-            doc.setDefaultFont(self.text_item.font())
-            doc.setPlainText(self.full_text)
-            doc.setTextWidth(r.width() - (self.MARGIN * 2))
+            # Only create/update document if text content changed or width changed
+            doc = self.text_item.document()
+            if not doc or doc.textWidth() != r.width() - (self.MARGIN * 2):
+                doc = QTextDocument()
+                doc.setDefaultFont(self.text_item.font())
+                # Note: text is set via setPlainText only on initial creation or change
+                # to avoid expensive QTextDocument operations on every layout sync
+                if not hasattr(self, '_last_full_text') or self._last_full_text != self.full_text:
+                    doc.setPlainText(self.full_text)
+                    self._last_full_text = self.full_text
+                doc.setTextWidth(r.width() - (self.MARGIN * 2))
+                self.text_item.setDocument(doc)
 
-            self.text_item.setDocument(doc)
             self.text_item.setPos(self.MARGIN, 55)
 
             # Auto-grow height based on content
