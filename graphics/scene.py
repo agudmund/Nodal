@@ -93,8 +93,11 @@ class NodeScene(QGraphicsScene):
         return self._dirty
 
     def get_session_data(self) -> dict:
-        # 1. Gather Nodes (Existing)
-        nodes_data = [item.to_dict() for item in self.items() if isinstance(item, BaseNode)]
+        """Gather all nodes and connections for session persistence.
+
+        Returns:
+            Dictionary with version, serialized nodes, and connection metadata.
+        """
         
         # 2. Gather Connections (The New Nerve Ledger)
         from graphics.connection import Connection
@@ -113,7 +116,15 @@ class NodeScene(QGraphicsScene):
         }
 
     def add_connection(self, node_a, node_b):
-        from graphics.connection import Connection
+        """Create and register a connection (wire) between two nodes.
+
+        Args:
+            node_a: Source BaseNode
+            node_b: Target BaseNode
+
+        Returns:
+            Connection instance
+        """
         conn = Connection(node_a, node_b)
         self.addItem(conn)
         node_a.connections.append(conn)
@@ -121,17 +132,18 @@ class NodeScene(QGraphicsScene):
         return conn
 
     def add_node(self, x: float, y: float, title: str = None) -> 'WarmNode':
-        """
-        Add a node to the scene at the specified coordinates.
-        Coordinates are clamped to the scene bounds (0-2000).
+        """Create and add a WarmNode to the scene.
+
+        Automatically generates a node_id based on existing node count.
+        Uses random motivational message as title if not provided.
 
         Args:
-            x: X coordinate
-            y: Y coordinate
-            title: Node title label (if None, selects random motivational message)
+            x: Scene X coordinate
+            y: Scene Y coordinate
+            title: Optional node title (uses random motivational message if None)
 
         Returns:
-            WarmNode: The created and added node
+            Newly created and added WarmNode instance
         """
 
         # Use random motivational message if no title provided
@@ -146,9 +158,8 @@ class NodeScene(QGraphicsScene):
         return node
 
     def clear_nodes(self):
-        """
-        PURPOSE: Clear the stage of all transient characters.
-        CLAIM: Only the Fog Layer has a permanent claim to existing.
+        """Remove all nodes from the scene while preserving the background fog layer.
+        Properly cleans up graphics effects and invalidates the scene cache.
         """
         # 1. Grab everything currently on the stage
         all_items = self.items()
@@ -171,8 +182,12 @@ class NodeScene(QGraphicsScene):
             view.viewport().update()
 
     def rebuild_from_session(self, data: dict):
-        from graphics import node_types
-        from graphics.connection import Connection # The Nerve specialist
+        """Reconstruct scene nodes and connections from session data.
+        Clears existing nodes and rebuilds graph from serialized state.
+
+        Args:
+            data: Dictionary with 'nodes' and 'connections' lists from session
+        """
 
         self.clear_nodes()
         node_map = {} # To keep track of UUIDs during the build

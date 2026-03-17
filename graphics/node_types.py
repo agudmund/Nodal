@@ -19,7 +19,9 @@ logger = setup_logger()
 
 
 class WarmNode(BaseNode):
-    """Text/thought node with QGraphicsTextItem, emoji, and note editor."""
+    """Text/thought node specialization with emoji, QGraphicsTextItem child items, and note editor.
+    Displays title, body text, and random emoji for visual personality.
+    Supports interactive editing via double-click and dynamic height resizing based on content."""
 
     MIN_WIDTH = 180
     MIN_HEIGHT = 60
@@ -73,9 +75,9 @@ class WarmNode(BaseNode):
         self._sync_content_layout()
 
     def paint_content(self, painter):
-        """Specific dialogue for the WarmNode: Emojis and Thoughts."""
+        """Ensure child text items (emoji, title, body) are visible. Qt handles actual rendering."""
         # Since WarmNode uses child QGraphicsTextItems (self.emoji_item, etc.),
-        # we just ensure they are visible. Qt draws child items automatically 
+        # we just ensure they are visible. Qt draws child items automatically
         # AFTER the parent's paint() finishes.
         if not self.emoji_item.isVisible():
             self.emoji_item.show()
@@ -88,7 +90,8 @@ class WarmNode(BaseNode):
         self._sync_content_layout()
 
     def _sync_content_layout(self):
-        """Update position and visibility of title and body text items."""
+        """Update child item positions and visibility based on current node dimensions.
+        Handles text elision, auto-height growth, and small-node compact mode."""
         r = self.rect()
 
         # === Emoji display (top-left) ===
@@ -189,7 +192,10 @@ class WarmNode(BaseNode):
 
     @staticmethod
     def from_dict(data: dict) -> 'WarmNode':
-        """Deserializes a WarmNode using the standard Warehouse keys."""
+        """Deserialize WarmNode from session data dictionary.
+
+        Expected keys: node_id, title, full_text, pos_x, pos_y, width, height, uuid, ports_visible
+        """
         node = WarmNode(
             node_id=data.get("node_id", 0),
             title=data.get("title", "Warm Node"), # Matches 'title' key
@@ -204,7 +210,8 @@ class WarmNode(BaseNode):
 
 
 class AboutNode(BaseNode):
-    """Meta/information node - smaller, no ports."""
+    """Meta/information node specialization - compact read-only node without ports.
+    Used for display-only metadata or information markers in the node graph."""
 
     def __init__(self, node_id=0, title="About", full_text="", pos=QPointF(0, 0), 
                  width=200, height=55, uuid=None):
@@ -213,7 +220,7 @@ class AboutNode(BaseNode):
         self.setBrush(Theme.aboutNodeBg)
 
     def paint_content(self, painter):
-        """Simple text rendering for about nodes."""
+        """Render title text centered with word wrapping in compact node format."""
         padding = 8
         painter.setPen(Theme.textPrimary)
         painter.setFont(QFont(Theme.buttonFontFamily, 10, QFont.Bold))
@@ -241,7 +248,8 @@ class AboutNode(BaseNode):
 
 
 class ImageNode(BaseNode):
-    """Image display node - shows image content."""
+    """Image display node specialization - renders pixmap content with optional caption.
+    Supports loading and displaying image content with title as caption overlay."""
 
     def __init__(self, node_id=0, title="", full_text="", pos=QPointF(0, 0), 
                  width=None, height=None, uuid=None):
@@ -255,7 +263,7 @@ class ImageNode(BaseNode):
         self.image = None
 
     def paint_content(self, painter):
-        """Specific dialogue for the ImageNode: Visual Content."""
+        """Render image pixmap scaled to node bounds, with title caption at bottom if present."""
         if self.image:
             # Draw the image elided within the rounded frame
             painter.drawPixmap(self.rect().toRect(), self.image)

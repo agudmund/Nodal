@@ -36,14 +36,20 @@ def _get_sessions_dir() -> Path:
 
 
 class SessionManager:
-    """Handle saving and loading of nodal graph sessions to/from JSON files."""
+    """Manage persistence of nodal graph sessions to/from JSON files.
+    Handles session creation, loading, saving, and listing with proper error handling.
+    """
 
     SESSIONS_DIR = "sessions"
     VERSION = "1.0"
 
     @staticmethod
     def get_available_sessions() -> List[str]:
-        """Get list of available session names from sessions/ directory."""
+        """Retrieve list of all saved session file names from the sessions directory.
+
+        Returns:
+            List of session names (without .json extension)
+        """
         sessions_path = _get_sessions_dir()
 
         if not sessions_path.exists():

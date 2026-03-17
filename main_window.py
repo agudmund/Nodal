@@ -212,8 +212,9 @@ class NodeGraphicsView(QGraphicsView):
             super().keyPressEvent(event)
 
     def delete_selected_nodes(self):
-        """Delete all selected nodes from the scene."""
-        from graphics.BaseNode import BaseNode
+        """Delete all selected BaseNode instances from the scene.
+        Filters for BaseNode types to exclude other graphics items. Updates viewport.
+        """
         scene = self.scene()
         if not scene:
             return

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times nodal playground - baseNode.py base node graphics item
--Foundation class for all node types: ports, wires, resize, hover, serialization
+-Cozy times nodal playground - BaseNode.py base node graphics item
+-Foundation class for all node types: ports, connections, resize, hover, serialization
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
@@ -21,11 +21,26 @@ logger = setup_logger()
 class BaseNode(QGraphicsRectItem):
     """
     Foundation class for all node types.
-    Handles ports, wire connections, resize, hover animation, paint pipeline, and serialization.
-    Override paint_content() in subclasses to draw type-specific content.
+    Provides core functionality: input/output ports, connections, interactive resize,
+    hover animations with pulse effect, and serialization for session persistence.
+
+    Subclasses override paint_content() to draw type-specific visuals.
+    Subclasses can override mouseDoubleClickEvent() for custom double-click behavior.
     """
 
     def __init__(self, node_id, title, full_text, pos=QPointF(0, 0), width=300, height=200, uuid=None):
+        """
+        Initialize a BaseNode with identification, positioning, and visual properties.
+
+        Args:
+            node_id: Unique identifier for this node in the scene
+            title: Node title/label text
+            full_text: Extended content text for node-specific rendering
+            pos: Scene position as QPointF (default: origin)
+            width: Node width in pixels (default: 300)
+            height: Node height in pixels (default: 200)
+            uuid: Unique identifier for serialization (auto-generated if None)
+        """
         super().__init__(0, 0, width, height)
 
         self.ports_visible = False
@@ -371,6 +386,7 @@ class BaseNode(QGraphicsRectItem):
     # -------------------------------------------------------------------------
 
     def to_dict(self):
+        """Serialize node state to dictionary for session persistence."""
         return {
             "node_id": self.node_id,
             "uuid": self.uuid,
@@ -387,8 +403,14 @@ class BaseNode(QGraphicsRectItem):
     @staticmethod
     def from_dict(data: dict) -> 'BaseNode':
         """
-        Factory - routes to the correct subclass based on node type.
-        Import subclasses here locally to avoid circular imports.
+        Factory method - routes to correct subclass based on node type.
+        Uses local imports to avoid circular dependency issues.
+
+        Args:
+            data: Dictionary containing node state (must include 'type' key)
+
+        Returns:
+            Appropriate BaseNode subclass instance (WarmNode, ImageNode, AboutNode, or BaseNode)
         """
         from .node_types import WarmNode, ImageNode, AboutNode
 
@@ -405,6 +427,7 @@ class BaseNode(QGraphicsRectItem):
 
     @staticmethod
     def _create_from_dict(data: dict) -> 'BaseNode':
+        """Fallback factory for creating generic BaseNode instances from serialized data."""
         node = BaseNode(
             node_id=data.get("node_id", 0),
             title=data.get("title", "Node"),
