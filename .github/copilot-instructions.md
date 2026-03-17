@@ -19,6 +19,7 @@
 
 ## Documentation Standards
 - All external documentation (reports, audits, summaries, analysis documents) must be stored in the `./Documents/` folder at the project root.
+- Exception: README.md must remain in the project root as a default GitHub repository file.
 - Documentation files should use "Title Case With Spaces" naming convention (e.g., "Final Theme Refactoring Report.md", "Docstring Compliance Report.md").
 - Documentation is generated for significant refactoring work, audits, and verification processes.
 - Each document should include a brief summary at the top explaining its purpose and scope.

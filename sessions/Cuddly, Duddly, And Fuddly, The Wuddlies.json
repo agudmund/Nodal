@@ -2,24 +2,144 @@
   "version": "1.0",
   "nodes": [
     {
-      "node_id": 10,
-      "uuid": "b363bd96ab2f490f8a80f208b3fbfaf1",
+      "node_id": 14,
+      "uuid": "4af1a92aef9048fc8db35db83c5282b8",
       "type": "warm",
-      "title": "New Node",
-      "pos_x": -71.1675108986534,
-      "pos_y": -1173.1519374699888,
-      "width": 178.0,
+      "title": "Endless Potential",
+      "pos_x": 1263.3234507672541,
+      "pos_y": -1265.8483659173244,
+      "width": 277.0,
       "height": 90.0,
       "ports_visible": false,
       "full_text": ""
     },
     {
-      "node_id": 9,
-      "uuid": "ed831246ccb1403ea723ccc2127b7b9f",
+      "node_id": 13,
+      "uuid": "b0822a7852054b079f174c7e56711825",
+      "type": "warm",
+      "title": "Endless Potential",
+      "pos_x": 866.1551414741703,
+      "pos_y": -1314.9063917521023,
+      "width": 280.1903784578419,
+      "height": 91.62667362936622,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 12,
+      "uuid": "e6731dba7ade4e95bef86c48394407fb",
+      "type": "warm",
+      "title": "Soft",
+      "pos_x": 943.5935395450373,
+      "pos_y": -1201.4704044280952,
+      "width": 140.0,
+      "height": 90.0,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 11,
+      "uuid": "e9414ed211414aedbf4ce39d79d4f5f8",
+      "type": "warm",
+      "title": "Golden Hour",
+      "pos_x": 583.7308109088713,
+      "pos_y": -1256.1684588747719,
+      "width": 211.0,
+      "height": 89.38467038665726,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 7,
+      "uuid": "b2e6bfb469d74e13ade063a99ec4ff22",
+      "type": "warm",
+      "title": "Dont panic",
+      "pos_x": -459.13767854681646,
+      "pos_y": -846.1136490047114,
+      "width": 200.0,
+      "height": 90.0,
+      "ports_visible": true,
+      "full_text": ""
+    },
+    {
+      "node_id": 6,
+      "uuid": "381329d071924cb69467732b76c24ffb",
+      "type": "warm",
+      "title": "Tonight",
+      "pos_x": -428.30300045415123,
+      "pos_y": -609.7611333688496,
+      "width": 167.0,
+      "height": 90.0,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 5,
+      "uuid": "dbd17792bdd0465c89a4d5d3be4ed0b8",
+      "type": "warm",
+      "title": "Yummi",
+      "pos_x": 339.7983010545998,
+      "pos_y": -1154.6867442253729,
+      "width": 143.76934077331418,
+      "height": 86.30802231994289,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 3,
+      "uuid": "151f21437c1345dc8ed4f9974858c608",
+      "type": "warm",
+      "title": "Sweet",
+      "pos_x": 1070.5378435199445,
+      "pos_y": -915.7951880183053,
+      "width": 180.7774227902023,
+      "height": 86.1022364217252,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 1,
+      "uuid": "6bd1a4fa3a94421aaf1ff7c5e6cbeaa0",
+      "type": "warm",
+      "title": "We definately need a way to copy paste nodes from one session to another",
+      "pos_x": 158.37437328115152,
+      "pos_y": -561.1075025103014,
+      "width": 881.0,
+      "height": 72.79020234291795,
+      "ports_visible": true,
+      "full_text": ""
+    },
+    {
+      "node_id": 2,
+      "uuid": "e2f0d60483d442f199dcb1b6503daec9",
+      "type": "warm",
+      "title": "Tummi",
+      "pos_x": 757.3821488650499,
+      "pos_y": -1035.5794465290812,
+      "width": 145.0,
+      "height": 83.43982960596378,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 4,
+      "uuid": "ab4e7d9c226346fbbc9b46ebc74893b3",
+      "type": "warm",
+      "title": "Irresistible",
+      "pos_x": -216.24885808623742,
+      "pos_y": -731.7337875340661,
+      "width": 222.0,
+      "height": 82.10862619808307,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 4,
+      "uuid": "c87977599dd94324a05a64cff5c17c37",
       "type": "warm",
       "title": "New Node",
-      "pos_x": -72.27950325644474,
-      "pos_y": -1068.6246558375915,
+      "pos_x": 1419.9111925290692,
+      "pos_y": -997.4362456737106,
       "width": 178.0,
       "height": 90.0,
       "ports_visible": false,
@@ -38,145 +158,25 @@
       "full_text": ""
     },
     {
-      "node_id": 4,
-      "uuid": "c87977599dd94324a05a64cff5c17c37",
+      "node_id": 9,
+      "uuid": "ed831246ccb1403ea723ccc2127b7b9f",
       "type": "warm",
       "title": "New Node",
-      "pos_x": 1419.9111925290692,
-      "pos_y": -997.4362456737106,
+      "pos_x": -72.27950325644474,
+      "pos_y": -1068.6246558375915,
       "width": 178.0,
       "height": 90.0,
       "ports_visible": false,
       "full_text": ""
     },
     {
-      "node_id": 4,
-      "uuid": "ab4e7d9c226346fbbc9b46ebc74893b3",
+      "node_id": 10,
+      "uuid": "b363bd96ab2f490f8a80f208b3fbfaf1",
       "type": "warm",
-      "title": "Irresistible",
-      "pos_x": -216.24885808623742,
-      "pos_y": -731.7337875340661,
-      "width": 222.0,
-      "height": 82.10862619808307,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 2,
-      "uuid": "e2f0d60483d442f199dcb1b6503daec9",
-      "type": "warm",
-      "title": "Tummi",
-      "pos_x": 757.3821488650499,
-      "pos_y": -1035.5794465290812,
-      "width": 145.0,
-      "height": 83.43982960596378,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 1,
-      "uuid": "6bd1a4fa3a94421aaf1ff7c5e6cbeaa0",
-      "type": "warm",
-      "title": "We definately need a way to copy paste nodes from one session to another",
-      "pos_x": 158.37437328115152,
-      "pos_y": -561.1075025103014,
-      "width": 881.0,
-      "height": 72.79020234291795,
-      "ports_visible": true,
-      "full_text": ""
-    },
-    {
-      "node_id": 3,
-      "uuid": "151f21437c1345dc8ed4f9974858c608",
-      "type": "warm",
-      "title": "Sweet",
-      "pos_x": 1070.5378435199445,
-      "pos_y": -915.7951880183053,
-      "width": 180.7774227902023,
-      "height": 86.1022364217252,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 5,
-      "uuid": "dbd17792bdd0465c89a4d5d3be4ed0b8",
-      "type": "warm",
-      "title": "Yummi",
-      "pos_x": 339.7983010545998,
-      "pos_y": -1154.6867442253729,
-      "width": 143.76934077331418,
-      "height": 86.30802231994289,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 6,
-      "uuid": "381329d071924cb69467732b76c24ffb",
-      "type": "warm",
-      "title": "Tonight",
-      "pos_x": -428.30300045415123,
-      "pos_y": -609.7611333688496,
-      "width": 167.0,
-      "height": 90.0,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 7,
-      "uuid": "b2e6bfb469d74e13ade063a99ec4ff22",
-      "type": "warm",
-      "title": "Dont panic",
-      "pos_x": -459.13767854681646,
-      "pos_y": -846.1136490047114,
-      "width": 200.0,
-      "height": 90.0,
-      "ports_visible": true,
-      "full_text": ""
-    },
-    {
-      "node_id": 11,
-      "uuid": "e9414ed211414aedbf4ce39d79d4f5f8",
-      "type": "warm",
-      "title": "Golden Hour",
-      "pos_x": 583.7308109088713,
-      "pos_y": -1256.1684588747719,
-      "width": 211.0,
-      "height": 89.38467038665726,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 12,
-      "uuid": "e6731dba7ade4e95bef86c48394407fb",
-      "type": "warm",
-      "title": "Soft",
-      "pos_x": 943.5935395450373,
-      "pos_y": -1201.4704044280952,
-      "width": 140.0,
-      "height": 90.0,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 13,
-      "uuid": "b0822a7852054b079f174c7e56711825",
-      "type": "warm",
-      "title": "Endless Potential",
-      "pos_x": 866.1551414741703,
-      "pos_y": -1314.9063917521023,
-      "width": 280.1903784578419,
-      "height": 91.62667362936622,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 14,
-      "uuid": "4af1a92aef9048fc8db35db83c5282b8",
-      "type": "warm",
-      "title": "Endless Potential",
-      "pos_x": 1263.3234507672541,
-      "pos_y": -1265.8483659173244,
-      "width": 277.0,
+      "title": "New Node",
+      "pos_x": -71.1675108986534,
+      "pos_y": -1173.1519374699888,
+      "width": 178.0,
       "height": 90.0,
       "ports_visible": false,
       "full_text": ""
@@ -184,36 +184,12 @@
   ],
   "connections": [
     {
-      "start_node_uuid": "e9414ed211414aedbf4ce39d79d4f5f8",
-      "end_node_uuid": "e6731dba7ade4e95bef86c48394407fb"
-    },
-    {
-      "start_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3",
-      "end_node_uuid": "4603a917ef7c475ba1ba850091d45a33"
-    },
-    {
-      "start_node_uuid": "151f21437c1345dc8ed4f9974858c608",
-      "end_node_uuid": "c87977599dd94324a05a64cff5c17c37"
-    },
-    {
-      "start_node_uuid": "6bd1a4fa3a94421aaf1ff7c5e6cbeaa0",
-      "end_node_uuid": "151f21437c1345dc8ed4f9974858c608"
-    },
-    {
-      "start_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3",
-      "end_node_uuid": "151f21437c1345dc8ed4f9974858c608"
-    },
-    {
-      "start_node_uuid": "e2f0d60483d442f199dcb1b6503daec9",
-      "end_node_uuid": "151f21437c1345dc8ed4f9974858c608"
-    },
-    {
-      "start_node_uuid": "381329d071924cb69467732b76c24ffb",
-      "end_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3"
+      "start_node_uuid": "b2e6bfb469d74e13ade063a99ec4ff22",
+      "end_node_uuid": "e2f0d60483d442f199dcb1b6503daec9"
     },
     {
       "start_node_uuid": "b2e6bfb469d74e13ade063a99ec4ff22",
-      "end_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3"
+      "end_node_uuid": "151f21437c1345dc8ed4f9974858c608"
     },
     {
       "start_node_uuid": "dbd17792bdd0465c89a4d5d3be4ed0b8",
@@ -221,16 +197,40 @@
     },
     {
       "start_node_uuid": "b2e6bfb469d74e13ade063a99ec4ff22",
+      "end_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3"
+    },
+    {
+      "start_node_uuid": "381329d071924cb69467732b76c24ffb",
+      "end_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3"
+    },
+    {
+      "start_node_uuid": "e2f0d60483d442f199dcb1b6503daec9",
       "end_node_uuid": "151f21437c1345dc8ed4f9974858c608"
     },
     {
-      "start_node_uuid": "b2e6bfb469d74e13ade063a99ec4ff22",
-      "end_node_uuid": "e2f0d60483d442f199dcb1b6503daec9"
+      "start_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3",
+      "end_node_uuid": "151f21437c1345dc8ed4f9974858c608"
+    },
+    {
+      "start_node_uuid": "6bd1a4fa3a94421aaf1ff7c5e6cbeaa0",
+      "end_node_uuid": "151f21437c1345dc8ed4f9974858c608"
+    },
+    {
+      "start_node_uuid": "151f21437c1345dc8ed4f9974858c608",
+      "end_node_uuid": "c87977599dd94324a05a64cff5c17c37"
+    },
+    {
+      "start_node_uuid": "ab4e7d9c226346fbbc9b46ebc74893b3",
+      "end_node_uuid": "4603a917ef7c475ba1ba850091d45a33"
+    },
+    {
+      "start_node_uuid": "e9414ed211414aedbf4ce39d79d4f5f8",
+      "end_node_uuid": "e6731dba7ade4e95bef86c48394407fb"
     }
   ],
   "viewport": {
-    "center_x": 662.5592381390878,
-    "center_y": -343.5409667508842,
+    "center_x": 1003.2868755243902,
+    "center_y": -1370.3372124884097,
     "scale": 1.5173409588003726
   }
 }
