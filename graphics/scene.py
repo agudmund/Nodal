@@ -56,6 +56,8 @@ class NodeScene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._dirty = False
+        self._undo_stack = []       # Each entry: list of (node_dict, [conn_dicts]) for one delete action
+        self._undo_max = 30         # Cap memory use — oldest actions fall off the back
 
         # Only try to enable blur if we actually have a parent window
         if parent and hasattr(parent, 'winId'):
@@ -212,13 +214,21 @@ class NodeScene(QGraphicsScene):
                 self.addItem(new_conn)
 
     def keyPressEvent(self, event):
-        """Delete selected nodes (and their connections) with Backspace or Delete."""
+        """Delete selected nodes with Backspace/Delete, undo last delete with Ctrl+Z."""
         if event.key() in (Qt.Key_Backspace, Qt.Key_Delete):
             selected_nodes = [item for item in self.selectedItems() if isinstance(item, BaseNode)]
             if selected_nodes:
                 from graphics.Connection import Connection
+                snapshot = []
                 for node in selected_nodes:
+                    node_dict = node.to_dict()
+                    conn_dicts = []
                     for conn in list(node.connections):
+                        if conn.end_node:
+                            conn_dicts.append({
+                                "start_node_uuid": conn.start_node.uuid,
+                                "end_node_uuid": conn.end_node.uuid,
+                            })
                         if conn.scene():
                             self.removeItem(conn)
                         for endpoint in (conn.start_node, conn.end_node):
@@ -227,10 +237,45 @@ class NodeScene(QGraphicsScene):
                     node.connections.clear()
                     if node.scene():
                         self.removeItem(node)
+                    snapshot.append((node_dict, conn_dicts))
+                self._undo_stack.append(snapshot)
+                if len(self._undo_stack) > self._undo_max:
+                    self._undo_stack.pop(0)
                 self.set_dirty(True)
                 event.accept()
                 return
+
+        if event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier:
+            if self._undo_stack:
+                self._undo_delete(self._undo_stack.pop())
+                event.accept()
+                return
+
         super().keyPressEvent(event)
+
+    def _undo_delete(self, snapshot):
+        """Restore a deleted set of nodes and reconnect any wires whose both endpoints exist."""
+        from graphics.Connection import Connection
+        uuid_map = {item.uuid: item for item in self.items() if isinstance(item, BaseNode)}
+
+        restored = {}
+        for node_dict, _ in snapshot:
+            node = BaseNode.from_dict(node_dict)
+            node.setZValue(10)
+            self.addItem(node)
+            restored[node.uuid] = node
+
+        uuid_map.update(restored)
+
+        for _, conn_dicts in snapshot:
+            for cd in conn_dicts:
+                start = uuid_map.get(cd["start_node_uuid"])
+                end = uuid_map.get(cd["end_node_uuid"])
+                if start and end:
+                    conn = Connection(start, end)
+                    self.addItem(conn)
+
+        self.set_dirty(True)
 
     def drawBackground(self, painter, rect):
         bg_color = Theme.get_alpha(Theme.frostColor, Theme.frostColor.alpha())

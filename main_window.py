@@ -776,8 +776,9 @@ class NodalApp(QMainWindow):
         super().mouseReleaseEvent(event)
 
     def keyPressEvent(self, event):
-        """Route Backspace/Delete to the scene for node deletion."""
-        if event.key() in (Qt.Key_Backspace, Qt.Key_Delete):
+        """Route Backspace/Delete and Ctrl+Z to the scene."""
+        if event.key() in (Qt.Key_Backspace, Qt.Key_Delete) or \
+           (event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier):
             if hasattr(self, 'view') and self.view.scene():
                 self.view.scene().keyPressEvent(event)
                 return
