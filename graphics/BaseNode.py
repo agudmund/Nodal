@@ -209,7 +209,10 @@ class BaseNode(QGraphicsRectItem):
                 if isinstance(child, Port):
                     mapped = child.mapFromScene(click_pos)
                     hit = child.contains(mapped)
-                    logger.debug(f"[NODE]   child port is_output={child.is_output} visible={child.isVisible()} mapped={mapped} contains={hit}")
+                    logger.debug(f"[NODE]   port is_output={child.is_output} visible={child.isVisible()} "
+                                 f"port.pos()={child.pos()} port.rect()={child.rect()} "
+                                 f"port.scenePos()={child.scenePos()} "
+                                 f"mapped={mapped} contains={hit}")
                     if hit:
                         if getattr(child, 'is_output', False):
                             from .Connection import Connection
