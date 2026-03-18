@@ -188,17 +188,34 @@ class BaseNode(QGraphicsRectItem):
     # MOUSE EVENTS
     # -------------------------------------------------------------------------
 
+    def on_port_clicked(self, port, event):
+        """Called directly by Port.mousePressEvent — start a wire from the output port."""
+        port_type = 'OUTPUT' if port.is_output else 'INPUT'
+        logger.debug(f"[NODE] on_port_clicked — port={port_type} node={self.title}")
+        if port.is_output:
+            from .Connection import Connection
+            self.temp_connection = Connection(self)
+            self.scene().addItem(self.temp_connection)
+            logger.debug(f"[NODE] Wire started from output port of '{self.title}'")
+        else:
+            logger.debug(f"[NODE] INPUT port clicked — no wire start action")
+
     def mousePressEvent(self, event):
+        logger.debug(f"[NODE] mousePressEvent — button={event.button()} scenePos={event.scenePos()} node='{self.title}'")
         if event.button() == Qt.LeftButton:
-            # 1. PORT HANDSHAKE
+            # 1. PORT HANDSHAKE (fallback — should now be handled by Port.mousePressEvent directly)
             click_pos = event.scenePos()
             for child in self.childItems():
                 if isinstance(child, Port):
-                    if child.contains(child.mapFromScene(click_pos)):
+                    mapped = child.mapFromScene(click_pos)
+                    hit = child.contains(mapped)
+                    logger.debug(f"[NODE]   child port is_output={child.is_output} visible={child.isVisible()} mapped={mapped} contains={hit}")
+                    if hit:
                         if getattr(child, 'is_output', False):
-                            from .connection import Connection
+                            from .Connection import Connection
                             self.temp_connection = Connection(self)
                             self.scene().addItem(self.temp_connection)
+                            logger.debug(f"[NODE]   Wire started via fallback path")
                             event.accept()
                             return
 
@@ -209,10 +226,12 @@ class BaseNode(QGraphicsRectItem):
                 self._is_resizing = True
                 self._resize_start_pos = event.pos()
                 self._resize_start_rect = self.rect()
+                logger.debug(f"[NODE]   Resize handle activated")
                 event.accept()
                 return
 
         # 3. FALLBACK: Standard drag
+        logger.debug(f"[NODE]   Falling through to drag")
         self._is_resizing = False
         super().mousePressEvent(event)
 
