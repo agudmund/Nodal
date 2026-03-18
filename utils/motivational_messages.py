@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - motivational_messages.py generic affirmation collection
--Provides a list of positive reinforcement statements for node creation
+-Provides a list of positive reinforcement statements for node creation for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
-MOTIVATIONAL_MESSAGES = [
+motivationalMessages = [
     "All Glory",
     "Practical and pleasurable",
     "Tiny little extra sprinkles of joy",

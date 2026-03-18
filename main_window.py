@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - main_window.py main application window
--Frameless window with draggable toolbar and node graphics view
+-Frameless window with draggable toolbar and node graphics view for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

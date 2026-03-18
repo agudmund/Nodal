@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - BaseNode.py base node graphics item
--Foundation class for all node types: ports, connections, resize, hover, serialization
+-Foundation class for all node types: ports, connections, resize, hover, serialization for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

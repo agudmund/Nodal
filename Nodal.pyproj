@@ -29,10 +29,6 @@
     <Compile Include="benchmarks\profiler.py" />
     <Compile Include="benchmarks\run_benchmarks.py" />
     <Compile Include="benchmarks\__init__.py" />
-
-
-
-
     <Compile Include="graphics\__init__.py" />
     <Compile Include="graphics\AboutNode.py" />
     <Compile Include="graphics\BaseNode.py" />
@@ -56,6 +52,7 @@
     <Compile Include="utils\__init__.py" />
     <Compile Include="widgets\cozy_dialog.py" />
     <Compile Include="widgets\demo_dialog.py" />
+    <Compile Include="widgets\log_viewer_tab.py" />
     <Compile Include="widgets\settings_dialog.py" />
     <Compile Include="widgets\__init__.py" />
     <Compile Include="*.py" xmlns="" />
@@ -79,7 +76,6 @@
       <xmlns>
       </xmlns>
     </Compile>
-
     <Compile Include="graphics\__init__.py">
       <xmlns>
       </xmlns>
@@ -117,10 +113,6 @@
       </xmlns>
     </Compile>
     <Compile Include="utils\__init__.py">
-      <xmlns>
-      </xmlns>
-    </Compile>
-    <Compile Include="widgets\log_viewer_dialog.py">
       <xmlns>
       </xmlns>
     </Compile>

@@ -8,7 +8,11 @@
 
 from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsDropShadowEffect
 from PySide6.QtGui import QBrush, QPen
+from PySide6.QtCore import Qt
 from .Theme import Theme
+from utils.logger import setup_logger
+
+logger = setup_logger()
 
 class Port(QGraphicsEllipseItem):
     """A warm connection port for input/output on nodes 🌿"""
@@ -35,3 +39,13 @@ class Port(QGraphicsEllipseItem):
         glow.setColor(Theme.primaryBorder)
         glow.setOffset(0, 0)
         self.setGraphicsEffect(glow)
+
+    def mousePressEvent(self, event):
+        """Handle click directly on port — delegate wire creation to parent node."""
+        port_type = 'OUTPUT' if self.is_output else 'INPUT'
+        logger.debug(f"[PORT] {port_type} port clicked — scene pos {event.scenePos()}")
+        if event.button() == Qt.LeftButton:
+            self.parent_node.on_port_clicked(self, event)
+            event.accept()
+        else:
+            super().mousePressEvent(event)

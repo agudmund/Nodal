@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsS
 from PySide6.QtCore import Qt, QPointF, QTimer
 from PySide6.QtGui import QColor, QPainter, QTransform
 from .Theme import Theme
-from utils.motivational_messages import MOTIVATIONAL_MESSAGES
+from utils.motivational_messages import motivationalMessages
 from .BaseNode import BaseNode
 from .WarmNode import WarmNode
 
@@ -209,7 +209,7 @@ class NodeScene(QGraphicsScene):
 
         # Use random motivational message if no title provided
         if title is None:
-            title = random.choice(MOTIVATIONAL_MESSAGES)
+            title = random.choice(motivationalMessages)
 
         # Create a WarmNode with auto-incremented node_id
         node_id = len([item for item in self.items() if isinstance(item, BaseNode)])

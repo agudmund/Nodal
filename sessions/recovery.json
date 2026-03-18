@@ -8,8 +8,8 @@
       "title": "Bright Tomorrow",
       "pos_x": -27.647212220884967,
       "pos_y": 978.223420638959,
-      "width": 328.13796872585067,
-      "height": 90.74952661190594,
+      "width": 120.0,
+      "height": 130.59403834200486,
       "ports_visible": true,
       "full_text": ""
     },
@@ -235,10 +235,5 @@
       "start_node_uuid": "808a994c491f41f2bbbe5586848a3c65",
       "end_node_uuid": "348b5a36-9333-4f72-a716-2bb49fe9e6ec"
     }
-  ],
-  "viewport": {
-    "center_x": 281.6113258277233,
-    "center_y": 816.3240908349962,
-    "scale": 1.2297804107104904
-  }
+  ]
 }

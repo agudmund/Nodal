@@ -9,7 +9,7 @@
   # -*- coding: utf-8 -*-
   \"""
   -Cozy times nodal playground - [filename] [primary utility]
-  -[Extended description of what the module does]
+  -[Extended description of what the module does] for enjoying
   -Built using a single shared braincell by Yours Truly and various Intelligences
   \"""
   ```

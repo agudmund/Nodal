@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - Theme.py color and styling system
--Centralized theme management for consistent UI appearance
+-Centralized theme management for consistent UI appearance for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
@@ -124,6 +124,7 @@ class Theme:
 
     frostColor = QColor(30, 30, 35, 150)
     gridColor  = QColor(200, 200, 200, 30)
+    debugNodeOverlay = False   # Toggled at startup from Settings — shows boundingRect/shape/port crosses
 
     # =========================================================================
     # BUTTONS
@@ -180,37 +181,29 @@ class Theme:
         return Theme._resizeGripPixmap
 
     @staticmethod
-    def lerp(color1: QColor, color2: QColor, t: float) -> QColor:
-        """Linear interpolation between two colors."""
-        t = max(0.0, min(1.0, t))
-        return QColor(
-            int(color1.red()   + (color2.red()   - color1.red())   * t),
-            int(color1.green() + (color2.green() - color1.green()) * t),
-            int(color1.blue()  + (color2.blue()  - color1.blue())  * t),
-            int(color1.alpha() + (color2.alpha() - color1.alpha()) * t)
-        )
-
-    # In Theme.py
-    resizeGripImage = "resources/icons/tester.png"
-    _resizeGripPixmap = None  # Loaded on first use after QApplication exists
+    def from_hex(hex_str: str, alpha: int = 255) -> QColor:
+        """Build a QColor from a hex string with an optional alpha value.
+        Example: Theme.from_hex('#3498db', 180)
+        """
+        c = QColor(hex_str)
+        c.setAlpha(alpha)
+        return c
 
     @staticmethod
-    def getResizeGripPixmap():
-        """Lazy load resize grip pixmap — safe to call after QApplication is created."""
-        if Theme._resizeGripPixmap is None:
-            from PySide6.QtGui import QPixmap
-            Theme._resizeGripPixmap = QPixmap(Theme.resizeGripImage)
-        return Theme._resizeGripPixmap
-
-    @staticmethod
-    def get_alpha(color: QColor, alpha: int) -> QColor:
-        """Return a copy of color with a specific alpha value."""
+    def with_alpha(color: QColor, alpha: int) -> QColor:
+        """Return a copy of color with a specific alpha value.
+        Example: Theme.with_alpha(Theme.frostColor, 100)
+        """
         return QColor(color.red(), color.green(), color.blue(), alpha)
 
     @staticmethod
+    def get_alpha(color: QColor, alpha: int) -> QColor:
+        """Alias for with_alpha — kept for backward compatibility."""
+        return Theme.with_alpha(color, alpha)
+
+    @staticmethod
     def darken(color: QColor, factor: int = 140) -> QColor:
-        """
-        Return a darker copy of color.
+        """Return a darker copy of color.
         factor > 100 = darker, default 140 matches port glow darkness.
         Example: Theme.darken(Theme.portOutputColor)
         """
@@ -218,8 +211,7 @@ class Theme:
 
     @staticmethod
     def lighten(color: QColor, factor: int = 125) -> QColor:
-        """
-        Return a lighter copy of color.
+        """Return a lighter copy of color.
         factor > 100 = lighter, default 125 matches hover pen lightening.
         Example: Theme.lighten(Theme.primaryBorder)
         """
@@ -227,10 +219,9 @@ class Theme:
 
     @staticmethod
     def adjust_brightness(color: QColor, factor: float) -> QColor:
-        """
-        Return a copy of color with brightness scaled by factor.
-        factor > 1.0 makes it brighter, < 1.0 makes it darker.
-        Example: Theme.adjust_brightness(Theme.accentNormal, 0.8) # 20% darker
+        """Return a copy of color with brightness scaled by factor.
+        factor > 1.0 = brighter, < 1.0 = darker.
+        Example: Theme.adjust_brightness(Theme.accentNormal, 0.8)
         """
         r = max(0, min(255, int(color.red()   * factor)))
         g = max(0, min(255, int(color.green() * factor)))
