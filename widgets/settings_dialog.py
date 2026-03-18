@@ -58,6 +58,17 @@ class SettingsDialog(CozyDialog):
         self.restore_geom_cb = QCheckBox("Remember window position")
         form.addRow(self.high_dpi_cb)
         form.addRow(self.restore_geom_cb)
+
+        self.recovery_interval_slider = QSlider(Qt.Horizontal)
+        self.recovery_interval_slider.setRange(1, 30)
+        self.recovery_interval_slider.setTickInterval(1)
+        self.recovery_interval_slider.setValue(Settings.get_recovery_interval())
+        self.recovery_interval_slider.setToolTip(f"{Settings.get_recovery_interval()}s")
+        self.recovery_interval_slider.valueChanged.connect(
+            lambda v: self.recovery_interval_slider.setToolTip(f"{v}s")
+        )
+        form.addRow("Recovery Snapshot Delay (s):", self.recovery_interval_slider)
+
         self.tabs.addTab(tab, "General")
 
     def _create_nodes_tab(self):
@@ -100,6 +111,7 @@ class SettingsDialog(CozyDialog):
         Settings.set_high_dpi(self.high_dpi_cb.isChecked())
         Settings.set("interface/restore_geom", self.restore_geom_cb.isChecked())
         Settings.set("nodes/default_label", self.default_label_edit.text().strip())
+        Settings.set_recovery_interval(self.recovery_interval_slider.value())
 
         # 2. Log the success (Settings.set already calls sync() internally)
         self.logger.info("Settings saved — cozy changes applied to nodal_config.ini 🌱")

@@ -96,3 +96,12 @@ class Settings:
     @classmethod
     def set_window_geometry(cls, geometry):
         cls.set("window/geometry", geometry)
+
+    @classmethod
+    def get_recovery_interval(cls) -> int:
+        """Recovery write quiet period in seconds (default 2)."""
+        return cls.get_int("scene/recovery_interval_secs", 2)
+
+    @classmethod
+    def set_recovery_interval(cls, seconds: int):
+        cls.set("scene/recovery_interval_secs", seconds)

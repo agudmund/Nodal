@@ -60,9 +60,10 @@ class NodeScene(QGraphicsScene):
         self._undo_max = 30         # Cap memory use — oldest actions fall off the back
 
         # Recovery: debounced write so rapid dirty events collapse into one disk hit
+        from utils.settings import Settings
         self._recovery_timer = QTimer()
         self._recovery_timer.setSingleShot(True)
-        self._recovery_timer.setInterval(2000)  # 2 s quiet period before writing
+        self._recovery_timer.setInterval(Settings.get_recovery_interval() * 1000)
         self._recovery_timer.timeout.connect(self._write_recovery)
 
         # Only try to enable blur if we actually have a parent window
