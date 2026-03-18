@@ -159,7 +159,7 @@ class Theme:
     comboboxFontSize      = 12
     comboboxFontWeight    = "normal"
     comboboxDropdownWidth = 30
-    comboboxMinWidth      = 200
+    comboboxMinWidth      = 350
 
     # =========================================================================
     # SLIDER
