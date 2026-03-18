@@ -211,6 +211,27 @@ class NodeScene(QGraphicsScene):
                 new_conn = Connection(start_node, end_node)
                 self.addItem(new_conn)
 
+    def keyPressEvent(self, event):
+        """Delete selected nodes (and their connections) with Backspace or Delete."""
+        if event.key() in (Qt.Key_Backspace, Qt.Key_Delete):
+            selected_nodes = [item for item in self.selectedItems() if isinstance(item, BaseNode)]
+            if selected_nodes:
+                from graphics.Connection import Connection
+                for node in selected_nodes:
+                    for conn in list(node.connections):
+                        if conn.scene():
+                            self.removeItem(conn)
+                        for endpoint in (conn.start_node, conn.end_node):
+                            if endpoint and endpoint is not node and conn in endpoint.connections:
+                                endpoint.connections.remove(conn)
+                    node.connections.clear()
+                    if node.scene():
+                        self.removeItem(node)
+                self.set_dirty(True)
+                event.accept()
+                return
+        super().keyPressEvent(event)
+
     def drawBackground(self, painter, rect):
         bg_color = Theme.get_alpha(Theme.frostColor, Theme.frostColor.alpha())
         painter.setBrush(bg_color) 
