@@ -1,5 +1,5 @@
 ✨ Cozy Snapshot — clean tree respecting .gitignore 🌱
-Generated: 2026-03-17 15:11:37
+Generated: 2026-03-18 09:11:36
 Location:  C:\Users\thisg\Desktop\Cozy Times\Nodal
 Mode:      with cozy emojis
 ────────────────────────────────────────────────────────────
@@ -11,6 +11,20 @@ Mode:      with cozy emojis
 │   ├── 📄 performance_tests.py
 │   ├── 📄 profiler.py
 │   └── 📄 run_benchmarks.py
+├── 📁 build/
+│   └── 📁 Nodal/
+│       ├── 📄 Analysis-00.toc
+│       ├── 📄 base_library.zip
+│       ├── 📄 EXE-00.toc
+│       ├── 📄 Nodal.pkg
+│       ├── 📄 PKG-00.toc
+│       ├── 📄 PYZ-00.pyz
+│       ├── 📄 PYZ-00.toc
+│       ├── 📄 warn-Nodal.txt
+│       └── 📄 xref-Nodal.html
+├── 📁 dist/
+│   ├── 📄 Nodal.exe
+│   └── 📄 nodal_config.ini
 ├── 📁 Documents/
 │   ├── 📄 BaseNode Refactoring - Implementation Summary.md
 │   ├── 📄 BaseNode Refactoring Audit Report.md
