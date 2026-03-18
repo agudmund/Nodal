@@ -296,7 +296,7 @@ class NodeScene(QGraphicsScene):
         self.set_dirty(True)
 
     def drawBackground(self, painter, rect):
-        bg_color = Theme.get_alpha(Theme.frostColor, Theme.frostColor.alpha())
+        bg_color = Theme.with_alpha(Theme.frostColor, Theme.frostColor.alpha())
         painter.setBrush(bg_color) 
         painter.setPen(Qt.NoPen)
         painter.drawRect(rect)
