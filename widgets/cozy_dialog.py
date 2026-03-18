@@ -26,7 +26,6 @@ class WindowResizeHandle(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedSize(self.HANDLE_SIZE, self.HANDLE_SIZE)
-        self.setCursor(Qt.SizeFDiagCursor)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self._dragging = False
         self._drag_start_pos = QPoint()
