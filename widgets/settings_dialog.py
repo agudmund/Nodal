@@ -16,7 +16,7 @@ from utils.logger import setup_logger
 from utils.settings import Settings
 from graphics.Theme import Theme
 from widgets.cozy_dialog import CozyDialog
-from widgets.log_viewer_dialog import LogViewerDialog
+from widgets.log_viewer_tab import LogViewerTab
 from widgets import CozyButton
 
 
@@ -89,11 +89,7 @@ class SettingsDialog(CozyDialog):
         self.tabs.addTab(tab, "Nodes")
 
     def _create_logs_tab(self):
-        # Here we nest the actual LogViewerDialog
-        # We pass 'self' as parent, but strip the window flags so it embeds
-        self.log_viewer = LogViewerDialog(self)
-        self.log_viewer.setWindowFlags(Qt.Widget) 
-        # Optionally hide the viewer's own 'Refresh' buttons to avoid UI clutter
+        self.log_viewer = LogViewerTab(self)
         self.tabs.addTab(self.log_viewer, "Logs")
 
     def _load_settings(self):

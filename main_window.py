@@ -17,7 +17,6 @@ from utils.logger import setup_logger
 from utils.settings import Settings
 from utils.session_manager import SessionManager
 from utils.window_animator import WindowAnimator
-from widgets.log_viewer_dialog import LogViewerDialog
 from widgets.settings_dialog import SettingsDialog
 from widgets.demo_dialog import DemoDialog
 from widgets.cozy_dialog import WindowResizeHandle
@@ -377,12 +376,6 @@ class NodalApp(QMainWindow):
         # We keep a reference so it doesn't get garbage collected
         self.settings_window = SettingsDialog(self)
         self.settings_window.show()
-
-    def open_log_viewer(self):
-        """Open the application log viewer dialog."""
-        # We keep a reference so it doesn't get garbage collected
-        self.log_viewer = LogViewerDialog(self)
-        self.log_viewer.show()
 
     def _create_spacer(self):
         """Create a standard padding spacer widget.
