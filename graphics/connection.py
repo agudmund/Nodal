@@ -33,15 +33,13 @@ class Connection(QGraphicsPathItem):
         """Update bezier path only if endpoints have moved significantly."""
         self.floating_point = mouse_pos
 
-        # 1. Start Point (Output Port of Start Node)
-        # Map from node's local right-edge to scene coordinates
-        p1 = self.start_node.mapToScene(self.start_node.rect().width(), self.start_node.rect().height()/2)
+        # Start point — output port scene position
+        p1 = self.start_node.mapToScene(self.start_node.output_port.pos())
 
         if self.end_node:
-            # 2. End Point (Input Port of Target Node)
-            p2 = self.end_node.mapToScene(0, self.end_node.rect().height()/2)
+            # End point — input port scene position
+            p2 = self.end_node.mapToScene(self.end_node.input_port.pos())
         elif self.floating_point:
-            # 3. Floating Point (Mouse position)
             p2 = self.floating_point
         else:
             return
@@ -87,8 +85,8 @@ class Connection(QGraphicsPathItem):
         glow_pen = QPen(QBrush(grad), 6, Qt.SolidLine, Qt.RoundCap)
         painter.setPen(glow_pen)
         painter.drawPath(self.path())
-        
+
         # Drawing the "Core" line second (thinner, higher alpha)
-        core_pen = QPen(QColor(255, 255, 255, 150), 1.5, Qt.SolidLine, Qt.RoundCap)
+        core_pen = QPen(Theme.from_hex('#ffffff', 150), 1.5, Qt.SolidLine, Qt.RoundCap)
         painter.setPen(core_pen)
         painter.drawPath(self.path())
