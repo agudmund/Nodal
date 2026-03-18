@@ -20,6 +20,7 @@ from utils.window_animator import WindowAnimator
 from widgets.log_viewer_dialog import LogViewerDialog
 from widgets.settings_dialog import SettingsDialog
 from widgets.demo_dialog import DemoDialog
+from widgets.cozy_dialog import WindowResizeHandle
 
 
 logger = setup_logger()
@@ -224,55 +225,6 @@ class NodeGraphicsView(QGraphicsView):
             self.viewport().update()
 
 
-class WindowResizeHandle(QWidget):
-    """
-    Floating bottom-right resize grip for the frameless main window.
-    Mirrors BaseNode._draw_corner_taper — same PNG asset, same drag mechanic.
-    The 20x20 hit area matches the node's grab zone; the 12x12 PNG sits flush
-    to the corner exactly as _draw_corner_taper positions it on nodes.
-    """
-    HANDLE_SIZE = 20
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setFixedSize(self.HANDLE_SIZE, self.HANDLE_SIZE)
-        self.setCursor(Qt.SizeFDiagCursor)
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self._dragging = False
-        self._drag_start_pos = QPoint()
-        self._drag_start_geom = QRect()
-
-    def paintEvent(self, event):
-        pixmap = Theme.getResizeGripPixmap()
-        if pixmap and not pixmap.isNull():
-            painter = QPainter(self)
-            painter.drawPixmap(
-                self.width()  - pixmap.width(),
-                self.height() - pixmap.height(),
-                pixmap
-            )
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self._dragging = True
-            self._drag_start_pos = event.globalPosition().toPoint()
-            self._drag_start_geom = self.window().geometry()
-            event.accept()
-
-    def mouseMoveEvent(self, event):
-        if self._dragging:
-            delta = event.globalPosition().toPoint() - self._drag_start_pos
-            geom  = self._drag_start_geom
-            new_w = max(500, geom.width()  + delta.x())
-            new_h = max(300, geom.height() + delta.y())
-            self.window().setGeometry(geom.x(), geom.y(), new_w, new_h)
-            event.accept()
-
-    def mouseReleaseEvent(self, event):
-        self._dragging = False
-        event.accept()
-
-
 class NodalApp(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -294,6 +246,7 @@ class NodalApp(QMainWindow):
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setMinimumSize(500, 300)
 
         self.init_ui()
         enable_blur(int(self.winId()))

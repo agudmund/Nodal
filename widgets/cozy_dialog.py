@@ -10,8 +10,57 @@ from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget,
     QLabel
 )
-from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint
+from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QRect
+from PySide6.QtGui import QPainter
 from graphics.Theme import Theme
+
+
+class WindowResizeHandle(QWidget):
+    """
+    Floating bottom-right resize grip for frameless windows.
+    Mirrors BaseNode._draw_corner_taper — same PNG asset, same drag mechanic.
+    Drop into any frameless QDialog or QMainWindow for consistent resize behaviour.
+    """
+    HANDLE_SIZE = 20
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(self.HANDLE_SIZE, self.HANDLE_SIZE)
+        self.setCursor(Qt.SizeFDiagCursor)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self._dragging = False
+        self._drag_start_pos = QPoint()
+        self._drag_start_geom = QRect()
+
+    def paintEvent(self, event):
+        pixmap = Theme.getResizeGripPixmap()
+        if pixmap and not pixmap.isNull():
+            painter = QPainter(self)
+            painter.drawPixmap(
+                self.width()  - pixmap.width(),
+                self.height() - pixmap.height(),
+                pixmap
+            )
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._dragging = True
+            self._drag_start_pos = event.globalPosition().toPoint()
+            self._drag_start_geom = self.window().geometry()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if self._dragging:
+            delta = event.globalPosition().toPoint() - self._drag_start_pos
+            geom  = self._drag_start_geom
+            new_w = max(self.window().minimumWidth(),  geom.width()  + delta.x())
+            new_h = max(self.window().minimumHeight(), geom.height() + delta.y())
+            self.window().setGeometry(geom.x(), geom.y(), new_w, new_h)
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        self._dragging = False
+        event.accept()
 
 
 class CozyDialog(QDialog):
@@ -29,7 +78,8 @@ class CozyDialog(QDialog):
         self._side_padding = 15
 
         self.setWindowTitle(title)
-        self.setFixedSize(600, 650)
+        self.setMinimumSize(400, 300)
+        self.resize(600, 650)
 
         # Frameless window to match main window design motif
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
@@ -131,6 +181,11 @@ class CozyDialog(QDialog):
         # Fade-in animation
         self._fadein()
 
+        # Resize grip — consistent with node resize handles
+        self._resize_handle = WindowResizeHandle(self)
+        self._reposition_resize_handle()
+        self._resize_handle.show()
+
     def _create_spacer(self, position="middle"):
         """
         Create a standard padding spacer widget with selective borders.
@@ -181,6 +236,18 @@ class CozyDialog(QDialog):
         self.anim.setEndValue(1.0)
         self.anim.setEasingCurve(QEasingCurve.OutQuad)
         self.anim.start()
+
+    def resizeEvent(self, event):
+        """Keep the resize grip anchored to the bottom-right corner on every resize."""
+        super().resizeEvent(event)
+        if hasattr(self, '_resize_handle') and self._resize_handle:
+            self._reposition_resize_handle()
+
+    def _reposition_resize_handle(self):
+        """Move the resize grip flush to the bottom-right corner and raise it above siblings."""
+        h = self._resize_handle
+        h.move(self.width() - h.width(), self.height() - h.height())
+        h.raise_()
 
     def mousePressEvent(self, event):
         """Handle window dragging from the top bar."""

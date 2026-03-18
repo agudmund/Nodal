@@ -18,7 +18,7 @@ class DemoDialog(CozyDialog):
 
     def __init__(self, parent=None):
         super().__init__(title="This window is a bit extra 🌿", parent=parent)
-        self.setFixedSize(500, 300)
+        self.resize(500, 300)
 
     def _setup_content(self):
         """Create a simple content area."""
