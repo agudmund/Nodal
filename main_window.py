@@ -666,7 +666,7 @@ class NodalApp(QMainWindow):
 
     # =========================================================================
     # Curtains, The Window Rollup Thing
-    # Should be ported to the resuable window default for the other dialogs
+    # Ported to CozyDialog — all floating dialogs now inherit this behaviour
     # =========================================================================
 
     def _increment_and_wait(self):

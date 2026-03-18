@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget,
     QLabel
 )
-from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QRect
+from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QRect, QTimer
 from PySide6.QtGui import QPainter
 from graphics.Theme import Theme
 
@@ -143,6 +143,7 @@ class CozyDialog(QDialog):
 
         # Row 1, Col 1: Content (subclasses override this)
         content_widget = self._setup_content()
+        self._content_widget = content_widget
         if content_widget:
             main_layout.addWidget(content_widget, 1, 1)
 
@@ -155,6 +156,7 @@ class CozyDialog(QDialog):
 
          # Row 2, Col 1: Bottom bar with buttons
         bottom_container = QWidget()
+        self._bottom_container = bottom_container
         bottom_container.setFixedHeight(Theme.dialogBottomBarHeight)
         bottom_container.setStyleSheet(f"""
             background-color: {Theme.toolbarBg.name()};
@@ -176,6 +178,9 @@ class CozyDialog(QDialog):
         # Set row/column stretch
         main_layout.setRowStretch(1, 1)
         main_layout.setColumnStretch(1, 1)
+
+        # Curtains + fade-in setup
+        self._setup_curtains()
 
         # Fade-in animation
         self._fadein()
@@ -236,6 +241,66 @@ class CozyDialog(QDialog):
         self.anim.setEasingCurve(QEasingCurve.OutQuad)
         self.anim.start()
 
+    # =========================================================================
+    # Curtains — The Window Rollup Thing
+    # =========================================================================
+
+    def _setup_curtains(self):
+        """Initialise curtains state and the multi-click patience timer."""
+        self._click_count = 0
+        self._click_patience = 350
+        self._is_collapsed = False
+        self._original_height = self.height()
+        self._click_timer = QTimer(self)
+        self._click_timer.setSingleShot(True)
+        self._click_timer.timeout.connect(self._execute_curtain_logic)
+
+    def _increment_and_wait(self):
+        """Count each press and restart the patience window."""
+        self._click_timer.stop()
+        self._click_count += 1
+        self._click_timer.start(self._click_patience)
+
+    def _execute_curtain_logic(self):
+        """Run once clicking stops — double-click maximises, triple-click rolls up."""
+        if self._click_count == 2:
+            if self.isMaximized():
+                self.showNormal()
+            else:
+                self.showMaximized()
+        elif self._click_count >= 3:
+            self.toggle_curtains()
+        self._click_count = 0
+
+    def toggle_curtains(self):
+        """Animate the dialog into a sleek title-bar strip and back."""
+        self.setMinimumHeight(0)
+        self.curtain_anim = QPropertyAnimation(self, b"geometry")
+        self.curtain_anim.setDuration(450)
+        self.curtain_anim.setEasingCurve(QEasingCurve.OutExpo)
+
+        start_rect = self.geometry()
+
+        if not self._is_collapsed:
+            self._original_height = self.height()
+            end_rect = QRect(start_rect.x(), start_rect.y(), start_rect.width(), Theme.dialogTopBarHeight)
+            if self._content_widget:
+                self._content_widget.hide()
+            if self._bottom_container:
+                self._bottom_container.hide()
+        else:
+            end_rect = QRect(start_rect.x(), start_rect.y(), start_rect.width(), self._original_height)
+            if self._content_widget:
+                self._content_widget.show()
+            if self._bottom_container:
+                self._bottom_container.show()
+
+        self.curtain_anim.setStartValue(start_rect)
+        self.curtain_anim.setEndValue(end_rect)
+        self.curtain_anim.start()
+
+        self._is_collapsed = not self._is_collapsed
+
     def resizeEvent(self, event):
         """Keep the resize grip anchored to the bottom-right corner on every resize."""
         super().resizeEvent(event)
@@ -249,13 +314,22 @@ class CozyDialog(QDialog):
         h.raise_()
 
     def mousePressEvent(self, event):
-        """Handle window dragging from the top bar."""
+        """Handle window dragging and curtain clicks from the top bar."""
         if event.button() == Qt.LeftButton and event.position().y() < Theme.dialogTopBarHeight:
+            self._increment_and_wait()
             self._dragging_window = True
             self._drag_pos = event.globalPosition().toPoint()
             event.accept()
         else:
             super().mousePressEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        """Intercept OS double-click on the top bar so the click count stays accurate."""
+        if event.position().y() < Theme.dialogTopBarHeight:
+            self._increment_and_wait()
+            event.accept()
+            return
+        super().mouseDoubleClickEvent(event)
 
     def mouseMoveEvent(self, event):
         """Move window when dragging the top bar."""
