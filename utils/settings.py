@@ -105,3 +105,12 @@ class Settings:
     @classmethod
     def set_recovery_interval(cls, seconds: int):
         cls.set("scene/recovery_interval_secs", seconds)
+
+    @classmethod
+    def is_debug_overlay_enabled(cls) -> bool:
+        """Show bounding rect, shape, and port crosshairs on nodes."""
+        return cls.get_bool("debug/node_overlay", False)
+
+    @classmethod
+    def set_debug_overlay(cls, enabled: bool):
+        cls.set("debug/node_overlay", enabled)

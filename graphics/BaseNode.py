@@ -190,35 +190,23 @@ class BaseNode(QGraphicsRectItem):
 
     def on_port_clicked(self, port, event):
         """Called directly by Port.mousePressEvent — start a wire from the output port."""
-        port_type = 'OUTPUT' if port.is_output else 'INPUT'
-        logger.debug(f"[NODE] on_port_clicked — port={port_type} node={self.title}")
         if port.is_output:
             from .Connection import Connection
             self.temp_connection = Connection(self)
             self.scene().addItem(self.temp_connection)
-            logger.debug(f"[NODE] Wire started from output port of '{self.title}'")
-        else:
-            logger.debug(f"[NODE] INPUT port clicked — no wire start action")
 
     def mousePressEvent(self, event):
-        logger.debug(f"[NODE] mousePressEvent — button={event.button()} scenePos={event.scenePos()} node='{self.title}'")
+        """Handle port handshake, resize handle, and standard drag."""
         if event.button() == Qt.LeftButton:
-            # 1. PORT HANDSHAKE (fallback — should now be handled by Port.mousePressEvent directly)
+            # 1. PORT HANDSHAKE (fallback — primary path is Port.mousePressEvent)
             click_pos = event.scenePos()
             for child in self.childItems():
                 if isinstance(child, Port):
-                    mapped = child.mapFromScene(click_pos)
-                    hit = child.contains(mapped)
-                    logger.debug(f"[NODE]   port is_output={child.is_output} visible={child.isVisible()} "
-                                 f"port.pos()={child.pos()} port.rect()={child.rect()} "
-                                 f"port.scenePos()={child.scenePos()} "
-                                 f"mapped={mapped} contains={hit}")
-                    if hit:
+                    if child.contains(child.mapFromScene(click_pos)):
                         if getattr(child, 'is_output', False):
                             from .Connection import Connection
                             self.temp_connection = Connection(self)
                             self.scene().addItem(self.temp_connection)
-                            logger.debug(f"[NODE]   Wire started via fallback path")
                             event.accept()
                             return
 
@@ -229,12 +217,10 @@ class BaseNode(QGraphicsRectItem):
                 self._is_resizing = True
                 self._resize_start_pos = event.pos()
                 self._resize_start_rect = self.rect()
-                logger.debug(f"[NODE]   Resize handle activated")
                 event.accept()
                 return
 
         # 3. FALLBACK: Standard drag
-        logger.debug(f"[NODE]   Falling through to drag")
         self._is_resizing = False
         super().mousePressEvent(event)
 
@@ -373,22 +359,22 @@ class BaseNode(QGraphicsRectItem):
         if self.graphicsEffect():
             self.graphicsEffect().setEnabled(True)
 
-        # DEBUG: paint bounding rect and shape in solid colours to verify hit areas
-        painter.save()
-        painter.setPen(QPen(QColor(255, 0, 0, 200), 2, Qt.DashLine))
-        painter.setBrush(QColor(255, 255, 255, 40))
-        painter.drawRect(self.boundingRect())
-        painter.setPen(QPen(QColor(0, 255, 0, 200), 2, Qt.DotLine))
-        painter.setBrush(Qt.NoBrush)
-        painter.drawPath(self.shape())
-        # Mark port positions as small crosses
-        for port in [self.input_port, self.output_port]:
-            if port:
-                p = port.pos()
-                painter.setPen(QPen(QColor(255, 255, 0, 255), 2))
-                painter.drawLine(int(p.x())-8, int(p.y()), int(p.x())+8, int(p.y()))
-                painter.drawLine(int(p.x()), int(p.y())-8, int(p.x()), int(p.y())+8)
-        painter.restore()
+        # Debug overlay — toggle via Settings > General > Node Debug Overlay
+        if Theme.debugNodeOverlay:
+            painter.save()
+            painter.setPen(QPen(QColor(255, 0, 0, 200), 2, Qt.DashLine))
+            painter.setBrush(QColor(255, 255, 255, 40))
+            painter.drawRect(self.boundingRect())
+            painter.setPen(QPen(QColor(0, 255, 0, 200), 2, Qt.DotLine))
+            painter.setBrush(Qt.NoBrush)
+            painter.drawPath(self.shape())
+            for port in [self.input_port, self.output_port]:
+                if port:
+                    p = port.pos()
+                    painter.setPen(QPen(QColor(255, 255, 0, 255), 2))
+                    painter.drawLine(int(p.x())-8, int(p.y()), int(p.x())+8, int(p.y()))
+                    painter.drawLine(int(p.x()), int(p.y())-8, int(p.x()), int(p.y())+8)
+            painter.restore()
 
         # 3. CORNER TAPER — resize grip, isolated for future asset replacement
         self._draw_corner_taper(painter)

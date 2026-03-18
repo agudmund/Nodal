@@ -69,6 +69,10 @@ class SettingsDialog(CozyDialog):
         )
         form.addRow("Recovery Snapshot Delay (s):", self.recovery_interval_slider)
 
+        self.debug_overlay_cb = QCheckBox("Node Debug Overlay (bounding rect, shape, port crosses)")
+        self.debug_overlay_cb.setChecked(Settings.is_debug_overlay_enabled())
+        form.addRow(self.debug_overlay_cb)
+
         self.tabs.addTab(tab, "General")
 
     def _create_nodes_tab(self):
@@ -112,6 +116,7 @@ class SettingsDialog(CozyDialog):
         Settings.set("interface/restore_geom", self.restore_geom_cb.isChecked())
         Settings.set("nodes/default_label", self.default_label_edit.text().strip())
         Settings.set_recovery_interval(self.recovery_interval_slider.value())
+        Settings.set_debug_overlay(self.debug_overlay_cb.isChecked())
 
         # 2. Log the success (Settings.set already calls sync() internally)
         self.logger.info("Settings saved — cozy changes applied to nodal_config.ini 🌱")

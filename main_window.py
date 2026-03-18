@@ -225,6 +225,9 @@ class NodalApp(QMainWindow):
         self.setWindowTitle("Nodal")
         self.setGeometry(100, 100, 1200, 800)
 
+        # Apply startup-only settings to Theme before anything is drawn
+        Theme.debugNodeOverlay = Settings.is_debug_overlay_enabled()
+
         # Main central widget with grid layout
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
