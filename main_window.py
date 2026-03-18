@@ -581,7 +581,7 @@ class NodalApp(QMainWindow):
         # Block signals during population to avoid loading before scene is initialized
         self.project_selector.blockSignals(True)
 
-        session_names = SessionManager.get_available_sessions()
+        session_names = [s for s in SessionManager.get_available_sessions() if s != "recovery"]
         if session_names:
             self.project_selector.addItems(session_names)
         else:
