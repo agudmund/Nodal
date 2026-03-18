@@ -8,7 +8,6 @@
 
 from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsDropShadowEffect
 from PySide6.QtGui import QBrush, QPen
-from PySide6.QtCore import Qt
 from .Theme import Theme
 
 class Port(QGraphicsEllipseItem):
@@ -26,7 +25,6 @@ class Port(QGraphicsEllipseItem):
         self.setBrush(QBrush(base_color.lighter(115)))
         self.setPen(QPen(Theme.portBorderColor, 1))
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsMovable, False)
-        self.setAcceptedMouseButtons(Qt.NoButton)  # Pass all clicks through to parent BaseNode
 
         # Connection tracking
         self.edge = None

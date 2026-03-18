@@ -10,7 +10,7 @@ import uuid as _uuid
 import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTimer
-from PySide6.QtGui import QColor, QPen, QPainter, QBrush
+from PySide6.QtGui import QColor, QPen, QPainter, QBrush, QPainterPath
 from .Theme import Theme
 from .Port import Port
 from utils.logger import setup_logger
@@ -384,6 +384,12 @@ class BaseNode(QGraphicsRectItem):
     def boundingRect(self):
         """Include shadow margins in bounding rect."""
         return self.rect().adjusted(-Theme.nodeShadowMargin, -Theme.nodeShadowMargin, Theme.nodeShadowMargin, Theme.nodeShadowMargin)
+
+    def shape(self):
+        """Match hit-test shape to boundingRect so port clicks reach mousePressEvent."""
+        path = QPainterPath()
+        path.addRect(self.boundingRect())
+        return path
 
     # -------------------------------------------------------------------------
     # SERIALIZATION
