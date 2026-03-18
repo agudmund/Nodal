@@ -46,18 +46,9 @@ class SettingsDialog(CozyDialog):
         return self.tabs
 
     def _setup_bottom_buttons(self, layout):
-        """Add Save and Cancel (Exid) buttons to the bottom bar.
-
-        Note: "Exid" is our intentional stylization for the cancel/exit button,
-        not a typo - it's part of the cozy aesthetic.
-        """
-        self.cancel_btn = CozyButton("Exid")
-        self.cancel_btn.clicked.connect(self.reject)
-
+        """Add the Save button to the bottom bar."""
         self.apply_btn = CozyButton("Save")
         self.apply_btn.clicked.connect(self._apply_and_close)
-
-        layout.addWidget(self.cancel_btn)
         layout.addWidget(self.apply_btn)
 
     def _create_general_tab(self):
