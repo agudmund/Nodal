@@ -10,7 +10,7 @@ import ctypes
 import sys
 import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsScene
-from PySide6.QtCore import Qt, QPointF
+from PySide6.QtCore import Qt, QPointF, QTimer
 from PySide6.QtGui import QColor, QPainter, QTransform
 from .Theme import Theme
 from utils.motivational_messages import MOTIVATIONAL_MESSAGES
@@ -59,6 +59,12 @@ class NodeScene(QGraphicsScene):
         self._undo_stack = []       # Each entry: list of (node_dict, [conn_dicts]) for one delete action
         self._undo_max = 30         # Cap memory use — oldest actions fall off the back
 
+        # Recovery: debounced write so rapid dirty events collapse into one disk hit
+        self._recovery_timer = QTimer()
+        self._recovery_timer.setSingleShot(True)
+        self._recovery_timer.setInterval(2000)  # 2 s quiet period before writing
+        self._recovery_timer.timeout.connect(self._write_recovery)
+
         # Only try to enable blur if we actually have a parent window
         if parent and hasattr(parent, 'winId'):
              enable_blur(parent.winId())
@@ -85,14 +91,25 @@ class NodeScene(QGraphicsScene):
         self.addItem(self.fog_layer)
 
     def set_dirty(self, value: bool):
-        """Updates the dirty state and could eventually trigger UI changes."""
+        """Updates the dirty state and schedules a recovery snapshot on any destructive change."""
         if self._dirty != value:
             self._dirty = value
-            # logger.debug(f"Scene Accountability: Dirty Flag set to {value}")
             # Here is where you'd eventually tell the Save Button to glow!
+        if value:
+            self._recovery_timer.start()  # Restart the 2 s quiet timer on every dirty event
 
     def is_dirty(self):
         return self._dirty
+
+    def _write_recovery(self):
+        """Write the full scene state to sessions/recovery.json as a silent safety net."""
+        from utils.session_manager import SessionManager
+        try:
+            data = self.get_session_data()
+            path = SessionManager.get_session_filename("recovery")
+            SessionManager.save_session(path, data)
+        except Exception as e:
+            logger.warning(f"Recovery write failed: {e}")
 
     def get_session_data(self) -> dict:
         """Gather all nodes and connections for session persistence.
