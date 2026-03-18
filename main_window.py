@@ -351,6 +351,11 @@ class NodalApp(QMainWindow):
         self.btn_settings.clicked.connect(self.open_settings_window)
         self.bottom_toolbar_layout.addWidget(self.btn_settings)
 
+        # Demo button
+        self.btn_demo = CozyButton("Demo")
+        self.btn_demo.clicked.connect(self.open_demo_window)
+        self.bottom_toolbar_layout.addWidget(self.btn_demo)
+
         # Exit button (right-aligned)
         # Note: "Exid" is intentional stylization, not a typo - it's an exit button named exid
         self.btn_exit = CozyButton("Exid")
@@ -376,6 +381,11 @@ class NodalApp(QMainWindow):
         # We keep a reference so it doesn't get garbage collected
         self.settings_window = SettingsDialog(self)
         self.settings_window.show()
+
+    def open_demo_window(self):
+        """Open the demo dialog for testing CozyDialog shared behaviours."""
+        self.demo_window = DemoDialog(self)
+        self.demo_window.show()
 
     def _create_spacer(self):
         """Create a standard padding spacer widget.
