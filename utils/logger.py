@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - logger.py its really just a fancypants print statement wrapper
--3-slot startup rotation with recycle bin safety net, matching build.py's rollover methodology
+-3-slot startup rotation with recycle bin safety net, matching build.py's rollover methodology for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
@@ -110,3 +110,12 @@ def setup_logger(name: str = "nodal") -> logging.Logger:
     logger.addHandler(file_handler)
 
     return logger
+
+
+def set_log_level(debug: bool):
+    """Switch all handlers on the root nodal logger between DEBUG and INFO."""
+    level = logging.DEBUG if debug else logging.INFO
+    logger = logging.getLogger("nodal")
+    logger.setLevel(level)
+    for handler in logger.handlers:
+        handler.setLevel(level)

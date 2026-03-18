@@ -9,12 +9,13 @@
 import os
 import io
 import sys
+import argparse
 import ctypes
 import signal
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from utils.logger import setup_logger
+from utils.logger import setup_logger, set_log_level
 from main_window import NodalApp
 from utils.settings import Settings
 
@@ -51,6 +52,10 @@ APP_NAME = "Nodal"
 ORG_NAME = "Single Shared Braincell"
 
 def main():
+    # 0. Parse command-line arguments
+    parser = argparse.ArgumentParser(description="Nodal")
+    parser.add_argument("--debug", action="store_true", help="Enable DEBUG logging and node debug overlay")
+    args = parser.parse_args()
 
     # 1. The console handshake, this makes sure that ctrl-c still works
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -70,6 +75,9 @@ def main():
 
     # 4. Initialization
     logger = setup_logger()
+    set_log_level(args.debug)
+    if args.debug:
+        Settings.set_debug_overlay(True)
     logger.info(f"{APP_NAME} is generally so happy that you are here. ✨")
     
     # This path works for both raw script and PyInstaller EXE
