@@ -223,6 +223,56 @@ class NodeGraphicsView(QGraphicsView):
         if nodes_to_delete:
             self.viewport().update()
 
+
+class WindowResizeHandle(QWidget):
+    """
+    Floating bottom-right resize grip for the frameless main window.
+    Mirrors BaseNode._draw_corner_taper — same PNG asset, same drag mechanic.
+    The 20x20 hit area matches the node's grab zone; the 12x12 PNG sits flush
+    to the corner exactly as _draw_corner_taper positions it on nodes.
+    """
+    HANDLE_SIZE = 20
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(self.HANDLE_SIZE, self.HANDLE_SIZE)
+        self.setCursor(Qt.SizeFDiagCursor)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self._dragging = False
+        self._drag_start_pos = QPoint()
+        self._drag_start_geom = QRect()
+
+    def paintEvent(self, event):
+        pixmap = Theme.getResizeGripPixmap()
+        if pixmap and not pixmap.isNull():
+            painter = QPainter(self)
+            painter.drawPixmap(
+                self.width()  - pixmap.width(),
+                self.height() - pixmap.height(),
+                pixmap
+            )
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._dragging = True
+            self._drag_start_pos = event.globalPosition().toPoint()
+            self._drag_start_geom = self.window().geometry()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if self._dragging:
+            delta = event.globalPosition().toPoint() - self._drag_start_pos
+            geom  = self._drag_start_geom
+            new_w = max(500, geom.width()  + delta.x())
+            new_h = max(300, geom.height() + delta.y())
+            self.window().setGeometry(geom.x(), geom.y(), new_w, new_h)
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        self._dragging = False
+        event.accept()
+
+
 class NodalApp(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -267,6 +317,9 @@ class NodalApp(QMainWindow):
         self._setupBottomToolbar()  # Bottom Toolbar Things 
         self._setup_patience()      # Timers for the double click versus the triple click
         self.show()                 # Render The Actual Window Now That It Has Gone Through All These Steps Of Actually Getting Here
+        self._resize_handle = WindowResizeHandle(self)
+        self._reposition_resize_handle()
+        self._resize_handle.show()
         self.auto_load()            # Auto-load the last session
 
     # =========================================================================
@@ -872,6 +925,18 @@ class NodalApp(QMainWindow):
                 logger.info("Window restored, starting restore animation")
                 self._animator.restore(self)
         super().changeEvent(event)
+
+    def resizeEvent(self, event):
+        """Keep the resize handle anchored to the bottom-right corner on every resize."""
+        super().resizeEvent(event)
+        if hasattr(self, '_resize_handle') and self._resize_handle:
+            self._reposition_resize_handle()
+
+    def _reposition_resize_handle(self):
+        """Move the resize grip flush to the bottom-right corner and raise it above all siblings."""
+        h = self._resize_handle
+        h.move(self.width() - h.width(), self.height() - h.height())
+        h.raise_()
 
     def closeEvent(self, event):
         # 1. Save Geometry immediately while the window is still valid
