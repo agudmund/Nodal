@@ -192,36 +192,7 @@ class NodeGraphicsView(QGraphicsView):
         super().mouseReleaseEvent(event)
            
 
-    def keyPressEvent(self, event):
-        """Handle keyboard shortcuts."""
-        if event.key() == Qt.Key.Key_Delete or event.key() == Qt.Key.Key_Backspace:
-            # Delete selected nodes
-            self.delete_selected_nodes()
-            event.accept()
-        else:
-            super().keyPressEvent(event)
 
-    def delete_selected_nodes(self):
-        """Delete all selected BaseNode instances from the scene.
-        Filters for BaseNode types to exclude other graphics items. Updates viewport.
-        """
-        scene = self.scene()
-        if not scene:
-            return
-
-        # Get all selected items
-        selected_items = scene.selectedItems()
-
-        # Filter for nodes only (exclude other graphics items)
-        nodes_to_delete = [item for item in selected_items if isinstance(item, BaseNode)]
-
-        # Remove each node
-        for node in nodes_to_delete:
-            scene.removeItem(node)
-
-        # Refresh viewport immediately to show deletion without lag
-        if nodes_to_delete:
-            self.viewport().update()
 
 
 class NodalApp(QMainWindow):
@@ -803,6 +774,14 @@ class NodalApp(QMainWindow):
         """Stop dragging on mouse release."""
         self._dragging_window = False
         super().mouseReleaseEvent(event)
+
+    def keyPressEvent(self, event):
+        """Route Backspace/Delete to the scene for node deletion."""
+        if event.key() in (Qt.Key_Backspace, Qt.Key_Delete):
+            if hasattr(self, 'view') and self.view.scene():
+                self.view.scene().keyPressEvent(event)
+                return
+        super().keyPressEvent(event)
 
     def mousePressEvent(self, event):
         """THE CURTAIN SENSOR: Every single press counts."""
