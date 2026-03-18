@@ -99,6 +99,45 @@ class NodeScene(QGraphicsScene):
         if value:
             self._recovery_timer.start()  # Restart the 2 s quiet timer on every dirty event
 
+    def _get_active_wire_node(self):
+        """Return the node currently dragging a temp_connection, or None."""
+        for item in self.items():
+            if isinstance(item, BaseNode) and getattr(item, 'temp_connection', None):
+                return item
+        return None
+
+    def mouseMoveEvent(self, event):
+        """Track floating wire at scene level so it follows the mouse anywhere."""
+        node = self._get_active_wire_node()
+        if node:
+            node.temp_connection.update_path(event.scenePos())
+            event.accept()
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """Complete or cancel floating wire at scene level."""
+        node = self._get_active_wire_node()
+        if node:
+            items = self.items(event.scenePos())
+            target_node = next((i for i in items if isinstance(i, BaseNode) and i is not node), None)
+            if target_node:
+                conn = node.temp_connection
+                conn.end_node = target_node
+                if conn not in node.connections:
+                    node.connections.append(conn)
+                if conn not in target_node.connections:
+                    target_node.connections.append(conn)
+                target_node._sync_port_visibility()
+                conn.update_path()
+                self.set_dirty(True)
+            else:
+                self.removeItem(node.temp_connection)
+            node.temp_connection = None
+            event.accept()
+            return
+        super().mouseReleaseEvent(event)
+
     def is_dirty(self):
         return self._dirty
 

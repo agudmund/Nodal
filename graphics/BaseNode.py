@@ -373,6 +373,23 @@ class BaseNode(QGraphicsRectItem):
         if self.graphicsEffect():
             self.graphicsEffect().setEnabled(True)
 
+        # DEBUG: paint bounding rect and shape in solid colours to verify hit areas
+        painter.save()
+        painter.setPen(QPen(QColor(255, 0, 0, 200), 2, Qt.DashLine))
+        painter.setBrush(QColor(255, 255, 255, 40))
+        painter.drawRect(self.boundingRect())
+        painter.setPen(QPen(QColor(0, 255, 0, 200), 2, Qt.DotLine))
+        painter.setBrush(Qt.NoBrush)
+        painter.drawPath(self.shape())
+        # Mark port positions as small crosses
+        for port in [self.input_port, self.output_port]:
+            if port:
+                p = port.pos()
+                painter.setPen(QPen(QColor(255, 255, 0, 255), 2))
+                painter.drawLine(int(p.x())-8, int(p.y()), int(p.x())+8, int(p.y()))
+                painter.drawLine(int(p.x()), int(p.y())-8, int(p.x()), int(p.y())+8)
+        painter.restore()
+
         # 3. CORNER TAPER — resize grip, isolated for future asset replacement
         self._draw_corner_taper(painter)
 
