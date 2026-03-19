@@ -206,7 +206,10 @@ def buildApp():
         print(f"\n✨ Success! Launching {appName}.exe...")
         subprocess.Popen([str(finalExe)])
         print(f"Check your logs to see if the sparkle ✨ [{newSignature}] arrived safely.")
-        print("\n✨ Build Cycle Complete. Stay cozy! 🌱")
+    else:
+        print(f"\n✨ Build complete, but {appName}.exe was not found in root.")
+
+    print("\n✨ Build Cycle Complete. Stay cozy! 🌱")
 
 if __name__ == "__main__":
     buildApp()
