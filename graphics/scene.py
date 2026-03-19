@@ -337,11 +337,11 @@ class NodeScene(QGraphicsScene):
 
         # 2. THE ULTIMATUM: If it's not the Fog, it's gone.
         # Only remove top-level items — their children (ports, etc.) follow automatically.
+        # Do NOT call setGraphicsEffect(None) before removeItem — doing so schedules a
+        # deferred repaint on the item which fires AFTER removal, producing ghost renders.
+        # The effect is destroyed cleanly by Qt when the item is removed.
         for item in top_level_items:
             if item != self.fog_layer:
-                # Strip effects (like shadows) before removal to clear the render buffer
-                if hasattr(item, 'setGraphicsEffect'):
-                    item.setGraphicsEffect(None)
                 self.removeItem(item)
 
         # 3. THE GHOST BUSTER: Invalidate the entire visual cache
@@ -351,7 +351,12 @@ class NodeScene(QGraphicsScene):
         for view in self.views():
             view.viewport().update()
 
-        logger.debug(f"[CLEAR_NODES] scene cleared and cache invalidated")
+        # 5. Post-clear verification — log any survivors that should not be here
+        survivors = [i for i in self.items() if i != self.fog_layer]
+        if survivors:
+            for s in survivors:
+                logger.debug(f"[CLEAR_NODES] SURVIVOR: {type(s).__name__} parentItem={type(s.parentItem()).__name__ if s.parentItem() else None} scene={s.scene() is not None}")
+        logger.debug(f"[CLEAR_NODES] scene cleared — {len(survivors)} survivors (expected 0)")
 
     # ─────────────────────────────────────────────────────────────────────────
     # KEYBOARD — delete and undo
