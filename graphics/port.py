@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times nodal playground - port.py connection port graphics item
--Input/output ports for node connectivity with warm aesthetic styling
+-Cozy times nodal playground - Port.py connection port graphics item
+-Input output ports for node connectivity with warm aesthetic styling for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

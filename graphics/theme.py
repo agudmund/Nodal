@@ -35,7 +35,7 @@ class Theme:
     toolbarBg     = QColor("#1e1e1e")
     toolbarBorder = primaryBorder
 
-    handleHeightTop    = 65    # Top toolbar/title bar height (draggable area)
+    handleHeightTop    = 35    # Top toolbar/title bar height (draggable area)
     handleHeightBottom = 100   # Bottom toolbar/button bar height
 
     dialogTopBarHeight    = 35   # Utility dialog top bar height (text only)
@@ -107,7 +107,7 @@ class Theme:
     # portGlowDarkness   = QColor("#8cbea0")
 
     # --- Port Positioning ---
-    portVerticalOffset  = -25   # Port vertical nudge from node bottom edge
+    portVerticalOffset  = 45   # Port vertical nudge from node bottom edge
     portHorizontalNudge = 3.0   # Port horizontal nudge outside node edge
 
     # --- Sockets (Legacy - for backward compatibility) ---
@@ -154,10 +154,10 @@ class Theme:
     comboboxBgOpen        = QColor("#2a2a3a")
     comboboxText          = QColor("#e0e0ff")
     comboboxBorder        = primaryBorder
-    comboboxBorderRadius  = 8
-    comboboxPadding       = "6px 10px"
+    comboboxBorderRadius  = 9
+    comboboxPadding       = "3px 12px"
     comboboxFontFamily    = "Segoe UI"
-    comboboxFontSize      = 12
+    comboboxFontSize      = 9
     comboboxFontWeight    = "normal"
     comboboxDropdownWidth = 30
     comboboxMinWidth      = 350

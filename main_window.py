@@ -20,6 +20,7 @@ from utils.window_animator import WindowAnimator
 from widgets.settings_dialog import SettingsDialog
 from widgets.demo_dialog import DemoDialog
 from widgets.cozy_dialog import WindowResizeHandle
+from widgets.extraWindow import ExtraDialog
 
 
 logger = setup_logger()
@@ -268,6 +269,7 @@ class NodalApp(QMainWindow):
         self.toolbar_container, self.toolbar_layout = self._create_toolbar(border_position="bottom", height=Theme.handleHeightTop)
 
         self.toolbar_layout.addStretch()
+        # add an icon file here right before the project selector to avoid the selection mechanism getting lost in translation
         self.toolbar_layout.addWidget(self.setup_project_selector())
         self.toolbar_layout.addStretch()
 
@@ -289,7 +291,9 @@ class NodalApp(QMainWindow):
         self.view_pan_y = 0.0
         self.view_zoom = 1.0
 
-        self.view.setStyleSheet(f"border: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};")
+        # This stylesheet isnt actually setting the border, leaving the code here as a memo
+        # The border gets applied per spacer
+        # self.view.setStyleSheet(f"""border: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};""")
         self.grid_layout.addWidget(self.view, 1, 1)
 
         # Row 1, Col 2: Right spacer
@@ -315,6 +319,11 @@ class NodalApp(QMainWindow):
         # The Blur Intensity Slider
         self.blur_slider = self._create_blur_slider()
         self.bottom_toolbar_layout.insertWidget(1, self.blur_slider)
+
+        # Extra button
+        self.btn_extra = CozyButton("Test")
+        self.btn_extra.clicked.connect(self.open_extra_window)
+        self.bottom_toolbar_layout.addWidget(self.btn_extra)
 
         # Settings button
         self.btn_settings = CozyButton("Settings")
@@ -346,6 +355,12 @@ class NodalApp(QMainWindow):
         # We keep a reference so it doesn't get garbage collected
         self.settings_window = SettingsDialog(self)
         self.settings_window.show()
+
+    def open_extra_window(self):
+        """Open the application settings dialog."""
+        # We keep a reference so it doesn't get garbage collected
+        self.extra_window = ExtraDialog(self)
+        self.extra_window.show()
 
     def _create_spacer(self):
         """Create a standard padding spacer widget.
@@ -575,6 +590,7 @@ class NodalApp(QMainWindow):
         self.scene.set_dirty(False)
         
         logger.info(f"✅ Archived '{session_name}' at {self._last_saved_viewport}")
+
     def populate_sessions(self):
         """Populate with session names from sessions/ directory"""
         # Block signals during population to avoid loading before scene is initialized
@@ -818,20 +834,19 @@ class NodalApp(QMainWindow):
         editor.show()
 
     def _handle_editor_finished(self, node, result):
-        """Sync data and purge the registry when a window closes."""
         editor = self.active_editors.get(node.node_id)
         
         if result == QDialog.Accepted and editor:
-            # Sync the soul back to the node
-            # node.title = editor.title_input.text()
-            # node.full_text = editor.text_edit.toPlainText()
-            
+            new_title = editor.get_title()
+            new_text = editor.get_text()
+            node.title = node._resolve_title(new_title, new_text)
+            node.full_text = new_text
+            node._last_full_text = None  # force body redraw
             node._sync_content_layout()
             node.update()
             self.scene.set_dirty(True)
             logger.info(f"💾 Parallel Sync: Node {node.node_id} updated.")
 
-        # 5. PURGE: Remove from registry so it can be re-opened later
         if node.node_id in self.active_editors:
             del self.active_editors[node.node_id]
 

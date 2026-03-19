@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times nodal playground - connection.py bezier connection rendering
--Visual connections between nodes with dynamic bezier curves and hover effects
+-Cozy times nodal playground - Connection.py bezier connection rendering
+-Visual connections between nodes with dynamic bezier curves and hover effects for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

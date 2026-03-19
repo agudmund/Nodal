@@ -69,11 +69,14 @@ class BezierHandle(QGraphicsEllipseItem):
 
         self.setBrush(QBrush(color))
         self.setPen(QPen(color.lighter(160), 1.5))
-        self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsMovable, True)
+        self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsMovable, False)
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
         self.setAcceptHoverEvents(True)
         self.setCursor(Qt.SizeAllCursor)
         self.setZValue(10)
+        self._dragging = False
+        self._drag_start_pos = QPointF()
+        self._drag_start_item_pos = QPointF()
 
         self._sync_pos_from_norm()
 
@@ -107,18 +110,10 @@ class BezierHandle(QGraphicsEllipseItem):
         return path
 
     def itemChange(self, change, value):
-        """Constrain movement to canvas rect and notify parent on move."""
-        if change == QGraphicsEllipseItem.GraphicsItemChange.ItemPositionChange:
-            cr = self.canvas_rect()
-            # Clamp the proposed position to the canvas bounds
-            clamped_x = max(cr.left(), min(cr.right(), value.x()))
-            clamped_y = max(cr.top(), min(cr.bottom(), value.y()))
-            return QPointF(clamped_x, clamped_y)
-
         if change == QGraphicsEllipseItem.GraphicsItemChange.ItemPositionHasChanged:
-            self._sync_norm_from_pos()
-            self._node._on_handle_moved()
-
+            if hasattr(self._node, '_handle1'):
+                self._sync_norm_from_pos()
+                self._node._on_handle_moved()
         return super().itemChange(change, value)
 
     def hoverEnterEvent(self, event):
@@ -134,21 +129,42 @@ class BezierHandle(QGraphicsEllipseItem):
         super().hoverLeaveEvent(event)
 
     def mousePressEvent(self, event):
-        """Absorb press so the parent node doesn't start dragging.
-        Clears scene selection first to prevent other selected nodes
-        moving along with the handle drag."""
         if event.button() == Qt.LeftButton:
+            if self.scene():
+                self.scene().clearSelection()
+            self._dragging = True
+            self._drag_start_pos = event.scenePos()
+            self._drag_start_item_pos = self.pos()
             event.accept()
         else:
             super().mousePressEvent(event)
 
-    def mouseReleaseEvent(self, event):
-        """Final norm sync on release, mark curve dirty for a clean redraw."""
-        self._sync_norm_from_pos()
-        self._node._curve_dirty = True
-        self._node.update()
-        event.accept()
+    def mouseMoveEvent(self, event):
+        if self._dragging:
+            delta = event.scenePos() - self._drag_start_pos
+            # Convert scene delta to parent (node-local) coordinates
+            new_pos = self._drag_start_item_pos + self.mapToParent(delta) - self.mapToParent(QPointF(0, 0))
+            cr = self.canvas_rect()
+            clamped = QPointF(
+                max(cr.left(), min(cr.right(), new_pos.x())),
+                max(cr.top(), min(cr.bottom(), new_pos.y()))
+            )
+            self.setPos(clamped)
+            self._sync_norm_from_pos()
+            self._node._on_handle_moved()
+            event.accept()
+        else:
+            super().mouseMoveEvent(event)
 
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._dragging = False
+            self._sync_norm_from_pos()
+            self._node._curve_dirty = True
+            self._node.update()
+            event.accept()
+        else:
+            super().mouseReleaseEvent(event)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # BEZIER NODE
@@ -264,6 +280,7 @@ class BezierNode(BaseNode):
         self._curve_dirty = True
         if not self._redraw_timer.isActive():
             self._redraw_timer.start(REDRAW_THROTTLE_MS)
+        self.propagate_output()
 
     # ─────────────────────────────────────────────────────────────────────────
     # CACHE MANAGEMENT
@@ -425,19 +442,6 @@ class BezierNode(BaseNode):
             painter.drawText(int(pos.x()) + 8, int(pos.y()) - 4, label)
 
     # ─────────────────────────────────────────────────────────────────────────
-    # RESIZE — sync handles and invalidate cache when node is resized
-    # ─────────────────────────────────────────────────────────────────────────
-
-    def setRect(self, rect: QRectF):
-        """Reposition handles to match new canvas size, invalidate cache."""
-        super().setRect(rect)
-        if hasattr(self, '_handle1'):
-            self._handle1._sync_pos_from_norm()
-            self._handle2._sync_pos_from_norm()
-        self._curve_dirty = True
-        self._curve_cache = None
-
-    # ─────────────────────────────────────────────────────────────────────────
     # OUTPUT — the reason this node exists
     # ─────────────────────────────────────────────────────────────────────────
 
@@ -488,6 +492,28 @@ class BezierNode(BaseNode):
         )
         QApplication.clipboard().setText(text)
         logger.info(f"BezierNode [{self.uuid[:8]}] curve copied to clipboard")
+
+    def propagate_output(self):
+        """Push current curve values to any connected WarmNodes."""
+        if not hasattr(self, '_handle2') or self._handle2 is None:
+            return  # Called during init before both handles exist
+        from .WarmNode import WarmNode
+        cp1 = QPointF(self._handle1.norm_x, 1.0 - self._handle1.norm_y)
+        cp2 = QPointF(self._handle2.norm_x, 1.0 - self._handle2.norm_y)
+        text = (
+            f"Bezier Curve Output\n\n"
+            f"CP1: ({cp1.x():.4f}, {cp1.y():.4f})\n"
+            f"CP2: ({cp2.x():.4f}, {cp2.y():.4f})\n\n"
+            f"# Ready to paste:\n"
+            f"curve.addCubicBezierSegment(\n"
+            f"    QPointF({cp1.x():.4f}, {cp1.y():.4f}),\n"
+            f"    QPointF({cp2.x():.4f}, {cp2.y():.4f}),\n"
+            f"    QPointF(1.0, 1.0)\n"
+            f")"
+        )
+        for conn in self.connections:
+            if conn.end_node and isinstance(conn.end_node, WarmNode):
+                conn.end_node.receive_data(text)
 
     # ─────────────────────────────────────────────────────────────────────────
     # DOUBLE CLICK — copy curve to clipboard
