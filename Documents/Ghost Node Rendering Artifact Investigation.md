@@ -187,12 +187,73 @@ def rebuild_from_session(self, data):
 
 ---
 
+---
+
+## Regression — Nodes From Previous Session Appearing in New Session
+
+After the Fix 1 and Fix 2 commits, a new symptom appeared: nodes from the outgoing session were now rendering as **fully-formed visible nodes** inside the new session (not blank color ghosts — actual styled nodes with text and effects intact). This was a regression introduced by the `setGraphicsEffect(None)` strip in `clear_nodes`.
+
+### Regression Diagnosis
+
+A post-clear survivor log was added to verify whether items were actually leaving the scene:
+
+```
+[CLEAR_NODES] scene cleared — 0 survivors (expected 0)
+```
+
+The scene confirmed **zero survivors** after every `clear_nodes()` call. The nodes were being removed. Yet ghost paints of previous-session nodes appeared immediately on `[BACKGROUND #0]` of the new session with `device=QWidget` and `effect_enabled=no_effect`.
+
+The key: the ghost nodes had `_paint_debug_count` values matching their **previous-session paint history** (e.g. `count=2` after two Cleanup scroll interactions). This proved the paint calls were not new objects — they were **deferred paint calls for removed objects firing after removal**.
+
+### Regression Root Cause — setGraphicsEffect(None) Schedules a Deferred Paint
+
+Calling `item.setGraphicsEffect(None)` before `removeItem(item)` triggers a Qt `update()` on the item to redraw after the effect is removed. This schedules a **deferred repaint** into Qt's event queue. When `removeItem` then executes, it removes the item from the scene — but the pending repaint event is already queued. That repaint fires on the next event loop cycle, **after** the item has been removed, causing the node to paint directly onto the viewport painter (since it no longer has a shadow effect buffer to render into).
+
+This is the `device=QWidget` + `effect_enabled=no_effect` signature: the removed item paints onto whatever painter is currently active — which turns out to be the scene's background layer during the new session's first `drawBackground` call.
+
+### Regression Fix — Remove the setGraphicsEffect(None) Pre-Strip
+
+**File:** `graphics/Scene.py` — `clear_nodes()` method
+
+**Change:** Removed the `setGraphicsEffect(None)` call entirely. `removeItem()` destroys the item's effect cleanly as part of scene removal — no pre-stripping is needed. Removing the pre-strip eliminates the phantom deferred repaint event.
+
+```python
+# Before (regression cause)
+for item in top_level_items:
+    if item != self.fog_layer:
+        if hasattr(item, 'setGraphicsEffect'):
+            item.setGraphicsEffect(None)   # ← schedules deferred repaint BEFORE removal
+        self.removeItem(item)
+
+# After (fixed)
+for item in top_level_items:
+    if item != self.fog_layer:
+        self.removeItem(item)              # ← effect destroyed cleanly by Qt
+```
+
+### Verification
+
+After this fix, four consecutive session switches across three different sessions produced zero `no_effect` paint entries and zero survivors in the log:
+
+```
+[CLEAR_NODES] removing 29 top-level items (27 nodes) from scene
+[CLEAR_NODES] scene cleared — 0 survivors (expected 0)
+...
+[CLEAR_NODES] removing 30 top-level items (22 nodes) from scene
+[CLEAR_NODES] scene cleared — 0 survivors (expected 0)
+...
+[CLEAR_NODES] removing 45 top-level items (30 nodes) from scene
+[CLEAR_NODES] scene cleared — 0 survivors (expected 0)
+```
+
+---
+
 ## Files Modified
 
 | File | Change |
 |---|---|
-| `graphics/Scene.py` | `clear_nodes()` — top-level-only item iteration |
-| `graphics/Scene.py` | `rebuild_from_session()` — removed redundant `self.clear_nodes()` |
+| `graphics/Scene.py` | `clear_nodes()` — top-level-only iteration, removed `setGraphicsEffect(None)` pre-strip |
+| `graphics/Scene.py` | `rebuild_from_session()` — removed redundant `self.clear_nodes()` call |
 | `graphics/BaseNode.py` | `paint()` — `save()`/`restore()` wrapping, LOD early-return fixed, debug logging |
 | `main_window.py` | `NodeGraphicsView` — removed `DontSavePainterState`, added debug logging |
 | `main_window.py` | `load_session()` — deferred repaint via `QTimer.singleShot`, step logging |
@@ -205,13 +266,16 @@ def rebuild_from_session(self, data):
 |---|---|
 | Previous session | Initial RC1/RC2/RC3 fixes + debug instrumentation |
 | `2ee05d7` | `fix: eliminate ghost node rendering artifact on session switch` |
+| `aadf47c` | `fix: remove setGraphicsEffect(None) from clear_nodes to stop phantom paint calls` |
 
 ---
 
 ## Key Lessons
 
 - `QGraphicsScene.items()` returns **all items including child items**. Never call `removeItem()` on child items directly — Qt unparents them rather than removing them, orphaning the parent.
+- `setGraphicsEffect(None)` before `removeItem()` schedules a deferred repaint event that fires after the item is removed — the removed item then paints directly onto the active viewport painter as a ghost. Never pre-strip effects before removal.
 - `QGraphicsDropShadowEffect` renders to a `QPixmap` offscreen buffer. Any node painting with `device=QWidget` instead of `device=QPixmap` is bypassing the effect pipeline and painting directly to the viewport — this is the signature of a ghost node.
 - `DontSavePainterState` + `WA_TranslucentBackground` + `QGraphicsDropShadowEffect` is a hazardous combination and should be avoided.
 - Synchronous `viewport.repaint()` during `setUpdatesEnabled(False)` bypasses effect buffer initialization — always defer with `QTimer.singleShot(0, ...)`.
 - `_paint_debug_count` surviving across session switches is a reliable indicator that the object is a leaked/orphaned item rather than a freshly deserialized one.
+- `[CLEAR_NODES] scene cleared — 0 survivors` confirming the scene is empty, yet ghost paints still appearing, points to deferred repaint events queued before removal — not to items actually surviving in the scene.
