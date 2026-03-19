@@ -1,5 +1,5 @@
 ✨ Cozy Snapshot — clean tree respecting .gitignore 🌱
-Generated: 2026-03-18 23:38:19
+Generated: 2026-03-19 18:17:48
 Location:  C:\Users\thisg\Desktop\Cozy Times\Nodal
 Mode:      with cozy emojis
 ────────────────────────────────────────────────────────────
@@ -7,7 +7,6 @@ Mode:      with cozy emojis
 ├── 📁 .github/
 │   └── 📄 copilot-instructions.md
 ├── 📁 archive/
-│   ├── 📄 Nodal_archive.exe
 │   └── 📄 Nodal_previous.exe
 ├── 📁 benchmarks/
 │   ├── 📄 __init__.py
@@ -17,12 +16,12 @@ Mode:      with cozy emojis
 ├── 📁 Documents/
 │   ├── 📄 Base Node Refactoring Audit Report.md
 │   ├── 📄 Base Node Refactoring Implementation Summary.md
-│   ├── 📄 Build Version.md
-│   ├── 📄 Build Version Archive.md
 │   ├── 📄 Build Version Previous.md
+│   ├── 📄 Build Version.md
 │   ├── 📄 Docstring Compliance Report.md
 │   ├── 📄 Docstring Update Summary.md
 │   ├── 📄 Final Theme Refactoring Report.md
+│   ├── 📄 Ghost Node Rendering Artifact Investigation.md
 │   ├── 📄 Graphics Module Import Validation Report.md
 │   ├── 📄 Graphics Module Refactoring Final Status.md
 │   ├── 📄 Graphics Module Renaming Completion Report.md
@@ -77,12 +76,12 @@ Mode:      with cozy emojis
 │   ├── 📄 __init__.py
 │   ├── 📄 cozy_dialog.py
 │   ├── 📄 demo_dialog.py
+│   ├── 📄 extraWindow.py
 │   ├── 📄 log_viewer_tab.py
 │   └── 📄 settings_dialog.py
 ├── 📄 .gitattributes
 ├── 📄 .gitignore
 ├── 📄 build.py
-├── 📄 cozy-tree.txt
 ├── 📄 LICENSE.txt
 ├── 📄 main.py
 ├── 📄 main_window.py
@@ -100,4 +99,3 @@ Mode:      with cozy emojis
 Saved by cozy-snapshot.py  •  gentle sibling to cozy-tree.py
 Hidden: .git, __pycache__, gitignored items, empty folders
 Double-click or run anytime — add --print to see live ♡
-

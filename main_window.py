@@ -131,6 +131,27 @@ class NodeGraphicsView(QGraphicsView):
         
         painter.restore()
 
+
+    # def mouseDoubleClickEvent(self, event):
+    #     """
+    #     Right double-click — toggle ports on the node under the cursor.
+    #     Handled here to prevent Qt's default view behaviour from consuming
+    #     the event before it reaches the node.
+    #     """
+    #     if event.button() == Qt.MouseButton.RightButton:
+    #         scene_pos = self.mapToScene(event.pos())
+    #         item = self.scene().itemAt(scene_pos, self.transform())
+    #         from graphics.BaseNode import BaseNode
+    #         while item and not isinstance(item, BaseNode):
+    #             item = item.parentItem()
+    #         if item and isinstance(item, BaseNode):
+    #             item.toggle_ports()
+    #             if item.scene():
+    #                 item.scene().set_dirty(True)
+    #             event.accept()
+    #             return
+    #     super().mouseDoubleClickEvent(event)
+        
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
             # We use position() for sub-pixel accuracy.

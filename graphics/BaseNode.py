@@ -6,6 +6,7 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
+import time
 import uuid as _uuid
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTimer
@@ -61,6 +62,19 @@ class BaseNode(QGraphicsRectItem):
                       when restoring from a saved session.
         """
         super().__init__(0, 0, width, height)
+
+        # ── Right-click patience ───────────────────────────────────────────────────
+        # Mirrors the curtain's patience pattern — buffers right-clicks and only
+        # acts once the clicking settles, preventing the double-click from being
+        # counted as two separate interactions.
+        self._right_click_count = 0
+        self._right_click_patience = 500  # ms — tune to taste
+        self._right_click_timer = QTimer()
+        self._right_click_timer.setSingleShot(True)
+        self._right_click_timer.timeout.connect(self._execute_right_click_logic)
+        self._last_right_click_time = None
+
+        self.click_counter = 0
 
         # ── Connection state ──────────────────────────────────────────────────
         self.ports_visible = False          # Whether ports are currently shown
@@ -140,6 +154,55 @@ class BaseNode(QGraphicsRectItem):
     # ─────────────────────────────────────────────────────────────────────────
     # POSITION TRACKING
     # ─────────────────────────────────────────────────────────────────────────
+
+    # def _increment_right_click(self):
+    #     """Count a right-click and restart the patience window."""
+    #     self._right_click_count += 1
+    #     # Always restart the patience window — we're waiting for clicking to settle
+    #     self._right_click_timer.stop()
+    #     self._right_click_timer.start(self._right_click_patience)
+
+    def _increment_right_click(self):
+        now = time.monotonic()
+        if self._last_right_click_time is not None:
+            interval = now - self._last_right_click_time
+            print(f"{interval:.4f} seconds since last click | click count: {self._right_click_count + 1}")
+        else:
+            print(f"first click | click count: 1")
+        self._last_right_click_time = now
+        self._right_click_count += 1
+        # Only start the timer on the first click — don't restart it on each subsequent click.
+        # The window runs once and fires when clicking settles.
+        if not self._right_click_timer.isActive():
+            self._right_click_timer.start(self._right_click_patience)
+
+    # def _increment_right_click(self):
+    #     """Count a right-click and restart the patience window."""
+    #     print('Single Shared Braincell Inc.')
+    #     # print('Incrementing right click counter %s\n----------' % self._right_click_count)
+    #     from datetime import datetime
+    #     datetime.now().strftime("%H:%M:%S.%f")[:-3]
+    #     print(f"[{datetime.now().strftime('%H:%M:%S.%f')[:-3]}] right click — count: {self._right_click_count}")
+    #     self._right_click_timer.stop()
+    #     self._right_click_count += 1
+    #     self._right_click_timer.start(self._right_click_patience)
+
+    def _execute_right_click_logic(self):
+        """Fire once the right-clicking settles — 2+ clicks = toggle ports."""
+        print(f"PATIENCE EXPIRED — count was: {self._right_click_count} | toggling: {self._right_click_count >= 2}")
+        if self._right_click_count >= 2:
+            self.toggle_ports()
+            if self.scene():
+                self.scene().set_dirty(True)
+        self._right_click_count = 0
+
+    # def _execute_right_click_logic(self):
+    #     """Fire once the right-clicking settles — 2+ clicks = toggle ports."""
+    #     if self._right_click_count >= 2:
+    #         self.toggle_ports()
+    #         if self.scene():
+    #             self.scene().set_dirty(True)
+    #     self._right_click_count = 0
 
     def itemChange(self, change, value):
         """
@@ -230,15 +293,22 @@ class BaseNode(QGraphicsRectItem):
             conn.update_path()
 
     def toggle_ports(self):
-        """
-        Flip port visibility and apply the new state.
-
-        This is the only method that should change ports_visible — it owns
-        the state flip. Call _sync_port_visibility() directly anywhere you
-        need to apply the current state without toggling it.
-        """
         self.ports_visible = not self.ports_visible
         self._sync_port_visibility()
+        self.update()  # explicitly request a repaint
+        if self.scene():
+            self.scene().update()
+
+    # def toggle_ports(self):
+    #     """
+    #     Flip port visibility and apply the new state.
+
+    #     This is the only method that should change ports_visible — it owns
+    #     the state flip. Call _sync_port_visibility() directly anywhere you
+    #     need to apply the current state without toggling it.
+    #     """
+    #     self.ports_visible = not self.ports_visible
+    #     self._sync_port_visibility()
 
     def _sync_port_visibility(self):
         """
@@ -248,6 +318,7 @@ class BaseNode(QGraphicsRectItem):
         for example after connecting a wire, completing a resize, or restoring
         from session. Never flips ports_visible itself.
         """
+        print(f"SYNC PORTS — visible: {self.ports_visible} | input: {self.input_port} | output: {self.output_port}")
         if self._port_anim and self._port_anim.state() == QAbstractAnimation.Running:
             self._port_anim.stop()
         if self.input_port:
@@ -282,6 +353,25 @@ class BaseNode(QGraphicsRectItem):
         2. Resize handle — bottom-right corner drag initiates interactive resize.
         3. Standard drag — falls through to Qt's built-in item move behaviour.
         """
+
+        if event.button() == Qt.RightButton:
+            print('----------\nright button event active %s' % self.click_counter)
+            self._increment_right_click()
+            event.accept()
+
+            self.click_counter = self.click_counter+1
+            return
+
+        # if event.button() == Qt.RightButton:
+        #     # Let right-click pass through entirely so double-click events
+        #     # can escalate properly — don't let super() consume them for selection.
+        #     print('right thurr %s' % self.click_counter)
+        #     print(f"NODE PRESS — button: {event.button()} | node: '{self.title}' ({self.node_type})")
+        #     event.ignore()
+        #     print('this was a right click %s' % self.click_counter)
+        #     self.click_counter = self.click_counter+1
+        #     return
+
         if event.button() == Qt.LeftButton:
             # 1. PORT HANDSHAKE (fallback — primary path is Port.mousePressEvent)
             click_pos = event.scenePos()
@@ -385,18 +475,41 @@ class BaseNode(QGraphicsRectItem):
         super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event):
-        """
-        Right double-click toggles port visibility on this node.
-
-        Left double-click is intentionally unhandled at the BaseNode level —
-        subclasses that want double-click behaviour (such as WarmNode opening
-        its note editor) override this method and handle the left button there.
-        """
+        """Left double-click handled by subclasses. Right double-click handled by patience timer."""
         if event.button() == Qt.MouseButton.RightButton:
-            self.toggle_ports()
-            if self.scene():
-                self.scene().set_dirty(True)
             event.accept()
+            return
+
+    # def mouseDoubleClickEvent(self, event):
+    #     """
+    #     Right double-clicks are delivered to scene items via normal Qt scene event dispatch.
+    #     Left double-clicks follow standard view behaviour.
+    #     """
+    #     if event.button() == Qt.MouseButton.RightButton:
+    #         # Deliver via the scene rather than calling item methods directly
+    #         # to avoid recursion through super() chains in node subclasses.
+    #         self.scene().sendEvent(
+    #             self.scene().itemAt(self.mapToScene(event.pos()), self.transform()),
+    #             event
+    #         )
+    #         return
+    #     super().mouseDoubleClickEvent(event)
+
+    # def mouseDoubleClickEvent(self, event):
+    #     """
+    #     Right double-click toggles port visibility on this node.
+
+    #     Left double-click is intentionally unhandled at the BaseNode level —
+    #     subclasses that want double-click behaviour (such as WarmNode opening
+    #     its note editor) override this method and handle the left button there.
+    #     """
+    #     print(f"NODE DOUBLE CLICK — button: {event.button()}")
+    #     if event.button() == Qt.MouseButton.RightButton:
+    #         print('this was a right double click %s' % self.click_counter)
+    #         self.toggle_ports()
+    #         if self.scene():
+    #             self.scene().set_dirty(True)
+    #         event.accept()
 
     # ─────────────────────────────────────────────────────────────────────────
     # HOVER
