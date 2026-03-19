@@ -209,13 +209,23 @@ class NodeScene(QGraphicsScene):
         """
         from graphics.Connection import Connection
 
-        self.clear_nodes()
+        # NOTE: load_session already calls clear_nodes() before invoking this method.
+        # Do not call it again here — a double clear fires invalidate()+viewport.update()
+        # mid-rebuild while nodes are being added, causing ghost renders.
         node_map = {}  # UUID → node, used for reconnecting wires in second pass
 
         # 1. First Pass: Create all Nodes
         for node_data in data.get("nodes", []):
             new_node = BaseNode.from_dict(node_data)
+            new_node.setZValue(10)
             self.addItem(new_node)
+            effect_name = type(new_node.graphicsEffect()).__name__ if new_node.graphicsEffect() else "None"
+            logger.debug(
+                f"[REBUILD] node id={new_node.node_id} type={new_node.node_type} "
+                f"z={new_node.zValue()} pos=({new_node.pos().x():.1f},{new_node.pos().y():.1f}) "
+                f"size=({new_node.rect().width():.0f}x{new_node.rect().height():.0f}) "
+                f"effect={effect_name} _paint_debug_count={new_node._paint_debug_count}"
+            )
             node_map[new_node.uuid] = new_node
 
         # 2. Second Pass: Re-plug the Nerves
@@ -316,12 +326,18 @@ class NodeScene(QGraphicsScene):
         """Remove all nodes from the scene while preserving the background fog layer.
         Properly cleans up graphics effects and invalidates the scene cache.
         """
-        # 1. Grab everything currently on the stage
+        # 1. Grab only top-level items — child items (ports) are cleaned up automatically
+        # when their parent node is removed. Iterating all items including children and
+        # calling removeItem on them causes Qt to unparent children into orphaned scene
+        # items rather than removing them, which is the root cause of ghost node rendering.
         all_items = self.items()
+        top_level_items = [i for i in all_items if i.parentItem() is None]
+        node_count = sum(1 for i in top_level_items if isinstance(i, BaseNode))
+        logger.debug(f"[CLEAR_NODES] removing {len(top_level_items)} top-level items ({node_count} nodes) from scene")
 
         # 2. THE ULTIMATUM: If it's not the Fog, it's gone.
-        # This catches nodes, wires, ports, and ghost artifacts.
-        for item in all_items:
+        # Only remove top-level items — their children (ports, etc.) follow automatically.
+        for item in top_level_items:
             if item != self.fog_layer:
                 # Strip effects (like shadows) before removal to clear the render buffer
                 if hasattr(item, 'setGraphicsEffect'):
@@ -334,6 +350,8 @@ class NodeScene(QGraphicsScene):
         # 4. Notify the cameras
         for view in self.views():
             view.viewport().update()
+
+        logger.debug(f"[CLEAR_NODES] scene cleared and cache invalidated")
 
     # ─────────────────────────────────────────────────────────────────────────
     # KEYBOARD — delete and undo
