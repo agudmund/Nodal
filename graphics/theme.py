@@ -6,6 +6,8 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
+import sys
+from pathlib import Path
 from PySide6.QtGui import QColor
 
 class Theme:
@@ -173,11 +175,18 @@ class Theme:
     # =========================================================================
 
     @staticmethod
+    def _get_resource_path(relative_path: str) -> str:
+        """Resolve a resource path for both script execution and PyInstaller EXE."""
+        if hasattr(sys, '_MEIPASS'):
+            return str(Path(sys._MEIPASS) / relative_path)
+        return str(Path(__file__).resolve().parent.parent / relative_path)
+
+    @staticmethod
     def getResizeGripPixmap():
         """Lazy load resize grip pixmap — safe to call after QApplication is created."""
         if Theme._resizeGripPixmap is None:
             from PySide6.QtGui import QPixmap
-            Theme._resizeGripPixmap = QPixmap(Theme.resizeGripImage)
+            Theme._resizeGripPixmap = QPixmap(Theme._get_resource_path(Theme.resizeGripImage))
         return Theme._resizeGripPixmap
 
     @staticmethod

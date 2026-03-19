@@ -133,6 +133,10 @@ class BaseNode(QGraphicsRectItem):
         # Scale animations (hover pulse) originate from the node center.
         self.setTransformOriginPoint(self.rect().center())
 
+        # ── Debug paint counter ────────────────────────────────────────────────
+        # Throttles per-node paint diagnostic logging — set to 0 to re-arm after a scene reload
+        self._paint_debug_count = 0
+
     # ─────────────────────────────────────────────────────────────────────────
     # POSITION TRACKING
     # ─────────────────────────────────────────────────────────────────────────
@@ -454,6 +458,25 @@ class BaseNode(QGraphicsRectItem):
         lod = option.levelOfDetailFromTransform(painter.worldTransform())
         rect = self.rect()
 
+        # [DEBUG] Paint pipeline diagnostics — throttled to first 5 calls per node instance.
+        # Logs device/widget types to identify if paint is firing in an unexpected context
+        # (e.g. QPixmap = offscreen effect buffer, None widget = no screen target).
+        if self._paint_debug_count < 5:
+            device_type  = type(painter.device()).__name__
+            widget_type  = type(widget).__name__ if widget else "None"
+            t            = painter.worldTransform()
+            comp_mode    = painter.compositionMode().value
+            effect_state = self.graphicsEffect().isEnabled() if self.graphicsEffect() else "no_effect"
+            logger.debug(
+                f"[PAINT #{self._paint_debug_count}] node={self.node_id}({self.node_type}) "
+                f"device={device_type} widget={widget_type} "
+                f"scale=({t.m11():.3f},{t.m22():.3f}) offset=({t.dx():.1f},{t.dy():.1f}) "
+                f"lod={lod:.3f} composition={comp_mode} effect_enabled={effect_state}"
+            )
+            self._paint_debug_count += 1
+
+        painter.save()
+
         # 1. BODY
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setPen(self._selected_pen if self.isSelected() else self.pen())
@@ -462,11 +485,16 @@ class BaseNode(QGraphicsRectItem):
 
         # 2. LOD GATE
         if lod < Theme.nodeLodThreshold:
-            if self.graphicsEffect():
-                self.graphicsEffect().setEnabled(False)
+            effect = self.graphicsEffect()
+            if effect and effect.isEnabled():
+                effect.setEnabled(False)
+                logger.debug(f"[LOD_GATE] node={self.node_id} lod={lod:.3f} — shadow DISABLED (threshold={Theme.nodeLodThreshold})")
+            painter.restore()
             return
-        if self.graphicsEffect():
-            self.graphicsEffect().setEnabled(True)
+        effect = self.graphicsEffect()
+        if effect and not effect.isEnabled():
+            effect.setEnabled(True)
+            logger.debug(f"[LOD_GATE] node={self.node_id} lod={lod:.3f} — shadow RE-ENABLED")
 
         # 3. DEBUG OVERLAY
         if Theme.debugNodeOverlay:
@@ -490,6 +518,8 @@ class BaseNode(QGraphicsRectItem):
 
         # 5. SPECIALIST HANDOFF
         self.paint_content(painter)
+
+        painter.restore()
 
     def _draw_corner_taper(self, painter):
         """

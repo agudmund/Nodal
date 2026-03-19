@@ -2,113 +2,14 @@
   "version": "1.0",
   "nodes": [
     {
-      "node_id": 11,
-      "uuid": "bd140256fad74602bddb34d66df04e3b",
-      "type": "bezier",
-      "title": "Curve",
-      "pos_x": -1204.3894148628297,
-      "pos_y": -393.24039931063487,
-      "width": 584.4733358035222,
-      "height": 324.20771846513105,
-      "ports_visible": true,
-      "cp1_x": 0.5181394612681018,
-      "cp1_y": 0.18707835107081855,
-      "cp2_x": 0.9515908468102928,
-      "cp2_y": 0.5290735815736539
-    },
-    {
-      "node_id": 11,
-      "uuid": "292d99f351b34e78ba2ae0ac362c76dd",
+      "node_id": 9,
+      "uuid": "877c1225336f472ab4446e37322260f5",
       "type": "warm",
-      "title": "Delicate",
-      "pos_x": -367.72189299917125,
-      "pos_y": 267.1990024374663,
-      "width": 178.0,
+      "title": "Inner Peace",
+      "pos_x": -92.1043918174305,
+      "pos_y": -219.08934290733083,
+      "width": 211.0,
       "height": 90.0,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 10,
-      "uuid": "87d5c942d3cb474abdcf8952f5db5f10",
-      "type": "warm",
-      "title": "New Thought",
-      "pos_x": -504.39098378279874,
-      "pos_y": -230.81105185062398,
-      "width": 443.1714534675334,
-      "height": 355.5460999034914,
-      "ports_visible": false,
-      "full_text": "Bezier Curve Output\n\nCP1: (0.5181, 0.8129)\nCP2: (0.9516, 0.4709)\n\n# Ready to paste:\ncurve.addCubicBezierSegment(\n    QPointF(0.5181, 0.8129),\n    QPointF(0.9516, 0.4709),\n    QPointF(1.0, 1.0)\n)"
-    },
-    {
-      "node_id": 8,
-      "uuid": "efff66a082d442ac97d2fa2d3f03cfb6",
-      "type": "warm",
-      "title": "practical and pleasurable",
-      "pos_x": 104.0645547534333,
-      "pos_y": -438.1766595197404,
-      "width": 559.3669435691779,
-      "height": 86.98080779146375,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 7,
-      "uuid": "43a3f1c492b94daf9a35aee65586c9f0",
-      "type": "warm",
-      "title": "The app very much needs to be able to play the theme song",
-      "pos_x": -1327.1035899875446,
-      "pos_y": -681.3557718473107,
-      "width": 1083.5720423947294,
-      "height": 81.25179031796046,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 6,
-      "uuid": "c64e7c4e3d6d421fadbdcdf97276f01d",
-      "type": "warm",
-      "title": "Areas For Improvement",
-      "pos_x": -396.5775821961506,
-      "pos_y": -40.43620296163094,
-      "width": 487.75422515038673,
-      "height": 81.25179031796048,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 5,
-      "uuid": "32820bd9272e4de8bcf51f9735478c3d",
-      "type": "warm",
-      "title": "Current version does not remember window_geometry on launch",
-      "pos_x": -1113.6289002534606,
-      "pos_y": 530.7880474610424,
-      "width": 1093.578588991867,
-      "height": 83.79988651409116,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 3,
-      "uuid": "53a032c9a46748a2a1a2d08052c5c216",
-      "type": "warm",
-      "title": "About",
-      "pos_x": -1529.4294497173767,
-      "pos_y": -216.20966604164053,
-      "width": 183.5785926945524,
-      "height": 61.89136391084134,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 3,
-      "uuid": "0d80580d975b47a69a0cf5e7ce8d2a2e",
-      "type": "warm",
-      "title": "cozy-tree Encoding and File Reading",
-      "pos_x": 327.33799393916627,
-      "pos_y": -140.9929632003654,
-      "width": 728.5322489124267,
-      "height": 144.32570455835065,
       "ports_visible": false,
       "full_text": ""
     },
@@ -125,35 +26,134 @@
       "full_text": ""
     },
     {
-      "node_id": 9,
-      "uuid": "877c1225336f472ab4446e37322260f5",
+      "node_id": 3,
+      "uuid": "0d80580d975b47a69a0cf5e7ce8d2a2e",
       "type": "warm",
-      "title": "Inner Peace",
-      "pos_x": -92.1043918174305,
-      "pos_y": -219.08934290733083,
-      "width": 211.0,
+      "title": "cozy-tree Encoding and File Reading",
+      "pos_x": 327.33799393916627,
+      "pos_y": -140.9929632003654,
+      "width": 728.5322489124267,
+      "height": 144.32570455835065,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 3,
+      "uuid": "53a032c9a46748a2a1a2d08052c5c216",
+      "type": "warm",
+      "title": "About",
+      "pos_x": -1529.4294497173767,
+      "pos_y": -216.20966604164053,
+      "width": 183.5785926945524,
+      "height": 61.89136391084134,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 5,
+      "uuid": "32820bd9272e4de8bcf51f9735478c3d",
+      "type": "warm",
+      "title": "Current version does not remember window_geometry on launch",
+      "pos_x": -1113.6289002534606,
+      "pos_y": 530.7880474610424,
+      "width": 1093.578588991867,
+      "height": 83.79988651409116,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 6,
+      "uuid": "c64e7c4e3d6d421fadbdcdf97276f01d",
+      "type": "warm",
+      "title": "Areas For Improvement",
+      "pos_x": -396.5775821961506,
+      "pos_y": -40.43620296163094,
+      "width": 487.75422515038673,
+      "height": 81.25179031796048,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 7,
+      "uuid": "43a3f1c492b94daf9a35aee65586c9f0",
+      "type": "warm",
+      "title": "The app very much needs to be able to play the theme song",
+      "pos_x": -1327.1035899875446,
+      "pos_y": -681.3557718473107,
+      "width": 1083.5720423947294,
+      "height": 81.25179031796046,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 8,
+      "uuid": "efff66a082d442ac97d2fa2d3f03cfb6",
+      "type": "warm",
+      "title": "practical and pleasurable",
+      "pos_x": 104.0645547534333,
+      "pos_y": -438.1766595197404,
+      "width": 559.3669435691779,
+      "height": 86.98080779146375,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 10,
+      "uuid": "87d5c942d3cb474abdcf8952f5db5f10",
+      "type": "warm",
+      "title": "New Thought",
+      "pos_x": -504.39098378279874,
+      "pos_y": -230.81105185062398,
+      "width": 443.1714534675334,
+      "height": 355.5460999034914,
+      "ports_visible": false,
+      "full_text": "Bezier Curve Output\n\nCP1: (0.5181, 0.8129)\nCP2: (0.9516, 0.4709)\n\n# Ready to paste:\ncurve.addCubicBezierSegment(\n    QPointF(0.5181, 0.8129),\n    QPointF(0.9516, 0.4709),\n    QPointF(1.0, 1.0)\n)"
+    },
+    {
+      "node_id": 11,
+      "uuid": "292d99f351b34e78ba2ae0ac362c76dd",
+      "type": "warm",
+      "title": "Delicate",
+      "pos_x": -367.72189299917125,
+      "pos_y": 267.1990024374663,
+      "width": 178.0,
       "height": 90.0,
       "ports_visible": false,
       "full_text": ""
+    },
+    {
+      "node_id": 11,
+      "uuid": "bd140256fad74602bddb34d66df04e3b",
+      "type": "bezier",
+      "title": "Curve",
+      "pos_x": -1204.3894148628297,
+      "pos_y": -393.24039931063487,
+      "width": 584.4733358035222,
+      "height": 324.20771846513105,
+      "ports_visible": true,
+      "cp1_x": 0.5181394612681018,
+      "cp1_y": 0.18707835107081855,
+      "cp2_x": 0.9515908468102928,
+      "cp2_y": 0.5290735815736539
     }
   ],
   "connections": [
     {
-      "start_node_uuid": "87d5c942d3cb474abdcf8952f5db5f10",
-      "end_node_uuid": "877c1225336f472ab4446e37322260f5"
+      "start_node_uuid": "bd140256fad74602bddb34d66df04e3b",
+      "end_node_uuid": "87d5c942d3cb474abdcf8952f5db5f10"
     },
     {
       "start_node_uuid": "53a032c9a46748a2a1a2d08052c5c216",
       "end_node_uuid": "bd140256fad74602bddb34d66df04e3b"
     },
     {
-      "start_node_uuid": "bd140256fad74602bddb34d66df04e3b",
-      "end_node_uuid": "87d5c942d3cb474abdcf8952f5db5f10"
+      "start_node_uuid": "87d5c942d3cb474abdcf8952f5db5f10",
+      "end_node_uuid": "877c1225336f472ab4446e37322260f5"
     }
   ],
   "viewport": {
-    "center_x": -237.54833164212542,
-    "center_y": -192.93346647813436,
+    "center_x": -61.968669957303575,
+    "center_y": -1098.4021350015155,
     "scale": 0.6891458773693476
   }
 }

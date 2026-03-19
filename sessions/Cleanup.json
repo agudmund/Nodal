@@ -2,6 +2,33 @@
   "version": "1.0",
   "nodes": [
     {
+      "node_id": 28,
+      "uuid": "4db21172aa174a9e94f3e26b1da6832d",
+      "type": "warm",
+      "title": "Gentle",
+      "pos_x": 1368.0705588607525,
+      "pos_y": 1601.915177642765,
+      "width": 156.0,
+      "height": 90.0,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 27,
+      "uuid": "3273771b8e904e27911acb5db654f5ae",
+      "type": "bezier",
+      "title": "Curve",
+      "pos_x": 987.8742058750317,
+      "pos_y": 1404.6584924116792,
+      "width": 280.0,
+      "height": 220.0,
+      "ports_visible": false,
+      "cp1_x": 0.25,
+      "cp1_y": 0.75,
+      "cp2_x": 0.75,
+      "cp2_y": 0.25
+    },
+    {
       "node_id": 27,
       "uuid": "5b2f80943354442a92fc260cb19005f2",
       "type": "warm",
@@ -18,8 +45,8 @@
       "uuid": "59560ee590314397a4cda59ce238ffab",
       "type": "warm",
       "title": "Growth",
-      "pos_x": 887.7580215657586,
-      "pos_y": -547.4322754175232,
+      "pos_x": 1022.9742977322281,
+      "pos_y": -588.7925481272669,
       "width": 156.0,
       "height": 90.0,
       "ports_visible": false,
@@ -294,8 +321,8 @@
       "uuid": "ec83712e-16c1-4c4e-93ac-eab5ae9590e9",
       "type": "warm",
       "title": "Phase 1: Clean about.py",
-      "pos_x": 1072.1776554870962,
-      "pos_y": -334.744516844057,
+      "pos_x": 1597.1349629569202,
+      "pos_y": -694.2607334749059,
       "width": 501.64107853906467,
       "height": 147.56760135738526,
       "ports_visible": false,
@@ -318,8 +345,8 @@
       "uuid": "39fd72a2-a9f0-43ef-b83c-c3b741d69737",
       "type": "warm",
       "title": "about_app.py",
-      "pos_x": 48.071278591342605,
-      "pos_y": -1013.0036289890633,
+      "pos_x": 0.3478870031767656,
+      "pos_y": -1025.7298667459072,
       "width": 722.4129125195586,
       "height": 226.0,
       "ports_visible": false,
@@ -333,8 +360,8 @@
     }
   ],
   "viewport": {
-    "center_x": 344.3456607204215,
-    "center_y": 19.913691664524347,
+    "center_x": 1327.447527436637,
+    "center_y": 1749.0912468757303,
     "scale": 0.6286225475944431
   }
 }

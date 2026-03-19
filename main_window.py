@@ -58,11 +58,14 @@ class NodeGraphicsView(QGraphicsView):
         self.zoom_speed = 0.002
         self.min_zoom = 0.1
         self.max_zoom = 5.0
-        
+
         # Consolidate: use underscore naming for internal mouse state
         self._last_pan_pos = None 
         self._last_zoom_pos = None
         self._alt_right_pressed = False
+
+        # [DEBUG] Background paint call counter — throttles drawBackground diagnostic logging
+        self._bg_paint_count = 0
 
         # --- 4. The Mica Core (Transparency & Quality) ---
         # Use a BspTree to make finding nodes faster in a large scene
@@ -71,7 +74,9 @@ class NodeGraphicsView(QGraphicsView):
         self.viewport().setAttribute(Qt.WA_TranslucentBackground)
         self.setStyleSheet("background: transparent;")
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
-        self.setOptimizationFlag(QGraphicsView.OptimizationFlag.DontSavePainterState)
+        # DontSavePainterState is intentionally omitted — with WA_TranslucentBackground and
+        # QGraphicsDropShadowEffect on nodes, not saving painter state causes solid-color node
+        # ghosts to bleed into the background layer via painter brush/transform leakage.
         try:
             self.setOptimizationFlag(QGraphicsView.OptimizationFlag.DontAdjustCursorShape)
         except AttributeError:
@@ -93,6 +98,19 @@ class NodeGraphicsView(QGraphicsView):
             self.window().view_zoom = self.current_zoom
 
     def drawBackground(self, painter, rect):
+        # [DEBUG] Logs the first 15 background paints — confirms draw order relative to item paints.
+        # If background fires AFTER a node paint in the log, that explains the ghost bake-in.
+        if self._bg_paint_count < 15:
+            device_type = type(painter.device()).__name__
+            t = painter.worldTransform()
+            logger.debug(
+                f"[BACKGROUND #{self._bg_paint_count}] device={device_type} "
+                f"rect=({rect.x():.0f},{rect.y():.0f},{rect.width():.0f},{rect.height():.0f}) "
+                f"viewport=({self.viewport().rect().width()},{self.viewport().rect().height()}) "
+                f"scale=({t.m11():.3f},{t.m22():.3f})"
+            )
+            self._bg_paint_count += 1
+
         painter.save()
         painter.resetTransform()
 
@@ -387,9 +405,10 @@ class NodalApp(QMainWindow):
         handle_style = ""
         if Theme.sliderHandleImage:
             import os
-            if os.path.exists(Theme.sliderHandleImage):
+            _resolved_slider_image = Theme._get_resource_path(Theme.sliderHandleImage)
+            if os.path.exists(_resolved_slider_image):
                 # Use custom image - convert path to URL format for stylesheet
-                image_path = Theme.sliderHandleImage.replace("\\", "/")
+                image_path = _resolved_slider_image.replace("\\", "/")
                 handle_style = f"""
             QSlider::handle:horizontal {{
                 background-image: url({image_path});
@@ -401,7 +420,7 @@ class NodalApp(QMainWindow):
             }}"""
             else:
                 # Image path specified but file not found - fallback to solid color
-                logger.warning(f"Slider handle image not found: {Theme.sliderHandleImage}, using solid color")
+                logger.warning(f"Slider handle image not found: {_resolved_slider_image}, using solid color")
                 handle_style = """
             QSlider::handle:horizontal {
                 background: #00d2ff;
@@ -523,44 +542,52 @@ class NodalApp(QMainWindow):
         data = SessionManager.get_session_data(filepath)
         if not data:
             return
-        
+
         if data:
-            # 1. Clear and Rebuild nodes (Your existing logic)
+            node_count = len(data.get("nodes", []))
+            conn_count = len(data.get("connections", []))
+            logger.debug(f"[LOAD_SESSION] '{session_name}' — {node_count} nodes, {conn_count} connections")
+
+            # 1. Clear and Rebuild nodes
+            logger.debug(f"[LOAD_SESSION] setUpdatesEnabled(False)")
             self.view.setUpdatesEnabled(False)
             try:
+                logger.debug(f"[LOAD_SESSION] clear_nodes()")
                 self.scene.clear_nodes()
-                self.scene.rebuild_from_session(data)
 
-                # 103% CERTAINTY: Force the 'Camera Operator' to look at the truth
-                self.view.viewport().setUpdatesEnabled(True)
-                self.view.viewport().repaint() # Synchronous paint (The Sledgehammer)
-                
-                # 1. Retrieve the Focal Length
+                logger.debug(f"[LOAD_SESSION] rebuild_from_session()")
+                self.scene.rebuild_from_session(data)
+                logger.debug(f"[LOAD_SESSION] rebuild complete — resetting bg_paint_count for fresh diagnostics")
+                self.view._bg_paint_count = 0
+
+                # Retrieve the Focal Length
                 viewport = data.get("viewport", {})
                 self.view_pan_x = viewport.get("center_x", 0.0)
                 self.view_pan_y = viewport.get("center_y", 0.0)
-                self.view_zoom = viewport.get("scale", 1.0) # Default to 1:1
+                self.view_zoom = viewport.get("scale", 1.0)
+                logger.debug(f"[LOAD_SESSION] viewport — center=({self.view_pan_x:.1f},{self.view_pan_y:.1f}) zoom={self.view_zoom:.3f}")
 
-                # 2. Sync the View's internal ledger
-                # This is vital so the next scroll wheel event starts from the right place
+                # Sync the View's internal ledger
                 self.view.current_zoom = self.view_zoom
 
-                # 3. Apply the Transformation
-                # We reset to identity first to avoid 'Stacking' zooms on top of each other
+                # Apply the Transformation — reset to identity first to avoid stacking zooms
                 self.view.resetTransform()
                 self.view.scale(self.view_zoom, self.view_zoom)
 
-                # 4. Center the Camera
+                # Center the Camera
                 self.view.centerOn(self.view_pan_x, self.view_pan_y)
-                
+
                 # Reset the 'First Interact' guard so the next pan is high-precision
                 self.view._first_interact_done = False
-                
+
             finally:
                 self.scene.set_dirty(False)
+                logger.debug(f"[LOAD_SESSION] finally — setUpdatesEnabled(True), scheduling deferred repaint")
                 self.view.setUpdatesEnabled(True)
                 self.view.viewport().setUpdatesEnabled(True)
-                self.view.viewport().update()
+                # Deferred repaint — lets Qt initialize all effect buffers (e.g. drop shadows)
+                # before the first paint, preventing node bodies from baking into the background.
+                QTimer.singleShot(0, self.view.viewport().update)
 
     def save_session(self, session_name: str):
         """Gathers characters and camera state; forces the warehouse to acknowledge spaces."""
