@@ -190,10 +190,6 @@ class NodeGraphicsView(QGraphicsView):
             event.accept()
 
         super().mouseReleaseEvent(event)
-           
-
-
-
 
 class NodalApp(QMainWindow):
     def __init__(self):
@@ -618,8 +614,105 @@ class NodalApp(QMainWindow):
         self.load_session(new_session_name)
 
     def create_new_node(self):
-        view_center = self.view.mapToScene(self.view.viewport().width() // 2, self.view.viewport().height() // 2)
-        self.scene.add_node(view_center.x(), view_center.y())
+        """Show the node type chooser popup centered over the canvas."""
+        from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QGraphicsDropShadowEffect, QPushButton
+        from PySide6.QtGui import QColor
+
+        chooser = QWidget(self, Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        chooser.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        chooser.setFixedSize(560, 160)
+        chooser.setObjectName("nodeTypeChooser")
+
+        # Glow effect for extra coziness
+        glow = QGraphicsDropShadowEffect()
+        glow.setBlurRadius(24)
+        glow.setColor(QColor(Theme.primaryBorder.red(), Theme.primaryBorder.green(), Theme.primaryBorder.blue(), 120))
+        glow.setOffset(0, 0)
+        chooser.setGraphicsEffect(glow)
+
+        chooser.setStyleSheet(f"""
+            QWidget#nodeTypeChooser {{
+                background-color: {Theme.toolbarBg.name()};
+                border: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};
+                border-radius: 12px;
+            }}
+            QPushButton {{
+                background-color: {Theme.comboboxBg.name()};
+                color: {Theme.comboboxText.name()};
+                border: 1px solid {Theme.comboboxBorder.name()};
+                border-radius: 8px;
+                padding: 10px 18px;
+                font-family: {Theme.comboboxFontFamily};
+                font-size: {Theme.comboboxFontSize}pt;
+            }}
+            QPushButton:hover {{
+                background-color: {Theme.accentSelected.name()};
+                border-color: {Theme.primaryBorder.name()};
+            }}
+            QLabel {{
+                color: {Theme.comboboxText.name()};
+                font-family: {Theme.comboboxFontFamily};
+                font-size: {Theme.comboboxFontSize}pt;
+                background: transparent;
+                border: none;
+            }}
+        """)
+
+        layout = QVBoxLayout(chooser)
+        layout.setContentsMargins(24, 20, 24, 20)
+        layout.setSpacing(14)
+
+        title = QLabel("What kind of node feels right today? ✨")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
+
+        btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(12)
+
+        def create_and_close(node_type: str):
+            center = self.view.mapToScene(
+                self.view.viewport().width() // 2,
+                self.view.viewport().height() // 2
+            )
+            if node_type == "warm":
+                self.scene.add_warm_node(center.x(), center.y())
+            elif node_type == "bezier":
+                self.scene.add_bezier_node(center.x(), center.y())
+            elif node_type == "about":
+                from graphics.AboutNode import AboutNode
+                node = AboutNode(node_id=self.scene._next_node_id(), pos=center)
+                self.scene._register_node(node)
+            elif node_type == "image":
+                from graphics.ImageNode import ImageNode
+                node = ImageNode(node_id=self.scene._next_node_id(), pos=center)
+                self.scene._register_node(node)
+            chooser.close()
+
+        warm_btn = QPushButton("Warm 🌱")
+        warm_btn.clicked.connect(lambda: create_and_close("warm"))
+        btn_layout.addWidget(warm_btn)
+
+        bezier_btn = QPushButton("Bezier 〜")
+        bezier_btn.clicked.connect(lambda: create_and_close("bezier"))
+        btn_layout.addWidget(bezier_btn)
+
+        about_btn = QPushButton("About ❤️")
+        about_btn.clicked.connect(lambda: create_and_close("about"))
+        btn_layout.addWidget(about_btn)
+
+        image_btn = QPushButton("Image 🖼️")
+        image_btn.clicked.connect(lambda: create_and_close("image"))
+        btn_layout.addWidget(image_btn)
+
+        layout.addLayout(btn_layout)
+
+        # Center the popup over the canvas
+        global_pos = self.view.mapToGlobal(
+            self.view.viewport().rect().center()
+        )
+        chooser.move(global_pos - QPoint(chooser.width() // 2, chooser.height() // 2))
+        chooser.show()
+        chooser.raise_()
 
     # =========================================================================
     # The Glorious and Prestigious Mica

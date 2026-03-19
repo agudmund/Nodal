@@ -12,5 +12,6 @@ from .WarmNode import WarmNode
 from .ImageNode import ImageNode
 from .Scene import NodeScene
 from .Theme import Theme
+from .BezierNode import BezierNode
 
 __all__ = ['Port', 'Connection', 'BaseNode', 'WarmNode', 'ImageNode', 'NodeScene', 'Theme']

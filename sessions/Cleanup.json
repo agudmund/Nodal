@@ -2,6 +2,18 @@
   "version": "1.0",
   "nodes": [
     {
+      "node_id": 27,
+      "uuid": "5b2f80943354442a92fc260cb19005f2",
+      "type": "warm",
+      "title": "Sweet",
+      "pos_x": 720.1170355555084,
+      "pos_y": 2104.3078832171095,
+      "width": 145.0,
+      "height": 90.0,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
       "node_id": 28,
       "uuid": "59560ee590314397a4cda59ce238ffab",
       "type": "warm",
@@ -90,11 +102,11 @@
       "uuid": "f5566582-3256-4aba-b32e-d25547bdc3fb",
       "type": "warm",
       "title": "Phase 7: Check glow_frames.py usage",
-      "pos_x": 383.8319937146133,
-      "pos_y": 2193.8845884889065,
+      "pos_x": 974.9728437974934,
+      "pos_y": 2096.3847339947174,
       "width": 300.0,
       "height": 200.0,
-      "ports_visible": false,
+      "ports_visible": true,
       "full_text": ""
     },
     {
@@ -102,11 +114,11 @@
       "uuid": "fcb34bc1-d054-4049-a8cc-c95a42fe467d",
       "type": "warm",
       "title": "Phase 7: Check nodal.py usage",
-      "pos_x": 50.73344714063728,
-      "pos_y": 2147.7996585780884,
+      "pos_x": 244.96544073929795,
+      "pos_y": 2090.9887197389544,
       "width": 300.0,
       "height": 200.0,
-      "ports_visible": false,
+      "ports_visible": true,
       "full_text": ""
     },
     {
@@ -326,10 +338,15 @@
       "full_text": ""
     }
   ],
-  "connections": [],
+  "connections": [
+    {
+      "start_node_uuid": "fcb34bc1-d054-4049-a8cc-c95a42fe467d",
+      "end_node_uuid": "f5566582-3256-4aba-b32e-d25547bdc3fb"
+    }
+  ],
   "viewport": {
-    "center_x": 517.0936392606114,
-    "center_y": 289.7895559171422,
+    "center_x": 834.9278106038744,
+    "center_y": 2188.349714689821,
     "scale": 1.302566046471062
   }
 }

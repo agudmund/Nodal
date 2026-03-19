@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - scene.py graphics scene management
--Handles node scene, blur effects, and background rendering
+-Handles node scene, blur effects, and background rendering for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
@@ -16,48 +16,65 @@ from .Theme import Theme
 from utils.motivational_messages import motivationalMessages
 from .BaseNode import BaseNode
 from .WarmNode import WarmNode
+from .BezierNode import BezierNode
+from utils.logger import setup_logger
+
+logger = setup_logger()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WINDOWS MICA BLUR
+# ─────────────────────────────────────────────────────────────────────────────
 
 def enable_blur(hwnd):
-    """Enable Windows blur effect on the window (Windows only)."""
+    """Enable Windows Mica blur effect on the window (Windows only).
+    Silently skips on non-Windows platforms — broad catch is intentional.
+    """
     if sys.platform != "win32":
-        return  # Silently skip on non-Windows platforms
+        return  # Non-Windows platforms won't have ctypes.windll — broad catch is intentional
 
-    if not hwnd or sys.platform != "win32":
+    if not hwnd:
         return
 
     try:
         class WindowCompositionAttributeData(ctypes.Structure):
             _fields_ = [("Attribute", ctypes.c_int), ("Data", ctypes.c_void_p), ("SizeOfData", ctypes.c_size_t)]
         class AccentPolicy(ctypes.Structure):
-            _fields_ = [("AccentState", ctypes.c_int), ("AccentFlags", ctypes.c_int), 
+            _fields_ = [("AccentState", ctypes.c_int), ("AccentFlags", ctypes.c_int),
                         ("GradientColor", ctypes.c_int), ("AnimationId", ctypes.c_int)]
 
         accent = AccentPolicy()
-        # Change the AccentState to 5 for Mica
-        # And we need to add a "Flag" to tell Windows we want to use our own tint
-        # In scene.py -> enable_blur 
-        accent.AccentState = 5  # Keep Mica
-        accent.AccentFlags = 0  # Tell Windows to stay out of the tinting business
-        accent.GradientColor = 0x00000000 # Fully transparent
-        data = WindowCompositionAttributeData() 
-        data.Attribute = 19 
+        # AccentState 5 = Mica effect
+        # AccentFlags 0 = let Windows handle tinting, not us
+        accent.AccentState = 5
+        accent.AccentFlags = 0
+        accent.GradientColor = 0x00000000  # Fully transparent base
+
+        data = WindowCompositionAttributeData()
+        data.Attribute = 19
         data.SizeOfData = ctypes.sizeof(accent)
         data.Data = ctypes.cast(ctypes.pointer(accent), ctypes.c_void_p)
-        # Convert QColor to a Windows-friendly Hex (ABGR format)
+
+        # Convert QColor to Windows ABGR format (0xAA BB GG RR)
         tint = Theme.frostColor
-        # Windows expects: 0x AABBGGRR
         windows_color = (tint.alpha() << 24) | (tint.blue() << 16) | (tint.green() << 8) | tint.red()
         accent.GradientColor = windows_color
+
         ctypes.windll.user32.SetWindowCompositionAttribute(hwnd, ctypes.pointer(data))
     except Exception as e:
         print(f"Warning: Could not enable blur effect: {e}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NODE SCENE
+# ─────────────────────────────────────────────────────────────────────────────
 
 class NodeScene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._dirty = False
-        self._undo_stack = []       # Each entry: list of (node_dict, [conn_dicts]) for one delete action
-        self._undo_max = 30         # Cap memory use — oldest actions fall off the back
+        self._undo_stack = []   # Each entry: list of (node_dict, [conn_dicts]) for one delete action
+        self._undo_max = 30     # Cap memory use — oldest actions fall off the back
 
         # Recovery: debounced write so rapid dirty events collapse into one disk hit
         from utils.settings import Settings
@@ -68,36 +85,42 @@ class NodeScene(QGraphicsScene):
 
         # Only try to enable blur if we actually have a parent window
         if parent and hasattr(parent, 'winId'):
-             enable_blur(parent.winId())
+            enable_blur(parent.winId())
 
         self.temp_conn = None
-        self.setSceneRect(-1000, -1000, 1000, 1000) # Give yourself room to roam
+        self.setSceneRect(-1000, -1000, 1000, 1000)  # Give yourself room to roam
 
-        # 1. THE FOG LAYER (The Blur Container)
-        # This is a transparent rectangle that holds the blur effect
+        # THE FOG LAYER — a transparent rect that holds the background blur effect.
+        # The effect is applied to the layer, not the view, for performance reasons.
         self.fog_layer = QGraphicsRectItem(self.sceneRect())
         self.fog_layer.setRect(-1000, -1000, 1000, 1000)
         self.fog_layer.setBrush(Qt.NoBrush)
         self.fog_layer.setPen(Qt.NoPen)
-        self.fog_layer.setZValue(-100) # Deep in the background
-        
-        self.blur_effect = QGraphicsBlurEffect()
-        self.blur_effect.setBlurHints(QGraphicsBlurEffect.PerformanceHint) # Faster for slider-dragging
-        self.fog_layer.setGraphicsEffect(self.blur_effect)
-        
+        self.fog_layer.setZValue(-100)  # Deep in the background
 
-        # Apply the effect to the LAYER, not the view
         self.blur_effect = QGraphicsBlurEffect()
+        self.blur_effect.setBlurHints(QGraphicsBlurEffect.PerformanceHint)  # Faster during slider-dragging
         self.fog_layer.setGraphicsEffect(self.blur_effect)
         self.addItem(self.fog_layer)
 
+    # ─────────────────────────────────────────────────────────────────────────
+    # DIRTY STATE
+    # ─────────────────────────────────────────────────────────────────────────
+
     def set_dirty(self, value: bool):
-        """Updates the dirty state and schedules a recovery snapshot on any destructive change."""
+        """Update dirty state and schedule a recovery snapshot on any change."""
         if self._dirty != value:
             self._dirty = value
             # Here is where you'd eventually tell the Save Button to glow!
         if value:
-            self._recovery_timer.start()  # Restart the 2 s quiet timer on every dirty event
+            self._recovery_timer.start()  # Restart the quiet timer on every dirty event
+
+    def is_dirty(self) -> bool:
+        return self._dirty
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # WIRE TRACKING — scene-level mouse handling for floating connection wires
+    # ─────────────────────────────────────────────────────────────────────────
 
     def _get_active_wire_node(self):
         """Return the node currently dragging a temp_connection, or None."""
@@ -138,8 +161,9 @@ class NodeScene(QGraphicsScene):
             return
         super().mouseReleaseEvent(event)
 
-    def is_dirty(self):
-        return self._dirty
+    # ─────────────────────────────────────────────────────────────────────────
+    # SESSION PERSISTENCE
+    # ─────────────────────────────────────────────────────────────────────────
 
     def _write_recovery(self):
         """Write the full scene state to sessions/recovery.json as a silent safety net."""
@@ -157,10 +181,10 @@ class NodeScene(QGraphicsScene):
         Returns:
             Dictionary with version, serialized nodes, and connection metadata.
         """
-        # 1. Gather Nodes (Existing)
+        # 1. Gather Nodes
         nodes_data = [item.to_dict() for item in self.items() if isinstance(item, BaseNode)]
 
-        # 2. Gather Connections (The New Nerve Ledger)
+        # 2. Gather Connections — The Nerve Ledger
         from graphics.Connection import Connection
         conns_data = []
         for item in self.items():
@@ -176,72 +200,6 @@ class NodeScene(QGraphicsScene):
             "connections": conns_data
         }
 
-    def add_connection(self, node_a, node_b):
-        """Create and register a connection (wire) between two nodes.
-
-        Args:
-            node_a: Source BaseNode
-            node_b: Target BaseNode
-
-        Returns:
-            Connection instance
-        """
-        conn = Connection(node_a, node_b)
-        self.addItem(conn)
-        node_a.connections.append(conn)
-        node_b.connections.append(conn)
-        return conn
-
-    def add_node(self, x: float, y: float, title: str = None) -> 'WarmNode':
-        """Create and add a WarmNode to the scene.
-
-        Automatically generates a node_id based on existing node count.
-        Uses random motivational message as title if not provided.
-
-        Args:
-            x: Scene X coordinate
-            y: Scene Y coordinate
-            title: Optional node title (uses random motivational message if None)
-
-        Returns:
-            Newly created and added WarmNode instance
-        """
-
-        # Use random motivational message if no title provided
-        if title is None:
-            title = random.choice(motivationalMessages)
-
-        # Create a WarmNode with auto-incremented node_id
-        node_id = len([item for item in self.items() if isinstance(item, BaseNode)])
-        node = WarmNode(node_id=node_id, title=title, pos=QPointF(x, y))
-        node.setZValue(10) 
-        self.addItem(node)
-        return node
-
-    def clear_nodes(self):
-        """Remove all nodes from the scene while preserving the background fog layer.
-        Properly cleans up graphics effects and invalidates the scene cache.
-        """
-        # 1. Grab everything currently on the stage
-        all_items = self.items()
-        
-        # 2. THE ULTIMATUM: If it's not the Fog, it's gone.
-        # This catches nodes, wires, ports, and 'Ghost' artifacts.
-        for item in all_items:
-            if item != self.fog_layer:
-                # Strip effects (like shadows) before removal to clear the buffer
-                if hasattr(item, 'setGraphicsEffect'):
-                    item.setGraphicsEffect(None)
-                self.removeItem(item)
-
-        # 3. THE GHOST BUSTER: Invalidate the entire visual cache
-        # This is the 'Simulate pointing at every pixel' button in code.
-        self.invalidate(self.sceneRect(), QGraphicsScene.AllLayers)
-        
-        # 4. Notify the cameras
-        for view in self.views():
-            view.viewport().update()
-
     def rebuild_from_session(self, data: dict):
         """Reconstruct scene nodes and connections from session data.
         Clears existing nodes and rebuilds graph from serialized state.
@@ -249,11 +207,10 @@ class NodeScene(QGraphicsScene):
         Args:
             data: Dictionary with 'nodes' and 'connections' lists from session
         """
-        # from graphics import node_types
         from graphics.Connection import Connection
 
         self.clear_nodes()
-        node_map = {} # To keep track of UUIDs during the build
+        node_map = {}  # UUID → node, used for reconnecting wires in second pass
 
         # 1. First Pass: Create all Nodes
         for node_data in data.get("nodes", []):
@@ -265,10 +222,122 @@ class NodeScene(QGraphicsScene):
         for conn_data in data.get("connections", []):
             start_node = node_map.get(conn_data.get("start_node_uuid"))
             end_node = node_map.get(conn_data.get("end_node_uuid"))
-
             if start_node and end_node:
                 new_conn = Connection(start_node, end_node)
                 self.addItem(new_conn)
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # NODE CREATION HELPERS
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def _next_node_id(self) -> int:
+        """Auto-increment node id based on current scene node count."""
+        return len([item for item in self.items() if isinstance(item, BaseNode)])
+
+    def _register_node(self, node: BaseNode) -> BaseNode:
+        """Common finalisation for any newly created node — add to scene, set Z, mark dirty."""
+        node.setZValue(10)
+        self.addItem(node)
+        self.set_dirty(True)
+        return node
+
+    def add_warm_node(self, x: float, y: float, title: str = None) -> 'WarmNode':
+        """Create and add a WarmNode to the scene.
+        Uses a random motivational message as title if not provided.
+
+        Args:
+            x: Scene X coordinate
+            y: Scene Y coordinate
+            title: Optional node title (uses random motivational message if None)
+
+        Returns:
+            Newly created WarmNode instance
+        """
+        if title is None:
+            title = random.choice(motivationalMessages)
+        node = WarmNode(
+            node_id=self._next_node_id(),
+            title=title,
+            pos=QPointF(x, y)
+        )
+        return self._register_node(node)
+
+    def add_bezier_node(self, x: float, y: float, title: str = "Curve") -> 'BezierNode':
+        """Create and add a BezierNode to the scene.
+        Arrives with a default gentle ease-in-out curve, ready to shape.
+
+        Args:
+            x: Scene X coordinate
+            y: Scene Y coordinate
+            title: Optional node title (default: 'Curve')
+
+        Returns:
+            Newly created BezierNode instance
+        """
+        node = BezierNode(
+            node_id=self._next_node_id(),
+            title=title,
+            pos=QPointF(x, y)
+        )
+        return self._register_node(node)
+
+    def add_node(self, x: float, y: float, title: str = None) -> 'WarmNode':
+        """Backwards-compatible alias for add_warm_node.
+        🪟 Prefer add_warm_node() or add_bezier_node() for new call sites.
+        """
+        return self.add_warm_node(x, y, title)
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # CONNECTION CREATION
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def add_connection(self, node_a: BaseNode, node_b: BaseNode):
+        """Create and register a visual connection (wire) between two nodes.
+
+        Args:
+            node_a: Source BaseNode
+            node_b: Target BaseNode
+
+        Returns:
+            Connection instance
+        """
+        from graphics.Connection import Connection
+        conn = Connection(node_a, node_b)
+        self.addItem(conn)
+        node_a.connections.append(conn)
+        node_b.connections.append(conn)
+        return conn
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # SCENE CLEANUP
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def clear_nodes(self):
+        """Remove all nodes from the scene while preserving the background fog layer.
+        Properly cleans up graphics effects and invalidates the scene cache.
+        """
+        # 1. Grab everything currently on the stage
+        all_items = self.items()
+
+        # 2. THE ULTIMATUM: If it's not the Fog, it's gone.
+        # This catches nodes, wires, ports, and ghost artifacts.
+        for item in all_items:
+            if item != self.fog_layer:
+                # Strip effects (like shadows) before removal to clear the render buffer
+                if hasattr(item, 'setGraphicsEffect'):
+                    item.setGraphicsEffect(None)
+                self.removeItem(item)
+
+        # 3. THE GHOST BUSTER: Invalidate the entire visual cache
+        self.invalidate(self.sceneRect(), QGraphicsScene.AllLayers)
+
+        # 4. Notify the cameras
+        for view in self.views():
+            view.viewport().update()
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # KEYBOARD — delete and undo
+    # ─────────────────────────────────────────────────────────────────────────
 
     def keyPressEvent(self, event):
         """Delete selected nodes with Backspace/Delete, undo last delete with Ctrl+Z."""
@@ -295,6 +364,7 @@ class NodeScene(QGraphicsScene):
                     if node.scene():
                         self.removeItem(node)
                     snapshot.append((node_dict, conn_dicts))
+
                 self._undo_stack.append(snapshot)
                 if len(self._undo_stack) > self._undo_max:
                     self._undo_stack.pop(0)
@@ -334,8 +404,12 @@ class NodeScene(QGraphicsScene):
 
         self.set_dirty(True)
 
+    # ─────────────────────────────────────────────────────────────────────────
+    # BACKGROUND
+    # ─────────────────────────────────────────────────────────────────────────
+
     def drawBackground(self, painter, rect):
         bg_color = Theme.with_alpha(Theme.frostColor, Theme.frostColor.alpha())
-        painter.setBrush(bg_color) 
+        painter.setBrush(bg_color)
         painter.setPen(Qt.NoPen)
         painter.drawRect(rect)

@@ -7,13 +7,13 @@
 """
 
 import uuid as _uuid
-import random
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTimer
 from PySide6.QtGui import QColor, QPen, QPainter, QBrush, QPainterPath
 from .Theme import Theme
 from .Port import Port
 from utils.logger import setup_logger
+from utils.NodeBehaviour import NodeBehaviour
 
 logger = setup_logger()
 
@@ -45,6 +45,7 @@ class BaseNode(QGraphicsRectItem):
 
         self.ports_visible = False
         self.connections = []
+        self.temp_connection = None  # Active wire in progress, finalised on mouse release
 
         # Throttle itemChange updates to prevent excessive connection redraws
         self._update_throttle_timer = None
@@ -75,13 +76,7 @@ class BaseNode(QGraphicsRectItem):
         self._create_ports()
 
         # Hover animation
-        self.pulse_anim = QVariantAnimation()
-        pulse_duration = random.randint(Theme.nodePulseMin, Theme.nodePulseMax)
-        self.pulse_anim.setDuration(pulse_duration)
-        self.pulse_anim.setStartValue(1.0)
-        self.pulse_anim.setEndValue(Theme.nodePulseScale)
-        self.pulse_anim.setEasingCurve(QEasingCurve.OutQuad)
-        self.pulse_anim.valueChanged.connect(self.setScale)
+        self.behaviour = NodeBehaviour(self)
 
         # Pen styling
         self.normal_pen = QPen(Theme.primaryBorder, Theme.nodeBorderWidth)
@@ -115,14 +110,20 @@ class BaseNode(QGraphicsRectItem):
         self._selected_pen = QPen(Theme.textPrimary, Theme.nodeBorderWidth * Theme.nodeBorderSelectedScale, Qt.SolidLine)
 
     # -------------------------------------------------------------------------
-    # KINEMATICS
+    # Not sure what to name this category so this is just temporary placeholder text
     # -------------------------------------------------------------------------
 
     def itemChange(self, change, value):
         """Throttled update handler for node position changes to prevent excessive redraws."""
         if change == QGraphicsRectItem.GraphicsItemChange.ItemPositionHasChanged:
-            self._last_scene_pos = self.scenePos()
-            # Throttle connection updates - batch them together
+            new_pos = self.scenePos()
+            # Ignore sub-pixel noise and spurious notifications from scene bookkeeping
+            if self._last_scene_pos is not None:
+                dx = abs(new_pos.x() - self._last_scene_pos.x())
+                dy = abs(new_pos.y() - self._last_scene_pos.y())
+                if dx < 0.5 and dy < 0.5:
+                    return super().itemChange(change, value)
+            self._last_scene_pos = new_pos
             self._pending_update = True
             if not self._update_throttle_timer:
                 self._update_throttle_timer = QTimer()
@@ -133,16 +134,18 @@ class BaseNode(QGraphicsRectItem):
 
     def _execute_pending_update(self):
         """Execute batched connection updates after throttle period."""
+        self._update_throttle_timer = None
+        if not self.scene():
+            self._pending_update = False
+            return
         if self._pending_update and hasattr(self, 'connections'):
             for conn in self.connections:
                 conn.update_path()
-            if self.scene():
-                self.scene().set_dirty(True)
+            self.scene().set_dirty(True)
             self._pending_update = False
-        self._update_throttle_timer = None
 
     # -------------------------------------------------------------------------
-    # PORTS
+    # Ports
     # -------------------------------------------------------------------------
 
     def _create_ports(self):
@@ -226,7 +229,7 @@ class BaseNode(QGraphicsRectItem):
 
     def mouseMoveEvent(self, event):
         """Live wire follow and resize stretch."""
-        if hasattr(self, 'temp_connection') and self.temp_connection:
+        if self.temp_connection:
             self.temp_connection.update_path(event.scenePos())
             event.accept()
             return
@@ -255,7 +258,7 @@ class BaseNode(QGraphicsRectItem):
             self._sync_port_visibility()
             event.accept()
 
-        if hasattr(self, 'temp_connection') and self.temp_connection:
+        if self.temp_connection:
             items = self.scene().items(event.scenePos())
             target_node = None
             for item in items:
@@ -304,20 +307,7 @@ class BaseNode(QGraphicsRectItem):
         self.current_pen = self.hover_pen
         self.setPen(self.current_pen)
         self.update()
-
-        if self.pulse_anim.state() == QVariantAnimation.Stopped:
-            self.pulse_anim.setDirection(QVariantAnimation.Forward)
-            self.pulse_anim.start()
-
-            def reverse_pulse():
-                if self.pulse_anim.direction() == QVariantAnimation.Forward:
-                    self.pulse_anim.setDirection(QVariantAnimation.Backward)
-                    self.pulse_anim.start()
-
-            if self.pulse_anim.receivers("finished") > 0:
-                self.pulse_anim.finished.disconnect()
-            self.pulse_anim.finished.connect(reverse_pulse)
-
+        self.behaviour.on_hover_enter()
         super().hoverEnterEvent(event)
 
     def hoverLeaveEvent(self, event):
@@ -325,6 +315,7 @@ class BaseNode(QGraphicsRectItem):
         self.current_pen = self.normal_pen
         self.setPen(self.current_pen)
         self.update()
+        self.behaviour.on_hover_leave()
         super().hoverLeaveEvent(event)
 
     # -------------------------------------------------------------------------
@@ -449,6 +440,7 @@ class BaseNode(QGraphicsRectItem):
         from .WarmNode import WarmNode
         from .ImageNode import ImageNode
         from .AboutNode import AboutNode
+        from .BezierNode import BezierNode
 
         node_type = data.get("type", "node")
 
@@ -458,6 +450,8 @@ class BaseNode(QGraphicsRectItem):
             return AboutNode.from_dict(data)
         elif node_type == "image":
             return ImageNode.from_dict(data)
+        elif node_type == "bezier":
+            return BezierNode.from_dict(data)
         else:
             return BaseNode._create_from_dict(data)
 

@@ -30,9 +30,11 @@ def log_build_signature(logger, base_path):
                 signature = "Unknown"
                 for line in lines:
                     if "**Timestamp:**" in line:
-                        timestamp = line.split("`")[1]
+                        parts = line.split("`")
+                        timestamp = parts[1] if len(parts) > 1 else line.split("**Timestamp:**")[-1].strip(" :\n")
                     if "**Signature:**" in line:
-                        signature = line.split("`")[1]
+                        parts = line.split("`")
+                        signature = parts[1] if len(parts) > 1 else line.split("**Signature:**")[-1].strip(" :\n")
                 
                 logger.info(f"🧬 Build Signature: [{signature}] | Born: {timestamp}")
         else:
@@ -42,11 +44,11 @@ def log_build_signature(logger, base_path):
 
 # --- Windows Taskbar Icon Fix ---
 try:
-    # Forces Windows to treat the EXE as a unique application with its own icon
+    # Ensures Windows treats the .exe as a unique application with its own icon
     myappid = 'SingleSharedBraincell.Nodal.v1' 
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except Exception:
-    pass
+    pass # Non-Windows platforms won't have ctypes.windll — broad catch is intentional
 
 APP_NAME = "Nodal"
 ORG_NAME = "Single Shared Braincell"
@@ -66,7 +68,7 @@ def main():
             if sys.stdout.encoding is None or sys.stdout.encoding.lower() != 'utf-8':
                 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
         except (AttributeError, io.UnsupportedOperation):
-            pass
+            pass # Expected in pythonw / embedded / redirected stream contexts
 
     # 3. The settings injection, we ask the wrapper if High-DPI is enabled before creating the App
     if Settings.is_high_dpi_enabled():
@@ -83,6 +85,10 @@ def main():
     # This path works for both raw script and PyInstaller EXE
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     log_build_signature(logger, base_path)
+
+    # 🪟 You may notice window.show() is not called here — that's intentional!
+    # NodalApp takes care of showing itself from within main_window.py,
+    # once it has finished building all its cozy internals.
 
     try:
         app = QApplication(sys.argv)

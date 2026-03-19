@@ -1,54 +1,47 @@
 ✨ Cozy Snapshot — clean tree respecting .gitignore 🌱
-Generated: 2026-03-18 09:11:36
+Generated: 2026-03-18 23:38:19
 Location:  C:\Users\thisg\Desktop\Cozy Times\Nodal
 Mode:      with cozy emojis
 ────────────────────────────────────────────────────────────
 
 ├── 📁 .github/
 │   └── 📄 copilot-instructions.md
+├── 📁 archive/
+│   ├── 📄 Nodal_archive.exe
+│   └── 📄 Nodal_previous.exe
 ├── 📁 benchmarks/
 │   ├── 📄 __init__.py
 │   ├── 📄 performance_tests.py
 │   ├── 📄 profiler.py
 │   └── 📄 run_benchmarks.py
-├── 📁 build/
-│   └── 📁 Nodal/
-│       ├── 📄 Analysis-00.toc
-│       ├── 📄 base_library.zip
-│       ├── 📄 EXE-00.toc
-│       ├── 📄 Nodal.pkg
-│       ├── 📄 PKG-00.toc
-│       ├── 📄 PYZ-00.pyz
-│       ├── 📄 PYZ-00.toc
-│       ├── 📄 warn-Nodal.txt
-│       └── 📄 xref-Nodal.html
-├── 📁 dist/
-│   ├── 📄 Nodal.exe
-│   └── 📄 nodal_config.ini
 ├── 📁 Documents/
-│   ├── 📄 BaseNode Refactoring - Implementation Summary.md
 │   ├── 📄 BaseNode Refactoring Audit Report.md
+│   ├── 📄 BaseNode Refactoring Implementation Summary.md
+│   ├── 📄 Build Version.md
+│   ├── 📄 Build Version_archive.md
+│   ├── 📄 Build Version_previous.md
 │   ├── 📄 Docstring Compliance Report.md
 │   ├── 📄 Docstring Update Summary.md
 │   ├── 📄 Final Theme Refactoring Report.md
 │   ├── 📄 Graphics Module Import Validation Report.md
 │   ├── 📄 Graphics Module Refactoring Final Status.md
 │   ├── 📄 Graphics Module Renaming Completion Report.md
-│   ├── 📄 How to Run update_pyproj.md
+│   ├── 📄 How To Run Update Pyproj.md
 │   ├── 📄 Nodal PyProj Update Instructions.md
 │   ├── 📄 Performance Optimization Implementation.md
 │   ├── 📄 Performance Optimization Summary.md
 │   ├── 📄 Performance Regression Fix.md
 │   ├── 📄 PyProj Update Script - Complete Guide.md
-│   ├── 📄 Quick Reference - File Changes.md
+│   ├── 📄 Quick Reference File Changes.md
 │   ├── 📄 Refactoring Completion Report.md
 │   ├── 📄 Second Pass Fix Summary.md
 │   ├── 📄 Theme Reference Audit.md
-│   └── 📄 VS Not Reloading - Quick Fix.md
+│   └── 📄 VS Not Reloading Quick Fix.md
 ├── 📁 graphics/
 │   ├── 📄 __init__.py
 │   ├── 📄 AboutNode.py
 │   ├── 📄 BaseNode.py
+│   ├── 📄 BezierNode.py
 │   ├── 📄 Connection.py
 │   ├── 📄 ImageNode.py
 │   ├── 📄 NoteEditor.py
@@ -57,20 +50,24 @@ Mode:      with cozy emojis
 │   ├── 📄 Theme.py
 │   └── 📄 WarmNode.py
 ├── 📁 resources/
-│   └── 📁 icons/
-│       ├── 📄 app_icon.ico
-│       ├── 📄 iconic.png
-│       └── 📄 tester.png
+│   ├── 📁 icons/
+│   │   ├── 📄 app_icon.ico
+│   │   ├── 📄 iconic.png
+│   │   └── 📄 tester.png
+│   ├── 📄 Build Version.md
+│   └── 📄 version.txt
 ├── 📁 sessions/
 │   ├── 📄 Cleanup.json
 │   ├── 📄 Cozy Times - Copy.json
 │   ├── 📄 Cozy Times.json
-│   └── 📄 Cuddly, Duddly, And Fuddly, The Wuddlies.json
+│   ├── 📄 Cuddly, Duddly, And Fuddly, The Wuddlies.json
+│   └── 📄 recovery.json
 ├── 📁 utils/
 │   ├── 📄 __init__.py
 │   ├── 📄 check_sessions.py
 │   ├── 📄 logger.py
 │   ├── 📄 motivational_messages.py
+│   ├── 📄 NodeBehaviour.py
 │   ├── 📄 resource_monitor.py
 │   ├── 📄 session_manager.py
 │   ├── 📄 settings.py
@@ -80,11 +77,12 @@ Mode:      with cozy emojis
 │   ├── 📄 __init__.py
 │   ├── 📄 cozy_dialog.py
 │   ├── 📄 demo_dialog.py
-│   ├── 📄 log_viewer_dialog.py
+│   ├── 📄 log_viewer_tab.py
 │   └── 📄 settings_dialog.py
 ├── 📄 .gitattributes
 ├── 📄 .gitignore
 ├── 📄 build.py
+├── 📄 cozy-tree.txt
 ├── 📄 LICENSE.txt
 ├── 📄 main.py
 ├── 📄 main_window.py
