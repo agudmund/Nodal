@@ -1,5 +1,8 @@
 # Theme Reference Audit Report
 
+## Summary
+This audit tracks Theme constant reference updates across the project and confirms migration from UPPER_CASE names to camelCase usage.
+
 **Generated:** 2024
 **File:** `utils/theme.py` - Theme constant reference tracking  
 **Status:** ✅ All references updated to camelCase

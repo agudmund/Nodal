@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - session_manager.py session persistence
--Save and load nodal graphs from JSON session files
+-Save and load nodal graphs from JSON session files for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

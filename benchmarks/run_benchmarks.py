@@ -1,4 +1,10 @@
-# In benchmarks/run_benchmarks.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+-Cozy times nodal playground - run_benchmarks.py benchmark runner
+-Entry script for executing benchmark scenarios and stress routines for enjoying
+-Built using a single shared braincell by Yours Truly and various Intelligences
+"""
 
 import sys
 import time

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - profiler.py profiling utilities
--Simple wrappers around cProfile for easy benchmark tracking
+-Simple wrappers around cProfile for easy benchmark tracking for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

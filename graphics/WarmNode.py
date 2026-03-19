@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times nodal playground - warmNode.py text and thought node
--A warm, draggable, resizable node for writing, thinking, and bulk markdown import
+-Cozy times nodal playground - WarmNode.py text and thought node
+-A warm draggable resizable node for writing thinking and bulk markdown import for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
@@ -143,6 +143,14 @@ class WarmNode(BaseNode):
     # CONCERN 3: BODY TEXT
     # -------------------------------------------------------------------------
 
+    def receive_data(self, text: str):
+        """Receive data from a connected upstream node and display it as body text."""
+        self.full_text = text
+        self._last_full_text = None  # Force redraw
+        self._sync_content_layout()
+        if self.scene():
+            self.scene().set_dirty(True)
+
     def _refresh_body(self):
         """
         Responsive body text wrap — width tracks node rect so resizing
@@ -219,10 +227,9 @@ class WarmNode(BaseNode):
         QGraphicsTextItem children so Qt draws them automatically after
         the parent paint() finishes. We just ensure visibility here.
         """
-        if not self.emoji_item.isVisible():
-            self.emoji_item.show()
-            self.title_item.show()
-            self.text_item.show()
+        self.emoji_item.show()
+        self.title_item.show()
+        self.text_item.show()
 
     def shape(self):
         """Precise rounded rect shape for click detection and collision."""
@@ -252,25 +259,6 @@ class WarmNode(BaseNode):
                     return
 
         super().mouseDoubleClickEvent(event)
-
-    # def on_double_click(self, event):
-    #     """Open the note editor on left double-click."""
-    #     from graphics.NoteEditor import CozyNoteEditor
-
-    #     main_window = None
-    #     for view in self.scene().views():
-    #         main_window = view.window()
-    #         break
-
-    #     self._editor = CozyNoteEditor(
-    #         self.node_id, self.title, self.full_text, parent=main_window
-    #     )
-    #     self._editor.show()
-    #     self._editor.raise_()
-    #     self._editor.activateWindow()
-    #     self._editor.accepted.connect(self._on_editor_accepted)
-    #     self._editor.rejected.connect(self._on_editor_rejected)
-    #     self._editor.setModal(False)
 
     def _on_editor_accepted(self):
         """Apply changes from the note editor."""

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - log_viewer_tab.py log viewer panel
--Embeddable widget for viewing and filtering application logs, used as the Logs tab in SettingsDialog
+-Embeddable widget for viewing and filtering application logs for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

@@ -1,5 +1,8 @@
 # Performance Regression Analysis & Fix
 
+## Summary
+This report documents the root cause of the post-update slowdown and the targeted fix applied to restore smooth UI performance.
+
 ## Problem Identified
 After the docstring updates, the application became noticeably sluggish with significant UI lag.
 

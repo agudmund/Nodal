@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times nodal playground - build.py
--Automated 3-stage rollover & Forensic Hash Alignment.
--Cognitive-Optimized Summary: Designed for retinal pattern matching. 🧠✨
+-Cozy times nodal playground - build.py build automation
+-Automated 3-stage rollover and forensic hash alignment for enjoying
+-Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
 import PyInstaller.__main__
@@ -30,8 +30,8 @@ class BuildManager:
     archExe = f"{appName}_archive.exe"
 
     docName = "Build Version.md"
-    prevDoc = "Build Version_previous.md"
-    archDoc = "Build Version_archive.md"
+    prevDoc = "Build Version Previous.md"
+    archDoc = "Build Version Archive.md"
 
     @classmethod
     def getFileHash(cls, filePath: Path):

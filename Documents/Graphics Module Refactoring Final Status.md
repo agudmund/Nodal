@@ -150,7 +150,7 @@ The `Nodal.pyproj` file cannot be edited while Visual Studio has the solution op
 2. **Edit `Nodal.pyproj`** - Remove old graphics file references and add new PascalCase entries
 3. **Reopen the solution** in Visual Studio
 
-**Detailed instructions available in:** `./Documents/Nodal PyProj Update Instructions.md`
+**Detailed instructions available in:** `./Documents/Nodal Py Proj Update Instructions.md`
 
 ---
 
@@ -189,7 +189,7 @@ The `Nodal.pyproj` file cannot be edited while Visual Studio has the solution op
    - All import updates documented
    - Verification results
 
-3. **Nodal PyProj Update Instructions.md**
+3. **Nodal Py Proj Update Instructions.md**
    - Step-by-step instructions for manual pyproj update
    - PowerShell script provided
    - Verification commands
@@ -249,7 +249,7 @@ All changes are isolated to the graphics module and external references. No core
    - No errors or warnings
 
 3. **Next Steps:** Manual pyproj update
-   - See `Nodal PyProj Update Instructions.md`
+   - See `Nodal Py Proj Update Instructions.md`
    - Solution can be modified with PowerShell script
    - Takes ~2 minutes to complete
 
@@ -278,3 +278,4 @@ dotnet build
 The refactoring is functionally complete. One administrative task remains to sync the Visual Studio project file. This is a straightforward update with detailed instructions provided.
 
 **Estimated time to complete remaining task:** 2-5 minutes
+

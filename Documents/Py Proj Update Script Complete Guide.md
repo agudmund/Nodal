@@ -19,7 +19,7 @@ The `update_pyproj.ps1` script has been created, tested, and pushed to GitHub. I
 ### Documentation
 - **How to Run update_pyproj.md** - Step-by-step usage guide
 - **Graphics Module Refactoring Final Status.md** - Complete overview
-- **Nodal PyProj Update Instructions.md** - Manual alternative (if needed)
+- **Nodal Py Proj Update Instructions.md** - Manual alternative (if needed)
 - **Quick Reference - File Changes.md** - Summary of all changes
 
 All documentation is in the `./Documents/` folder.
@@ -166,7 +166,7 @@ Then you can:
 
 ### Manual Alternative
 If you prefer to edit `Nodal.pyproj` manually:
-- See: `Documents/Nodal PyProj Update Instructions.md`
+- See: `Documents/Nodal Py Proj Update Instructions.md`
 - Provides detailed XML editing steps
 - Includes search/replace patterns
 
@@ -248,7 +248,7 @@ Located in `./Documents/`:
    - All changes made to Python code
    - Verification results
 
-3. **Nodal PyProj Update Instructions.md**
+3. **Nodal Py Proj Update Instructions.md**
    - Manual editing instructions
    - For cases where script cannot be used
 
@@ -294,7 +294,7 @@ If you encounter any issues:
 
 1. Check the troubleshooting section above
 2. Review the documentation files
-3. Try the manual approach in `Nodal PyProj Update Instructions.md`
+3. Try the manual approach in `Nodal Py Proj Update Instructions.md`
 4. Use Git to revert if needed: `git checkout -- Nodal.pyproj`
 
 All changes are safely reversible!
@@ -304,3 +304,4 @@ All changes are safely reversible!
 **Ready to go!** 🚀
 
 The refactoring is 100% complete. Run the script whenever you're ready to finalize the Visual Studio project file.
+

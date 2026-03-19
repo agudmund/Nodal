@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - cozy_dialog.py frameless utility dialog base
--Reusable base class for frameless dialogs with borders, draggable bars, and theme consistency
+-Reusable base class for frameless dialogs with borders and draggable bars for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

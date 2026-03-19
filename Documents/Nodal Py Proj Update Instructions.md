@@ -1,5 +1,8 @@
 # Nodal.pyproj Update Instructions
 
+## Summary
+This document provides the exact manual edits required for Nodal.pyproj when Visual Studio keeps the solution file locked.
+
 ## Status: CANNOT EDIT - SOLUTION OPEN
 
 The `Nodal.pyproj` file could not be updated because the solution is currently open in Visual Studio.

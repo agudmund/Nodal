@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times nodal playground - widgets custom UI components
--Reusable themed widgets for the application
+-Cozy times nodal playground - __init__.py widgets package exports
+-Reusable themed widget exports for the application for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

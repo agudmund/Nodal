@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times nodal playground - aboutNode.py meta/information node
--A small, clean label node for annotations, headings, and context markers
+-Cozy times nodal playground - AboutNode.py meta information node
+-A small clean label node for annotations headings and context markers for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

@@ -1,5 +1,8 @@
 # Visual Studio Solution Not Reloading - Quick Fix
 
+## Summary
+This guide explains why updated project files may not appear immediately in Visual Studio and provides fast recovery steps.
+
 ## Problem
 The `Nodal.pyproj` file was updated successfully by the script, but Visual Studio isn't showing the updated graphics files in Solution Explorer.
 

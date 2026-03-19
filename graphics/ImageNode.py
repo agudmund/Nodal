@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times nodal playground - imageNode.py image display node
--A resizable node for displaying images with an optional caption
+-Cozy times nodal playground - ImageNode.py image display node
+-A resizable node for displaying images with an optional caption for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

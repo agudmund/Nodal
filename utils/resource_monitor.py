@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - resource_monitor.py resource tracking
--Monitor memory and CPU usage during app operations
+-Monitor memory and CPU usage during app operations for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

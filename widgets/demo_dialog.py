@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times nodal playground - demo_dialog.py proof of concept
--Simple example dialog demonstrating CozyDialog base class reusability
+-Cozy times nodal playground - demo_dialog.py proof of concept dialog
+-Simple example dialog demonstrating CozyDialog base class reusability for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

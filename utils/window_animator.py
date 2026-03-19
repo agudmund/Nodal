@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - window_animator.py frameless window animation
--Utility for smooth minimize/restore animations with frame-perfect rendering
+-Utility for smooth minimize and restore animations with frame perfect rendering for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - performance_tests.py performance testing utilities
--Performance stress tests for node creation and connection operations
+-Performance stress tests for node creation and connection operations for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

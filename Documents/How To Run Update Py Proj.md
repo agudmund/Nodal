@@ -1,5 +1,8 @@
 # Running update_pyproj.ps1 - Instructions
 
+## Summary
+This guide explains how to run the update script, what changes it applies to Nodal.pyproj, and how to verify the results in Visual Studio.
+
 ## What This Script Does
 
 The `update_pyproj.ps1` script automatically updates your `Nodal.pyproj` file to reflect the graphics module file renames and will verify the changes.
@@ -85,7 +88,7 @@ Copy-Item Nodal.pyproj.backup Nodal.pyproj -Force
 Then rerun the script or edit manually.
 
 ### Option 2: Manual Edit
-See: `./Documents/Nodal PyProj Update Instructions.md` for manual editing steps.
+See: `./Documents/Nodal Py Proj Update Instructions.md` for manual editing steps.
 
 ---
 
@@ -103,7 +106,8 @@ See: `./Documents/Nodal PyProj Update Instructions.md` for manual editing steps.
 
 Refer to the comprehensive documentation:
 - **Graphics Module Refactoring Final Status.md** - Complete overview
-- **Nodal PyProj Update Instructions.md** - Detailed instructions
+- **Nodal Py Proj Update Instructions.md** - Detailed instructions
 - **Quick Reference - File Changes.md** - Summary of changes
 
 All documentation files are in the `./Documents/` folder.
+

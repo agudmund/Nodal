@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times nodal playground - graphics module initialization
--Node systems, rendering, and scene management components
+-Cozy times nodal playground - __init__.py graphics package exports
+-Node systems rendering and scene management component exports for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 from .Port import Port

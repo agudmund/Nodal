@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
--Cozy times session validator - check_sessions.py
--Side utility that validates the format of specific .json files for enjoying
+-Cozy times nodal playground - check_sessions.py session validator
+-Side utility that validates the format of specific json files for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 

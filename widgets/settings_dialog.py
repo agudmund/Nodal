@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 -Cozy times nodal playground - settings_dialog.py application configuration
--Tabbed settings dialog for managing application preferences and node behavior
+-Tabbed settings dialog for managing app preferences and node behavior for enjoying
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
