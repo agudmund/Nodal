@@ -139,6 +139,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".github\copilot-instructions.md" />
+    <Content Include="Documents\Ghost Node Rendering Artifact Investigation.md" />
+    <Content Include="Documents\How To Run Update Pyproj.md" />
+    <Content Include="Documents\Nodal PyProj Update Instructions.md" />
     <Content Include="Documents\\Base Node Refactoring Implementation Summary.md" />
     <Content Include="Documents\\Base Node Refactoring Audit Report.md" />
     <Content Include="Documents\Docstring Update Summary.md" />
