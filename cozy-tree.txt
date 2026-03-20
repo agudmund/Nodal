@@ -1,5 +1,5 @@
 ✨ Cozy Snapshot — clean tree respecting .gitignore 🌱
-Generated: 2026-03-19 18:17:48
+Generated: 2026-03-20 04:10:51
 Location:  C:\Users\thisg\Desktop\Cozy Times\Nodal
 Mode:      with cozy emojis
 ────────────────────────────────────────────────────────────
@@ -25,17 +25,14 @@ Mode:      with cozy emojis
 │   ├── 📄 Graphics Module Import Validation Report.md
 │   ├── 📄 Graphics Module Refactoring Final Status.md
 │   ├── 📄 Graphics Module Renaming Completion Report.md
-│   ├── 📄 How To Run Update Py Proj.md
-│   ├── 📄 Nodal Py Proj Update Instructions.md
 │   ├── 📄 Performance Optimization Implementation.md
 │   ├── 📄 Performance Optimization Summary.md
 │   ├── 📄 Performance Regression Fix.md
-│   ├── 📄 Py Proj Update Script Complete Guide.md
 │   ├── 📄 Quick Reference File Changes.md
 │   ├── 📄 Refactoring Completion Report.md
 │   ├── 📄 Second Pass Fix Summary.md
 │   ├── 📄 Theme Reference Audit.md
-│   └── 📄 VS Not Reloading Quick Fix.md
+│   └── 📄 Trace Logging And Session Backup Implementation Summary.md
 ├── 📁 graphics/
 │   ├── 📄 __init__.py
 │   ├── 📄 AboutNode.py
@@ -56,11 +53,12 @@ Mode:      with cozy emojis
 │   ├── 📄 Build Version.md
 │   └── 📄 version.txt
 ├── 📁 sessions/
-│   ├── 📄 Cleanup.json
-│   ├── 📄 Cozy Times - Copy.json
+│   ├── 📄 ActionPlan.json
+│   ├── 📄 All Glory Summary.json
 │   ├── 📄 Cozy Times.json
 │   ├── 📄 Cuddly, Duddly, And Fuddly, The Wuddlies.json
-│   └── 📄 recovery.json
+│   ├── 📄 recovery.json
+│   └── 📄 Tester.json
 ├── 📁 utils/
 │   ├── 📄 __init__.py
 │   ├── 📄 check_sessions.py

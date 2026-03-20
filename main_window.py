@@ -8,7 +8,7 @@
 
 from pathlib import Path
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene, QDialog
-from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform
+from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform, QIcon
 from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect, QDateTime
 from graphics.Scene import NodeScene, enable_blur
 from graphics.Theme import Theme
@@ -21,7 +21,6 @@ from widgets.settings_dialog import SettingsDialog
 from widgets.demo_dialog import DemoDialog
 from widgets.cozy_dialog import WindowResizeHandle
 from widgets.extraWindow import ExtraDialog
-
 
 logger = setup_logger()
 
@@ -132,27 +131,6 @@ class NodeGraphicsView(QGraphicsView):
         
         painter.restore()
 
-
-    # def mouseDoubleClickEvent(self, event):
-    #     """
-    #     Right double-click — toggle ports on the node under the cursor.
-    #     Handled here to prevent Qt's default view behaviour from consuming
-    #     the event before it reaches the node.
-    #     """
-    #     if event.button() == Qt.MouseButton.RightButton:
-    #         scene_pos = self.mapToScene(event.pos())
-    #         item = self.scene().itemAt(scene_pos, self.transform())
-    #         from graphics.BaseNode import BaseNode
-    #         while item and not isinstance(item, BaseNode):
-    #             item = item.parentItem()
-    #         if item and isinstance(item, BaseNode):
-    #             item.toggle_ports()
-    #             if item.scene():
-    #                 item.scene().set_dirty(True)
-    #             event.accept()
-    #             return
-    #     super().mouseDoubleClickEvent(event)
-        
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
             # We use position() for sub-pixel accuracy.
@@ -301,7 +279,6 @@ class NodalApp(QMainWindow):
         self.click_timer.setSingleShot(True)
         self.click_timer.timeout.connect(self._execute_curtain_logic)
 
-
     def _setupTopToolbar(self):
         """The collapsable title bar"""
         self.grid_layout.addWidget(self._create_spacer(), 0, 0)
@@ -311,10 +288,39 @@ class NodalApp(QMainWindow):
         self.toolbar_layout.addStretch()
         # add an icon file here right before the project selector to avoid the selection mechanism getting lost in translation
         self.toolbar_layout.addWidget(self.setup_project_selector())
+
+        # INSERTED: The new icon button added right after the selector
+        self.image_node_btn = self.setup_newCanvas_button(Theme.iconPathImage)
+        self.toolbar_layout.addWidget(self.image_node_btn)
         self.toolbar_layout.addStretch()
 
         self.grid_layout.addWidget(self.toolbar_container, 0, 1)
         self.grid_layout.addWidget(self._create_spacer(), 0, 2)
+
+    def setup_newCanvas_button(self, icon_path):
+            """Creates a square, icon-only version of CozyButton"""
+            
+            # Pass empty string to avoid CozyButton's default text-padding logic
+            btn = CozyButton("", self)
+            
+            # Set absolute square dimensions to match ComboBox height
+            btn.setFixedSize(QSize(Theme.iconButtonSize, Theme.iconButtonSize))
+            
+            # Apply the icon
+            btn.setIcon(QIcon(icon_path))
+            btn.setIconSize(QSize(Theme.iconButtonSize - Theme.iconPadding, 
+                                  Theme.iconButtonSize - Theme.iconPadding))
+            
+            # Override the horizontal padding of 15px from CozyButton.__init__
+            btn.setStyleSheet(btn.styleSheet() + "QPushButton { padding: 0px; border-radius: 4px; }")
+            
+            # Connect to your future node logic
+            btn.clicked.connect(self.newCanvas) 
+            
+            return btn
+
+    def newCanvas(self):
+        print('new new')
 
     def _setupCentralGrid(self):
         """The central area holding the actual nodal canvas"""

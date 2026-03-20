@@ -148,6 +148,11 @@ class Theme:
     buttonBgInactive     = QColor("#1f1f1f")
     buttonBorderInactive = QColor("#4a4a4a")
 
+    # --- Icon-Only Button Settings ---
+    iconButtonSize = 32  # Square size to match your toolbar height
+    iconPadding    = 4   # Padding inside the button for the .png
+    iconPathImage  = "resources/icons/iconic.png" # Path from cozy-tree.txt
+
     # =========================================================================
     # COMBOBOX
     # =========================================================================
