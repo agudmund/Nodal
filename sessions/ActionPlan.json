@@ -338,5 +338,10 @@
       "full_text": "USAGE INSTRUCTIONS:\n\n1. Open this session in the app:\n   - Start the app\n   - Select 'ActionPlan' from session dropdown\n   - All 27 action items load\n\n2. Work through phases sequentially:\n   - PHASE 1 (cleanup)\n   - PHASE 2 (imports)\n   - PHASE 3 (validation)\n   - etc.\n\n3. For each node/action item:\n   - Read the full_text to understand the task\n   - Complete all ACTION ITEMS\n   - Run tests specified\n   - Make the COMMIT specified\n\n4. Track progress:\n   - Keep this session open\n   - Pan/zoom to focus on current phase\n   - Check off completed items (note in full_text)\n\n5. Final validation:\n   - After all phases: run Phase 9.3 (Final test)\n   - Verify complete app functionality\n   - Commit final cleanup\n\nGOAL: Clean, maintainable, well-documented node system ready for next development phase!"
     }
   ],
-  "connections": []
+  "connections": [],
+  "viewport": {
+    "center_x": 1071.663333333333,
+    "center_y": 2743.3300000000017,
+    "scale": 0.6
+  }
 }
