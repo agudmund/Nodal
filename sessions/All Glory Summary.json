@@ -1,0 +1,266 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "node_id": 16,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3e0",
+      "type": "about",
+      "title": "All Glory \u2728",
+      "pos_x": 1430.0,
+      "pos_y": 1645.7142857142858,
+      "width": 220.0,
+      "height": 55.0,
+      "ports_visible": false
+    },
+    {
+      "node_id": 15,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3df",
+      "type": "warm",
+      "title": "BaseNode.py \u2014 Final Clean",
+      "pos_x": 941.4285714285714,
+      "pos_y": 1584.2857142857142,
+      "width": 380.0,
+      "height": 177.0,
+      "ports_visible": false,
+      "full_text": "Full refactor pass removing all diagnostic prints, commented-out old versions, and debug click_counter. Paint debug logging kept as logger.debug \u2014 valuable for future ghost node investigations. Wacom ergonomics documented in class docstring and __init__ comment. All docstrings preserved and extended."
+    },
+    {
+      "node_id": 14,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3de",
+      "type": "warm",
+      "title": "Right-Click Patience System",
+      "pos_x": 457.1428571428571,
+      "pos_y": 1464.2857142857142,
+      "width": 420.0,
+      "height": 177.0,
+      "ports_visible": false,
+      "full_text": "Port toggle via right double-click reimplemented using patience timer pattern from curtain system. Wacom pen right-click rhythm measured at 600-720ms intervals. Timer opens on first click only \u2014 does not restart on subsequent clicks. 500ms window catches both hurried and relaxed double-click speeds. Single clicks silently ignored."
+    },
+    {
+      "node_id": 13,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3dd",
+      "type": "warm",
+      "title": "Ghost Node Investigation",
+      "pos_x": 7.142857142857224,
+      "pos_y": 1290.0000000000005,
+      "width": 400.0,
+      "height": 191.0,
+      "ports_visible": false,
+      "full_text": "Documented in Documents/Ghost Node Rendering Artifact Investigation.md. Root cause: clear_nodes() called removeItem() on child ports, unparenting them and orphaning parent nodes. Fix: top-level items only. Second fix: removed setGraphicsEffect(None) pre-strip which scheduled deferred repaints on removed items. Key signature: QWidget device instead of QPixmap = ghost node."
+    },
+    {
+      "node_id": 12,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3dc",
+      "type": "warm",
+      "title": "NoteEditor.py Rebuilt",
+      "pos_x": -522.8571428571429,
+      "pos_y": 1154.285714285714,
+      "width": 380.0,
+      "height": 163.0,
+      "ports_visible": false,
+      "full_text": "Rebuilt with spell highlighter properly wired to context menu. Save button now correctly pulls from editor.get_title() and get_text() via _handle_editor_finished in main_window.py \u2014 was previously commented out causing saves to not update node content."
+    },
+    {
+      "node_id": 11,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3db",
+      "type": "warm",
+      "title": "spellchecker.py Refactor",
+      "pos_x": -972.8571428571428,
+      "pos_y": 964.2857142857141,
+      "width": 380.0,
+      "height": 191.0,
+      "ports_visible": false,
+      "full_text": "Worker moved from lazy to eager initialisation at module import time \u2014 COM thread starts at app launch, not on first right-click. Highlighter passed to show_spell_suggestions so add-to-dictionary clears underline immediately. Private _checker access in context menu documented with rationale. Currently parked \u2014 Windows spell service unwell system-wide."
+    },
+    {
+      "node_id": 10,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3da",
+      "type": "warm",
+      "title": "Data Flow \u2014 First Test",
+      "pos_x": -1414.2857142857142,
+      "pos_y": 740.0,
+      "width": 400.0,
+      "height": 177.0,
+      "ports_visible": false,
+      "full_text": "BezierNode.propagate_output() pushes live curve values to connected WarmNodes via receive_data(). WarmNode.receive_data() sets full_text and forces layout sync. Data flows as handles are dragged in real time. Init ordering guard added \u2014 _handle2 not yet created when _handle1 fires itemChange during construction."
+    },
+    {
+      "node_id": 9,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d9",
+      "type": "warm",
+      "title": "Node Creation Chooser",
+      "pos_x": -1878.4997643197958,
+      "pos_y": 574.5723712922482,
+      "width": 380.0,
+      "height": 163.0,
+      "ports_visible": false,
+      "full_text": "Popup chooser added to main_window.py. Warm, Bezier, About, Image. Styled from Theme. Glow effect matches node border color. Width bumped to 560px for four buttons. add_node button now opens the chooser instead of hardcoding WarmNode."
+    },
+    {
+      "node_id": 8,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d8",
+      "type": "warm",
+      "title": "Scene.py Refactor",
+      "pos_x": -2380.859971019601,
+      "pos_y": 424.720413399612,
+      "width": 380.0,
+      "height": 163.0,
+      "ports_visible": false,
+      "full_text": "add_node split into add_warm_node and add_bezier_node with shared _next_node_id and _register_node helpers. add_node kept as backwards-compatible alias. logger added \u2014 was referenced in _write_recovery but never initialised. Duplicate blur_effect assignment cleaned."
+    },
+    {
+      "node_id": 7,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d7",
+      "type": "bezier",
+      "title": "The Breath Curve",
+      "pos_x": -1720.5157032269353,
+      "pos_y": -228.58932279763965,
+      "width": 280.0,
+      "height": 220.0,
+      "ports_visible": false,
+      "cp1_x": 0.25,
+      "cp1_y": 0.75,
+      "cp2_x": 0.75,
+      "cp2_y": 0.25
+    },
+    {
+      "node_id": 6,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d6",
+      "type": "warm",
+      "title": "BezierNode.py \u2014 Created",
+      "pos_x": -2954.2469579159724,
+      "pos_y": 316.82320490764374,
+      "width": 400.0,
+      "height": 177.0,
+      "ports_visible": false,
+      "full_text": "Full bezier curve editor node built from scratch. BezierHandle child items with normalised positions, constrained to canvas. Pixmap cache \u2014 at rest costs one drawPixmap call. Throttled redraw at ~60fps during drag. get_easing_curve() outputs QEasingCurve.BezierSpline. Double-click copies curve to clipboard as paste-ready Python. Serializes cp1/cp2 coordinates."
+    },
+    {
+      "node_id": 5,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d5",
+      "type": "warm",
+      "title": "NodeBehaviour.py \u2014 Created",
+      "pos_x": -3428.900420668048,
+      "pos_y": 41.31919834416138,
+      "width": 380.0,
+      "height": 163.0,
+      "ports_visible": false,
+      "full_text": "Extracted hover pulse animation from BaseNode into its own ambient behaviour manager. Grass in the wind philosophy \u2014 each node gets a random duration at birth so they never settle in unison. reverse_pulse wired once at init, never reconnected on hover. Qt event loop stays clean."
+    },
+    {
+      "node_id": 4,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+      "type": "warm",
+      "title": "BaseNode.py \u2014 First Pass",
+      "pos_x": -3889.405823843401,
+      "pos_y": -337.3286080829978,
+      "width": 400.0,
+      "height": 177.0,
+      "ports_visible": false,
+      "full_text": "Throttle timer lifecycle fixed \u2014 scene guard moved to top of _execute_pending_update, performance improvement confirmed during panning. temp_connection declared in __init__. hasattr checks cleaned to simple if checks. NodeBehaviour extracted to utils/NodeBehaviour.py. pulse_anim moved out of BaseNode entirely."
+    },
+    {
+      "node_id": 3,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d3",
+      "type": "warm",
+      "title": "motivational_messages.py",
+      "pos_x": -3657.891447350905,
+      "pos_y": -766.4158272281516,
+      "width": 360.0,
+      "height": 163.0,
+      "ports_visible": false,
+      "full_text": "A list of champions. Every entry earns its place before joining. Champion of champions: All Glory \u2014 the seed the entire app grew from. Practical and Pleasurable is the only descriptive one in a list of declaratives. Onward picked as personal favourite for its quiet brevity."
+    },
+    {
+      "node_id": 2,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d2",
+      "type": "warm",
+      "title": "main.py Review",
+      "pos_x": -4313.31060904064,
+      "pos_y": -498.60913740420534,
+      "width": 360.0,
+      "height": 163.0,
+      "ports_visible": false,
+      "full_text": "First file reviewed. Fixed stdout re-wrap exception comment, Build Version.md backtick parsing made defensive, Windows AppUserModelID silent catch documented, window.show() confirmed in main_window.py. All four items resolved."
+    },
+    {
+      "node_id": 1,
+      "uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1",
+      "type": "warm",
+      "title": "Session Start",
+      "pos_x": -4664.232817103681,
+      "pos_y": -605.322009037262,
+      "width": 320.0,
+      "height": 90.0,
+      "ports_visible": false,
+      "full_text": "Started with a VS Code rate limit question. Confirmed Claude.ai and GitHub Copilot are separate pipelines with independent quotas. Then a cozy visit turned into a full session."
+    }
+  ],
+  "connections": [
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3df",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3e0"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3de",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3df"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3dd",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3de"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3dc",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3dd"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3db",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3dc"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3da",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3db"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d9",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3da"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d8",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d9"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d6",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d8"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d6",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d7"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d5",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d6"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d5"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d2",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d3"
+    },
+    {
+      "start_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d1",
+      "end_node_uuid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d2"
+    }
+  ],
+  "viewport": {
+    "center_x": -2245.2484244052766,
+    "center_y": 548.5091915279894,
+    "scale": 0.3414359371784716
+  }
+}

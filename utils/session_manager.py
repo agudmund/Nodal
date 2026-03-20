@@ -12,6 +12,11 @@ import json
 from pathlib import Path
 from typing import List, Optional
 
+try:
+    from send2trash import send2trash as _send_to_trash
+except ImportError:
+    _send_to_trash = None
+
 from PySide6.QtCore import QPointF
 from PySide6.QtWidgets import QGraphicsView
 
@@ -33,6 +38,40 @@ def _get_sessions_dir() -> Path:
         base_path = Path(__file__).resolve().parent.parent
 
     return base_path / "sessions"
+
+
+def _rotate_session(filepath: str):
+    """
+    3-slot save rotation — mirrors build.py's rotateAndArchive and logger.py's _rotate_logs.
+    On each save: archive → recycle bin, previous → archive, current → previous.
+    Backup slots are kept in ./sessions/backup/ — only the live file stays in ./sessions/.
+    """
+    current    = Path(filepath)
+    backup_dir = current.parent / "backup"
+    backup_dir.mkdir(exist_ok=True)
+
+    previous = backup_dir / (current.stem + "_previous.json")
+    archive  = backup_dir / (current.stem + "_archive.json")
+
+    def _trash(path: Path):
+        """Send to recycle bin; fall back to permanent delete if send2trash is unavailable."""
+        if _send_to_trash:
+            try:
+                _send_to_trash(str(path))
+                return
+            except Exception:
+                pass
+        path.unlink(missing_ok=True)
+
+    try:
+        if archive.exists():
+            _trash(archive)
+        if previous.exists():
+            previous.rename(archive)
+        if current.exists():
+            current.rename(previous)
+    except Exception:
+        pass  # Rotation failure is non-fatal — save continues regardless
 
 
 class SessionManager:
@@ -71,10 +110,13 @@ class SessionManager:
         try:
             # Ensure the directory exists
             Path(filepath).parent.mkdir(parents=True, exist_ok=True)
-            
+
+            # 3-slot rollover before writing — matches build.py / logger.py rotation pattern
+            _rotate_session(filepath)
+
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
-            logger.info(f"✅ Session saved successfully to {filepath}")
+            logger.debug(f"✅ Session saved successfully to {filepath}")
         except Exception as e:
             logger.error(f"❌ Failed to save session: {e}")
         

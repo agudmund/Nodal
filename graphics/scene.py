@@ -17,7 +17,7 @@ from utils.motivational_messages import motivationalMessages
 from .BaseNode import BaseNode
 from .WarmNode import WarmNode
 from .BezierNode import BezierNode
-from utils.logger import setup_logger
+from utils.logger import setup_logger, TRACE
 
 logger = setup_logger()
 
@@ -220,7 +220,8 @@ class NodeScene(QGraphicsScene):
             new_node.setZValue(10)
             self.addItem(new_node)
             effect_name = type(new_node.graphicsEffect()).__name__ if new_node.graphicsEffect() else "None"
-            logger.debug(
+            logger.log(
+                TRACE,
                 f"[REBUILD] node id={new_node.node_id} type={new_node.node_type} "
                 f"z={new_node.zValue()} pos=({new_node.pos().x():.1f},{new_node.pos().y():.1f}) "
                 f"size=({new_node.rect().width():.0f}x{new_node.rect().height():.0f}) "
@@ -333,7 +334,7 @@ class NodeScene(QGraphicsScene):
         all_items = self.items()
         top_level_items = [i for i in all_items if i.parentItem() is None]
         node_count = sum(1 for i in top_level_items if isinstance(i, BaseNode))
-        logger.debug(f"[CLEAR_NODES] removing {len(top_level_items)} top-level items ({node_count} nodes) from scene")
+        logger.log(TRACE, f"[CLEAR_NODES] removing {len(top_level_items)} top-level items ({node_count} nodes) from scene")
 
         # 2. THE ULTIMATUM: If it's not the Fog, it's gone.
         # Only remove top-level items — their children (ports, etc.) follow automatically.
@@ -355,8 +356,8 @@ class NodeScene(QGraphicsScene):
         survivors = [i for i in self.items() if i != self.fog_layer]
         if survivors:
             for s in survivors:
-                logger.debug(f"[CLEAR_NODES] SURVIVOR: {type(s).__name__} parentItem={type(s.parentItem()).__name__ if s.parentItem() else None} scene={s.scene() is not None}")
-        logger.debug(f"[CLEAR_NODES] scene cleared — {len(survivors)} survivors (expected 0)")
+                logger.log(TRACE, f"[CLEAR_NODES] SURVIVOR: {type(s).__name__} parentItem={type(s.parentItem()).__name__ if s.parentItem() else None} scene={s.scene() is not None}")
+        logger.log(TRACE, f"[CLEAR_NODES] scene cleared — {len(survivors)} survivors (expected 0)")
 
     # ─────────────────────────────────────────────────────────────────────────
     # KEYBOARD — delete and undo

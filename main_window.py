@@ -13,7 +13,7 @@ from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAn
 from graphics.Scene import NodeScene, enable_blur
 from graphics.Theme import Theme
 from widgets import CozyButton
-from utils.logger import setup_logger
+from utils.logger import setup_logger, TRACE
 from utils.settings import Settings
 from utils.session_manager import SessionManager
 from utils.window_animator import WindowAnimator
@@ -103,7 +103,8 @@ class NodeGraphicsView(QGraphicsView):
         if self._bg_paint_count < 15:
             device_type = type(painter.device()).__name__
             t = painter.worldTransform()
-            logger.debug(
+            logger.log(
+                TRACE,
                 f"[BACKGROUND #{self._bg_paint_count}] device={device_type} "
                 f"rect=({rect.x():.0f},{rect.y():.0f},{rect.width():.0f},{rect.height():.0f}) "
                 f"viewport=({self.viewport().rect().width()},{self.viewport().rect().height()}) "
@@ -567,18 +568,18 @@ class NodalApp(QMainWindow):
         if data:
             node_count = len(data.get("nodes", []))
             conn_count = len(data.get("connections", []))
-            logger.debug(f"[LOAD_SESSION] '{session_name}' — {node_count} nodes, {conn_count} connections")
+            logger.log(TRACE, f"[LOAD_SESSION] '{session_name}' — {node_count} nodes, {conn_count} connections")
 
             # 1. Clear and Rebuild nodes
-            logger.debug(f"[LOAD_SESSION] setUpdatesEnabled(False)")
+            logger.log(TRACE, f"[LOAD_SESSION] setUpdatesEnabled(False)")
             self.view.setUpdatesEnabled(False)
             try:
-                logger.debug(f"[LOAD_SESSION] clear_nodes()")
+                logger.log(TRACE, f"[LOAD_SESSION] clear_nodes()")
                 self.scene.clear_nodes()
 
-                logger.debug(f"[LOAD_SESSION] rebuild_from_session()")
+                logger.log(TRACE, f"[LOAD_SESSION] rebuild_from_session()")
                 self.scene.rebuild_from_session(data)
-                logger.debug(f"[LOAD_SESSION] rebuild complete — resetting bg_paint_count for fresh diagnostics")
+                logger.log(TRACE, f"[LOAD_SESSION] rebuild complete — resetting bg_paint_count for fresh diagnostics")
                 self.view._bg_paint_count = 0
 
                 # Retrieve the Focal Length
@@ -586,7 +587,7 @@ class NodalApp(QMainWindow):
                 self.view_pan_x = viewport.get("center_x", 0.0)
                 self.view_pan_y = viewport.get("center_y", 0.0)
                 self.view_zoom = viewport.get("scale", 1.0)
-                logger.debug(f"[LOAD_SESSION] viewport — center=({self.view_pan_x:.1f},{self.view_pan_y:.1f}) zoom={self.view_zoom:.3f}")
+                logger.log(TRACE, f"[LOAD_SESSION] viewport — center=({self.view_pan_x:.1f},{self.view_pan_y:.1f}) zoom={self.view_zoom:.3f}")
 
                 # Sync the View's internal ledger
                 self.view.current_zoom = self.view_zoom
@@ -603,7 +604,7 @@ class NodalApp(QMainWindow):
 
             finally:
                 self.scene.set_dirty(False)
-                logger.debug(f"[LOAD_SESSION] finally — setUpdatesEnabled(True), scheduling deferred repaint")
+                logger.log(TRACE, f"[LOAD_SESSION] finally — setUpdatesEnabled(True), scheduling deferred repaint")
                 self.view.setUpdatesEnabled(True)
                 self.view.viewport().setUpdatesEnabled(True)
                 # Deferred repaint — lets Qt initialize all effect buffers (e.g. drop shadows)

@@ -13,7 +13,7 @@ from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve,
 from PySide6.QtGui import QColor, QPen, QPainter, QBrush, QPainterPath
 from .Theme import Theme
 from .Port import Port
-from utils.logger import setup_logger
+from utils.logger import setup_logger, TRACE
 from utils.NodeBehaviour import NodeBehaviour
 
 logger = setup_logger()
@@ -535,7 +535,8 @@ class BaseNode(QGraphicsRectItem):
             t            = painter.worldTransform()
             comp_mode    = painter.compositionMode().value
             effect_state = self.graphicsEffect().isEnabled() if self.graphicsEffect() else "no_effect"
-            logger.debug(
+            logger.log(
+                TRACE,
                 f"[PAINT #{self._paint_debug_count}] node={self.node_id}({self.node_type}) "
                 f"device={device_type} widget={widget_type} "
                 f"scale=({t.m11():.3f},{t.m22():.3f}) offset=({t.dx():.1f},{t.dy():.1f}) "

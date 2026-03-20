@@ -11,6 +11,11 @@ import sys
 import logging
 from pathlib import Path
 
+# TRACE (level 5) sits below DEBUG — file-only, never reaches the console.
+# Use for hyper-verbose diagnostics (paint cycles, frame-level events, etc.)
+TRACE = 5
+logging.addLevelName(TRACE, "TRACE")
+
 
 def get_base_dir() -> Path:
     """
@@ -106,16 +111,29 @@ def setup_logger(name: str = "nodal") -> logging.Logger:
     # 5. File Handler — plain, rotation is handled manually at startup
     file_handler = logging.FileHandler(log_file, encoding='utf-8')  # Ensures the Sparkle ✨ is saved correctly to disk
     file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(TRACE)
     logger.addHandler(file_handler)
 
     return logger
 
 
-def set_log_level(debug: bool):
-    """Switch all handlers on the root nodal logger between DEBUG and INFO."""
-    level = logging.DEBUG if debug else logging.INFO
+def set_log_level(debug: bool, trace: bool = False):
+    """Switch console verbosity: INFO (default) → DEBUG (--debug) → TRACE (--trace).
+    FileHandlers are always kept at TRACE so sub-DEBUG diagnostics are
+    preserved in nodal.log without ever surfacing in the console unless --trace is passed.
+    """
     logger = logging.getLogger("nodal")
-    logger.setLevel(level)
+    if trace:
+        console_level = TRACE
+        logger_level  = TRACE
+    elif debug:
+        console_level = logging.DEBUG
+        logger_level  = TRACE
+    else:
+        console_level = logging.INFO
+        logger_level  = logging.INFO
+
+    logger.setLevel(logger_level)
     for handler in logger.handlers:
-        handler.setLevel(level)
+        if isinstance(handler, logging.StreamHandler) and not isinstance(handler, logging.FileHandler):
+            handler.setLevel(console_level)

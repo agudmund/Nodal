@@ -15,7 +15,7 @@ import signal
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from utils.logger import setup_logger, set_log_level
+from utils.logger import setup_logger, set_log_level, TRACE
 from main_window import NodalApp
 from utils.settings import Settings
 
@@ -57,6 +57,7 @@ def main():
     # 0. Parse command-line arguments
     parser = argparse.ArgumentParser(description="Nodal")
     parser.add_argument("--debug", action="store_true", help="Enable DEBUG logging and node debug overlay")
+    parser.add_argument("--trace", action="store_true", help="Enable TRACE logging (verbose paint/session diagnostics to console)")
     args = parser.parse_args()
 
     # 1. The console handshake, this makes sure that ctrl-c still works
@@ -77,9 +78,10 @@ def main():
 
     # 4. Initialization
     logger = setup_logger()
-    set_log_level(args.debug)
-    if args.debug:
-        Settings.set_debug_overlay(True)
+    set_log_level(args.debug, args.trace)
+    if args.trace:
+        logger.log(TRACE, "TRACE mode active — verbose paint/session diagnostics will appear in console")
+    Settings.set_debug_overlay(args.debug or args.trace)
     logger.info(f"{APP_NAME} is generally so happy that you are here. ✨")
     
     # This path works for both raw script and PyInstaller EXE
