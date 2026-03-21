@@ -9,7 +9,7 @@
 import ctypes
 import sys
 import random
-from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsScene
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsBlurEffect, QGraphicsScene, QGraphicsTextItem
 from PySide6.QtCore import Qt, QPointF, QTimer
 from PySide6.QtGui import QColor, QPainter, QTransform
 from .Theme import Theme
@@ -132,6 +132,42 @@ class NodeScene(QGraphicsScene):
                 return item
         return None
 
+    def mouseMoveEvent(self, event):
+        """Track floating wire at scene level so it follows the mouse anywhere."""
+        node = self._get_active_wire_node()
+        if node:
+            node.temp_connection.update_path(event.scenePos())
+            event.accept()
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """Complete or cancel floating wire at scene level."""
+        node = self._get_active_wire_node()
+        if node:
+            items = self.items(event.scenePos())
+            target_node = next((i for i in items if isinstance(i, BaseNode) and i is not node), None)
+            if target_node:
+                conn = node.temp_connection
+                conn.end_node = target_node
+                if conn not in node.connections:
+                    node.connections.append(conn)
+                if conn not in target_node.connections:
+                    target_node.connections.append(conn)
+                target_node._sync_port_visibility()
+                conn.update_path()
+                self.set_dirty(True)
+            else:
+                self.removeItem(node.temp_connection)
+            node.temp_connection = None
+            event.accept()
+            return
+        super().mouseReleaseEvent(event)
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # IMAGE DROP
+    # ─────────────────────────────────────────────────────────────────────────
+
     _IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"}
 
     def dragEnterEvent(self, event):
@@ -183,38 +219,6 @@ class NodeScene(QGraphicsScene):
             )
 
         event.acceptProposedAction()
-        
-    def mouseMoveEvent(self, event):
-        """Track floating wire at scene level so it follows the mouse anywhere."""
-        node = self._get_active_wire_node()
-        if node:
-            node.temp_connection.update_path(event.scenePos())
-            event.accept()
-            return
-        super().mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        """Complete or cancel floating wire at scene level."""
-        node = self._get_active_wire_node()
-        if node:
-            items = self.items(event.scenePos())
-            target_node = next((i for i in items if isinstance(i, BaseNode) and i is not node), None)
-            if target_node:
-                conn = node.temp_connection
-                conn.end_node = target_node
-                if conn not in node.connections:
-                    node.connections.append(conn)
-                if conn not in target_node.connections:
-                    target_node.connections.append(conn)
-                target_node._sync_port_visibility()
-                conn.update_path()
-                self.set_dirty(True)
-            else:
-                self.removeItem(node.temp_connection)
-            node.temp_connection = None
-            event.accept()
-            return
-        super().mouseReleaseEvent(event)
 
     # ─────────────────────────────────────────────────────────────────────────
     # SESSION PERSISTENCE
@@ -354,6 +358,23 @@ class NodeScene(QGraphicsScene):
         self.set_dirty(True)
         return node
 
+    def set_all_ports_visible(self, visible: bool):
+        """
+        Show or hide ports on every node in the scene simultaneously.
+
+        Called by the wiring mode checkbox in the main window toolbar.
+        Sets ports_visible directly on each node and syncs visibility
+        without toggling — so repeated calls with the same value are safe.
+
+        Does not mark the scene dirty — port visibility is a transient UI
+        state during a session. Individual node port state is still persisted
+        per node via to_dict/from_dict on save.
+        """
+        for item in self.items():
+            if isinstance(item, BaseNode):
+                item.ports_visible = visible
+                item._sync_port_visibility()
+
     def add_warm_node(self, x: float, y: float, title: str = None) -> 'WarmNode':
         """Create and add a WarmNode to the scene.
         Uses a random motivational message as title if not provided.
@@ -395,6 +416,7 @@ class NodeScene(QGraphicsScene):
         return self._register_node(node)
 
     def add_health_node(self, x: float, y: float) -> 'HealthNode':
+        """Create and add a HealthNode to the scene."""
         node = HealthNode(node_id=self._next_node_id(), pos=QPointF(x, y))
         return self._register_node(node)
 
@@ -419,6 +441,12 @@ class NodeScene(QGraphicsScene):
         if path:
             node.load_from_path(path)
         return node
+
+    def add_node(self, x: float, y: float, title: str = None) -> 'WarmNode':
+        """Backwards-compatible alias for add_warm_node.
+        🪟 Prefer add_warm_node() or add_bezier_node() for new call sites.
+        """
+        return self.add_warm_node(x, y, title)
 
     # ─────────────────────────────────────────────────────────────────────────
     # CONNECTION CREATION
@@ -510,7 +538,6 @@ class NodeScene(QGraphicsScene):
         """
         from .BaseNode import BaseNode
         from .Connection import Connection
-        from PySide6.QtWidgets import QGraphicsTextItem
         import gc as _gc
 
         logger.log(TRACE, f"[PURGE] ═══ SESSION PURGE START ═══")
@@ -684,17 +711,88 @@ class NodeScene(QGraphicsScene):
     # ─────────────────────────────────────────────────────────────────────────
 
     def keyPressEvent(self, event):
-        logger.info(f"[SCENE] keyPressEvent: key={event.key()} text='{event.text()}' focusItem={type(self.focusItem()).__name__ if self.focusItem() else None}")
-        # Restore node deletion logic: if Backspace/Delete and not editing text, delete selected node(s)
+        """
+        Delete selected nodes with Backspace/Delete, undo last delete with Ctrl+Z.
+
+        Guard: if a QGraphicsTextItem currently has scene focus (e.g. ImageNode
+        caption edit), Backspace/Delete belong to the text editor and must not
+        trigger node deletion. The event is passed to super() in that case so
+        the text item receives it normally.
+        """
         if event.key() in (Qt.Key_Backspace, Qt.Key_Delete):
-            focus = self.focusItem()
-            from PySide6.QtWidgets import QGraphicsTextItem
-            if not isinstance(focus, QGraphicsTextItem):
-                # Node deletion logic (adapted from previous behavior)
-                selected = [item for item in self.selectedItems() if isinstance(item, BaseNode)]
-                if selected:
-                    for node in selected:
+            # If a text item has focus, let it handle the keystroke
+            if isinstance(self.focusItem(), QGraphicsTextItem):
+                super().keyPressEvent(event)
+                return
+
+            selected_nodes = [item for item in self.selectedItems() if isinstance(item, BaseNode)]
+            if selected_nodes:
+                from graphics.Connection import Connection
+                snapshot = []
+                for node in selected_nodes:
+                    node_dict = node.to_dict()
+                    conn_dicts = []
+                    for conn in list(node.connections):
+                        if conn.end_node:
+                            conn_dicts.append({
+                                "start_node_uuid": conn.start_node.uuid,
+                                "end_node_uuid": conn.end_node.uuid,
+                            })
+                        if conn.scene():
+                            self.removeItem(conn)
+                        for endpoint in (conn.start_node, conn.end_node):
+                            if endpoint and endpoint is not node and conn in endpoint.connections:
+                                endpoint.connections.remove(conn)
+                    node.connections.clear()
+                    if node.scene():
                         self.removeItem(node)
-                    event.accept()
-                    return
+                    snapshot.append((node_dict, conn_dicts))
+
+                self._undo_stack.append(snapshot)
+                if len(self._undo_stack) > self._undo_max:
+                    self._undo_stack.pop(0)
+                self.set_dirty(True)
+                event.accept()
+                return
+
+        if event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier:
+            if self._undo_stack:
+                self._undo_delete(self._undo_stack.pop())
+                event.accept()
+                return
+
         super().keyPressEvent(event)
+
+    def _undo_delete(self, snapshot):
+        """Restore a deleted set of nodes and reconnect any wires whose both endpoints exist."""
+        from graphics.Connection import Connection
+        uuid_map = {item.uuid: item for item in self.items() if isinstance(item, BaseNode)}
+
+        restored = {}
+        for node_dict, _ in snapshot:
+            node = BaseNode.from_dict(node_dict)
+            node.setZValue(10)
+            self.addItem(node)
+            restored[node.uuid] = node
+
+        uuid_map.update(restored)
+
+        for _, conn_dicts in snapshot:
+            for cd in conn_dicts:
+                start = uuid_map.get(cd["start_node_uuid"])
+                end = uuid_map.get(cd["end_node_uuid"])
+                if start and end:
+                    conn = Connection(start, end)
+                    self.addItem(conn)
+
+        self.set_dirty(True)
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # BACKGROUND
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def drawBackground(self, painter, rect):
+        bg_color = Theme.with_alpha(Theme.frostColor, Theme.frostColor.alpha())
+        painter.setBrush(bg_color)
+        painter.setPen(Qt.NoPen)
+        painter.drawRect(rect)

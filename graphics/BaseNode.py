@@ -6,11 +6,10 @@
 -Built using a single shared braincell by Yours Truly and various Intelligences
 """
 
-import time
 import uuid as _uuid
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsDropShadowEffect
-from PySide6.QtCore import Qt, QRectF, QPointF, QVariantAnimation, QEasingCurve, QSizeF, QAbstractAnimation, QTimer
-from PySide6.QtGui import QColor, QPen, QPainter, QBrush, QPainterPath
+from PySide6.QtCore import Qt, QRectF, QPointF, QSizeF, QAbstractAnimation, QTimer
+from PySide6.QtGui import QColor, QPen, QPainter, QPainterPath
 from .Theme import Theme
 from .Port import Port
 from utils.logger import setup_logger, TRACE
@@ -36,19 +35,14 @@ class BaseNode(QGraphicsRectItem):
     Port behaviour:
         Ports are placed at the vertical center of the node on the left (input) and right (output) edges.
         Port vertical position is controlled by Theme.portVerticalOffset and updates automatically on resize.
-        Port visibility is toggled via right double-click and persists through session save/load.
+        Port visibility is controlled globally via the wiring mode checkbox in the main window toolbar.
+        Individual node port state persists through session save/load via ports_visible.
 
     Performance model:
         Position changes are throttled via _update_throttle_timer — connection redraws are batched
         rather than firing on every pixel of movement.
         Paint objects (pens) are cached at init to avoid per-frame allocation.
         LOD gating suppresses detail rendering when zoomed out past Theme.nodeLodThreshold.
-
-    Right-click patience:
-        Port toggle uses a patience timer modelled after the curtain system in main_window.py.
-        Right-clicks are counted within a 500ms window — two clicks within the window toggles ports.
-        This accommodates Wacom pen ergonomics where right-click is a deliberate two-stage motion
-        rather than a quick finger tap. The patience value is tunable via _right_click_patience.
 
     Self-cleanup:
         Each node is responsible for its own graceful exit via _prepare_for_removal().
@@ -74,19 +68,6 @@ class BaseNode(QGraphicsRectItem):
                       when restoring from a saved session.
         """
         super().__init__(0, 0, width, height)
-
-        # ── Right-click patience ───────────────────────────────────────────────
-        # Mirrors the curtain's patience pattern — buffers right-clicks and only
-        # acts once the clicking settles. Accommodates Wacom pen right-click ergonomics
-        # where the button sits further up the pen barrel, causing ~600-700ms intervals
-        # between clicks. 500ms window catches both relaxed and hurried double-clicks.
-        # Tune _right_click_patience if your hardware or rhythm differs.
-        self._right_click_count = 0
-        self._right_click_patience = 500  # ms — tune to taste
-        self._right_click_timer = QTimer()
-        self._right_click_timer.setSingleShot(True)
-        self._right_click_timer.timeout.connect(self._execute_right_click_logic)
-        self._last_right_click_time = None
 
         # ── Connection state ──────────────────────────────────────────────────
         self.ports_visible = False          # Whether ports are currently shown
@@ -167,36 +148,6 @@ class BaseNode(QGraphicsRectItem):
         self._paint_debug_count = 0
 
     # ─────────────────────────────────────────────────────────────────────────
-    # RIGHT-CLICK PATIENCE
-    # ─────────────────────────────────────────────────────────────────────────
-
-    def _increment_right_click(self):
-        """
-        Count a right-click and open the patience window on the first click.
-
-        The timer is only started on the first click — subsequent clicks within
-        the window accumulate without resetting it. When the window closes,
-        _execute_right_click_logic fires and acts on the total count.
-        """
-        self._last_right_click_time = time.monotonic()
-        self._right_click_count += 1
-        if not self._right_click_timer.isActive():
-            self._right_click_timer.start(self._right_click_patience)
-
-    def _execute_right_click_logic(self):
-        """
-        Fire once the patience window closes — 2+ clicks within the window toggles ports.
-
-        Single clicks (context menu attempts, accidental grazes) are silently ignored.
-        The count is always reset after firing so the next double-click starts fresh.
-        """
-        if self._right_click_count >= 2:
-            self.toggle_ports()
-            if self.scene():
-                self.scene().set_dirty(True)
-        self._right_click_count = 0
-
-    # ─────────────────────────────────────────────────────────────────────────
     # LIFECYCLE — scene departure and position tracking
     # ─────────────────────────────────────────────────────────────────────────
 
@@ -251,8 +202,6 @@ class BaseNode(QGraphicsRectItem):
             # Do NOT set self.behaviour = None here — doing so during scene removal
             # triggers NodeBehaviour cleanup which fires pulse_anim.finished signal
             # re-entrantly into a partially torn down node causing a C++ segfault.
-        if hasattr(self, '_right_click_timer'):
-            self._right_click_timer.stop()
         for conn in list(self.connections):
             if conn.scene():
                 conn.scene().removeItem(conn)
@@ -300,7 +249,7 @@ class BaseNode(QGraphicsRectItem):
 
         Ports are created as children of this node so they inherit scene
         position changes automatically. They are hidden at birth and shown
-        only when the user explicitly toggles them via right double-click.
+        only when the global wiring mode checkbox is enabled.
         """
         self.input_port = Port(self, is_output=False)
         self.output_port = Port(self, is_output=True)
@@ -373,23 +322,14 @@ class BaseNode(QGraphicsRectItem):
 
     def mousePressEvent(self, event):
         """
-        Handle the three possible left-click interactions in priority order:
+        Handle left-click interactions in priority order:
 
         1. Port handshake — fallback path if Port.mousePressEvent didn't fire directly.
            Checks whether the click landed on a child port and starts a wire if so.
         2. Resize handle — bottom-right corner drag initiates interactive resize.
         3. Standard drag — falls through to Qt's built-in item move behaviour.
-
-        Right-clicks are routed to the patience timer and accepted immediately —
-        they never reach Qt's default handling which would interfere with the
-        patience window accumulation.
         """
         if not self.scene():
-            return
-
-        if event.button() == Qt.RightButton:
-            self._increment_right_click()
-            event.accept()
             return
 
         if event.button() == Qt.LeftButton:
@@ -496,17 +436,11 @@ class BaseNode(QGraphicsRectItem):
 
     def mouseDoubleClickEvent(self, event):
         """
-        Right double-click is handled by the patience timer in mousePressEvent —
-        this method absorbs the Qt double-click event to prevent any default
-        view handling from interfering with the patience accumulation.
-
         Left double-click is intentionally unhandled at the BaseNode level.
-        Subclasses that want left double-click behaviour (such as WarmNode opening
-        its note editor) override this method and handle Qt.MouseButton.LeftButton there.
+        Subclasses that want left double-click behaviour override this method
+        and handle Qt.MouseButton.LeftButton there (e.g. WarmNode editor,
+        ImageNode file browser).
         """
-        if event.button() == Qt.MouseButton.RightButton:
-            event.accept()
-            return
         super().mouseDoubleClickEvent(event)
 
     # ─────────────────────────────────────────────────────────────────────────

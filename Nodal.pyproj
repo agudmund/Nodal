@@ -143,6 +143,7 @@
     <Content Include="Documents\How To Run Update Pyproj.md" />
     <Content Include="Documents\Nodal PyProj Update Instructions.md" />
     <Content Include="Documents\Trace Logging And Session Backup Implementation Summary.md" />
+    <Content Include="Documents\WarmNode Teardown Order Implementation Summary.md" />
     <Content Include="Documents\\Base Node Refactoring Implementation Summary.md" />
     <Content Include="Documents\\Base Node Refactoring Audit Report.md" />
     <Content Include="Documents\Docstring Update Summary.md" />

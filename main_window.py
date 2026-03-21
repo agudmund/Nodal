@@ -7,7 +7,7 @@
 """
 
 from pathlib import Path
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene, QDialog, QInputDialog, QGraphicsTextItem
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene, QDialog, QInputDialog, QGraphicsTextItem, QCheckBox 
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform, QIcon
 from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect, QDateTime
 from graphics.Scene import NodeScene, enable_blur
@@ -404,6 +404,34 @@ class NodalApp(QMainWindow):
         # The Blur Intensity Slider
         self.blur_slider = self._create_blur_slider()
         self.bottom_toolbar_layout.insertWidget(1, self.blur_slider)
+        # Wiring mode toggle — shows/hides all ports globally
+        self.chk_ports = QCheckBox("Wires")
+        self.chk_ports.setChecked(False)
+        self.chk_ports.setStyleSheet(f"""
+            QCheckBox {{
+                color: {Theme.comboboxText.name()};
+                font-family: {Theme.comboboxFontFamily};
+                font-size: {Theme.comboboxFontSize}pt;
+                spacing: 6px;
+            }}
+            QCheckBox::indicator {{
+                width: 14px;
+                height: 14px;
+                border: 1px solid {Theme.primaryBorder.name()};
+                border-radius: 3px;
+                background-color: {Theme.comboboxBg.name()};
+            }}
+            QCheckBox::indicator:checked {{
+                background-color: {Theme.primaryBorder.name()};
+            }}
+            QCheckBox::indicator:hover {{
+                border-color: {Theme.accentSelected.name()};
+            }}
+        """)
+        self.chk_ports.stateChanged.connect(
+            lambda state: self.scene.set_all_ports_visible(bool(state))
+        )
+        self.bottom_toolbar_layout.insertWidget(2, self.chk_ports)
 
         # Extra button
         self.btn_extra = CozyButton("Test")
