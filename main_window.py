@@ -7,7 +7,7 @@
 """
 
 from pathlib import Path
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene, QDialog, QInputDialog
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene, QDialog, QInputDialog, QGraphicsTextItem
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform, QIcon
 from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect, QDateTime
 from graphics.Scene import NodeScene, enable_blur
@@ -21,7 +21,6 @@ from widgets.settings_dialog import SettingsDialog
 from widgets.demo_dialog import DemoDialog
 from widgets.cozy_dialog import WindowResizeHandle
 from widgets.extraWindow import ExtraDialog
-
 
 logger = setup_logger()
 
@@ -1016,11 +1015,20 @@ class NodalApp(QMainWindow):
         super().mouseReleaseEvent(event)
 
     def keyPressEvent(self, event):
-        """Route Backspace/Delete and Ctrl+Z to the scene."""
+        """Route Backspace/Delete and Ctrl+Z to the scene.
+        Guard: if a text item has keyboard focus (e.g. ImageNode caption edit),
+        let the event reach it naturally — do not forward to the scene delete handler.
+        """
         if event.key() in (Qt.Key_Backspace, Qt.Key_Delete) or \
            (event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier):
-            if hasattr(self, 'view') and self.view.scene():
-                self.view.scene().keyPressEvent(event)
+            # If a QGraphicsTextItem currently has focus, it owns this keystroke.
+            # Forwarding to the scene would delete the node instead of editing text.
+            scene = self.view.scene() if hasattr(self, 'view') else None
+            if scene:
+                if isinstance(scene.focusItem(), QGraphicsTextItem):
+                    super().keyPressEvent(event)
+                    return
+                scene.keyPressEvent(event)
                 return
         super().keyPressEvent(event)
 

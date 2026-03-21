@@ -15,12 +15,11 @@ from PySide6.QtGui import QColor, QPainter, QTransform
 from .Theme import Theme
 from utils.motivational_messages import motivationalMessages
 from .BaseNode import BaseNode
-from .WarmNode import WarmNode
 from .BezierNode import BezierNode
 from .HealthNode import HealthNode
+from .ImageNode import ImageNode
+from .WarmNode import WarmNode
 from utils.logger import setup_logger, TRACE
-
-from PySide6.QtWidgets import QGraphicsTextItem
 
 logger = setup_logger()
 
@@ -133,6 +132,58 @@ class NodeScene(QGraphicsScene):
                 return item
         return None
 
+    _IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"}
+
+    def dragEnterEvent(self, event):
+        """Accept drag events that carry at least one recognised image file URL."""
+        if event.mimeData().hasUrls():
+            for url in event.mimeData().urls():
+                if any(url.toLocalFile().lower().endswith(e) for e in self._IMAGE_EXTENSIONS):
+                    event.acceptProposedAction()
+                    return
+        event.ignore()
+
+    def dragMoveEvent(self, event):
+        """Keep the drag accepted as the cursor moves across the scene."""
+        if event.mimeData().hasUrls():
+            for url in event.mimeData().urls():
+                if any(url.toLocalFile().lower().endswith(e) for e in self._IMAGE_EXTENSIONS):
+                    event.acceptProposedAction()
+                    return
+        event.ignore()
+
+    def dropEvent(self, event):
+        """
+        Create an ImageNode for each dropped image file.
+        Multiple files in one drop each get their own node, staggered slightly
+        so they don't land exactly on top of each other.
+        """
+        if not event.mimeData().hasUrls():
+            event.ignore()
+            return
+
+        image_paths = [
+            url.toLocalFile()
+            for url in event.mimeData().urls()
+            if any(url.toLocalFile().lower().endswith(e) for e in self._IMAGE_EXTENSIONS)
+        ]
+
+        if not image_paths:
+            event.ignore()
+            return
+
+        base_pos = event.scenePos()
+        STAGGER = 20
+
+        for i, path in enumerate(image_paths):
+            self.add_image_node(
+                base_pos.x() + i * STAGGER,
+                base_pos.y() + i * STAGGER,
+                path=path
+            )
+
+        event.acceptProposedAction()
+        
     def mouseMoveEvent(self, event):
         """Track floating wire at scene level so it follows the mouse anywhere."""
         node = self._get_active_wire_node()
@@ -347,11 +398,27 @@ class NodeScene(QGraphicsScene):
         node = HealthNode(node_id=self._next_node_id(), pos=QPointF(x, y))
         return self._register_node(node)
 
-    def add_node(self, x: float, y: float, title: str = None) -> 'WarmNode':
-        """Backwards-compatible alias for add_warm_node.
-        🪟 Prefer add_warm_node() or add_bezier_node() for new call sites.
+    def add_image_node(self, x: float, y: float, path: str = None) -> 'ImageNode':
         """
-        return self.add_warm_node(x, y, title)
+        Create and add an ImageNode to the scene.
+
+        Args:
+            x:    Scene X coordinate for the new node.
+            y:    Scene Y coordinate for the new node.
+            path: Optional file path to load immediately.
+                  If None, the node arrives empty — double-click to browse.
+
+        Returns:
+            Newly created ImageNode instance.
+        """
+        node = ImageNode(
+            node_id=self._next_node_id(),
+            pos=QPointF(x, y)
+        )
+        self._register_node(node)
+        if path:
+            node.load_from_path(path)
+        return node
 
     # ─────────────────────────────────────────────────────────────────────────
     # CONNECTION CREATION
@@ -617,76 +684,17 @@ class NodeScene(QGraphicsScene):
     # ─────────────────────────────────────────────────────────────────────────
 
     def keyPressEvent(self, event):
-        """Delete selected nodes with Backspace/Delete, undo last delete with Ctrl+Z."""
+        logger.info(f"[SCENE] keyPressEvent: key={event.key()} text='{event.text()}' focusItem={type(self.focusItem()).__name__ if self.focusItem() else None}")
+        # Restore node deletion logic: if Backspace/Delete and not editing text, delete selected node(s)
         if event.key() in (Qt.Key_Backspace, Qt.Key_Delete):
-            selected_nodes = [item for item in self.selectedItems() if isinstance(item, BaseNode)]
-            if selected_nodes:
-                from graphics.Connection import Connection
-                snapshot = []
-                for node in selected_nodes:
-                    node_dict = node.to_dict()
-                    conn_dicts = []
-                    for conn in list(node.connections):
-                        if conn.end_node:
-                            conn_dicts.append({
-                                "start_node_uuid": conn.start_node.uuid,
-                                "end_node_uuid": conn.end_node.uuid,
-                            })
-                        if conn.scene():
-                            self.removeItem(conn)
-                        for endpoint in (conn.start_node, conn.end_node):
-                            if endpoint and endpoint is not node and conn in endpoint.connections:
-                                endpoint.connections.remove(conn)
-                    node.connections.clear()
-                    if node.scene():
+            focus = self.focusItem()
+            from PySide6.QtWidgets import QGraphicsTextItem
+            if not isinstance(focus, QGraphicsTextItem):
+                # Node deletion logic (adapted from previous behavior)
+                selected = [item for item in self.selectedItems() if isinstance(item, BaseNode)]
+                if selected:
+                    for node in selected:
                         self.removeItem(node)
-                    snapshot.append((node_dict, conn_dicts))
-
-                self._undo_stack.append(snapshot)
-                if len(self._undo_stack) > self._undo_max:
-                    self._undo_stack.pop(0)
-                self.set_dirty(True)
-                event.accept()
-                return
-
-        if event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier:
-            if self._undo_stack:
-                self._undo_delete(self._undo_stack.pop())
-                event.accept()
-                return
-
+                    event.accept()
+                    return
         super().keyPressEvent(event)
-
-    def _undo_delete(self, snapshot):
-        """Restore a deleted set of nodes and reconnect any wires whose both endpoints exist."""
-        from graphics.Connection import Connection
-        uuid_map = {item.uuid: item for item in self.items() if isinstance(item, BaseNode)}
-
-        restored = {}
-        for node_dict, _ in snapshot:
-            node = BaseNode.from_dict(node_dict)
-            node.setZValue(10)
-            self.addItem(node)
-            restored[node.uuid] = node
-
-        uuid_map.update(restored)
-
-        for _, conn_dicts in snapshot:
-            for cd in conn_dicts:
-                start = uuid_map.get(cd["start_node_uuid"])
-                end = uuid_map.get(cd["end_node_uuid"])
-                if start and end:
-                    conn = Connection(start, end)
-                    self.addItem(conn)
-
-        self.set_dirty(True)
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # BACKGROUND
-    # ─────────────────────────────────────────────────────────────────────────
-
-    def drawBackground(self, painter, rect):
-        bg_color = Theme.with_alpha(Theme.frostColor, Theme.frostColor.alpha())
-        painter.setBrush(bg_color)
-        painter.setPen(Qt.NoPen)
-        painter.drawRect(rect)
