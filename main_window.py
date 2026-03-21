@@ -463,9 +463,13 @@ class NodalApp(QMainWindow):
 
     def _create_blur_slider(self):
         """Create the blur intensity slider with consistent styling and connections."""
+
+        # Load saved blur opacity or fallback to theme default
+        saved_blur_opacity = Settings.get_int("appearance/blur_opacity", Theme.frostColor.alpha())
+        Theme.frostColor.setAlpha(saved_blur_opacity)
         slider = QSlider(Qt.Horizontal)
         slider.setRange(0, 255)
-        slider.setValue(Theme.frostColor.alpha())
+        slider.setValue(saved_blur_opacity)
         slider.setFixedWidth(150)
         slider.setToolTip("Adjust Background Abstraction")
 
@@ -514,6 +518,8 @@ class NodalApp(QMainWindow):
             }}{handle_style}
         """)
         slider.valueChanged.connect(self.update_blur_intensity)
+        # Save to settings on change
+        slider.valueChanged.connect(lambda v: Settings.set("appearance/blur_opacity", v))
         return slider
 
     def setup_project_selector(self):
@@ -861,17 +867,14 @@ class NodalApp(QMainWindow):
     # =========================================================================
 
     def update_blur_intensity(self, value):
-       Theme.frostColor.setAlpha(value)
-
-       # Map the blur (Sane range 0-30 for performance)
-       blur_radius = (value / 255) * 30
-
-       # Update the fog layer to what the user actually sees
-       visible_rect = self.view.mapToScene(self.view.viewport().rect()).boundingRect()
-       self.scene.fog_layer.setRect(visible_rect)
-
-       self.blur_slider.setToolTip(f"Optimized Smudge: {int(blur_radius)}px")
-       self.view.viewport().update()
+        Theme.frostColor.setAlpha(value)
+        # Map the blur (Sane range 0-30 for performance)
+        blur_radius = (value / 255) * 30
+        # Update the fog layer to what the user actually sees
+        visible_rect = self.view.mapToScene(self.view.viewport().rect()).boundingRect()
+        self.scene.fog_layer.setRect(visible_rect)
+        self.blur_slider.setToolTip(f"Optimized Smudge: {int(blur_radius)}px")
+        self.view.viewport().update()
 
     # =========================================================================
     # Curtains, The Window Rollup Thing
