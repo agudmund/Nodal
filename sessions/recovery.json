@@ -2,74 +2,15 @@
   "version": "1.0",
   "nodes": [
     {
-      "node_id": 3,
-      "uuid": "0311ddf6d03042f581ec78ef1efa780f",
+      "node_id": 7,
+      "uuid": "e8aa4bbc46074e3cb21c3718e1b243dd",
       "type": "warm",
-      "title": "Legend has it that currently the entire thing is being circled by rivaling carpet cleaning companies",
-      "pos_x": -561.0,
-      "pos_y": 89.0,
-      "width": 1222.1843534853228,
-      "height": 68.60933455164958,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 2,
-      "uuid": "58aa1273b65246b288fea9a94eddbe5e",
-      "type": "warm",
-      "title": "Effective People Think in Simple Patterns",
-      "pos_x": -1.1368683772161603e-13,
-      "pos_y": -169.0,
-      "width": 583.0286039037502,
-      "height": 72.66357271417806,
+      "title": "It's so much that if you dont have a specific reason to go looking you probably shouldnt",
+      "pos_x": -463.0,
+      "pos_y": -15.0,
+      "width": 1065.3060683491967,
+      "height": 59.62103996476745,
       "ports_visible": true,
-      "full_text": ""
-    },
-    {
-      "node_id": 1,
-      "uuid": "c75b70b3f2fd443c8b4806b1d27efa76",
-      "type": "about",
-      "title": "About",
-      "pos_x": -105.0,
-      "pos_y": -401.0,
-      "width": 200.0,
-      "height": 55.0,
-      "ports_visible": true
-    },
-    {
-      "node_id": 0,
-      "uuid": "690976f3edb1493e81edc2c86cd126f7",
-      "type": "warm",
-      "title": "Like the others, we were created Perfect",
-      "pos_x": -768.0,
-      "pos_y": -292.0,
-      "width": 553.6134672993824,
-      "height": 63.588086211924406,
-      "ports_visible": true,
-      "full_text": ""
-    },
-    {
-      "node_id": 4,
-      "uuid": "a3f3c8157f384268a1f941a82cad171f",
-      "type": "warm",
-      "title": "Someone at one point had an idea that the entire thing should fly, not like hey cool thats fly but literally fly in the sky",
-      "pos_x": -864.0,
-      "pos_y": 196.0,
-      "width": 1435.8131872754027,
-      "height": 68.15412811298572,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 5,
-      "uuid": "2fc6608f1b1e4392837f20ed405948c7",
-      "type": "warm",
-      "title": "It's one hell of a party, but also one hell of a thing to get hit in the lower back with",
-      "pos_x": -349.9999999999999,
-      "pos_y": 289.0,
-      "width": 1140.095238095238,
-      "height": 70.61904761904762,
-      "ports_visible": false,
       "full_text": ""
     },
     {
@@ -85,26 +26,85 @@
       "full_text": ""
     },
     {
-      "node_id": 7,
-      "uuid": "e8aa4bbc46074e3cb21c3718e1b243dd",
+      "node_id": 5,
+      "uuid": "2fc6608f1b1e4392837f20ed405948c7",
       "type": "warm",
-      "title": "It's so much that if you dont have a specific reason to go looking you probably shouldnt",
-      "pos_x": -463.0,
-      "pos_y": -15.0,
-      "width": 1065.3060683491967,
-      "height": 59.62103996476745,
+      "title": "It's one hell of a party, but also one hell of a thing to get hit in the lower back with",
+      "pos_x": -349.9999999999999,
+      "pos_y": 289.0,
+      "width": 1140.095238095238,
+      "height": 70.61904761904762,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 4,
+      "uuid": "a3f3c8157f384268a1f941a82cad171f",
+      "type": "warm",
+      "title": "Someone at one point had an idea that the entire thing should fly, not like hey cool thats fly but literally fly in the sky",
+      "pos_x": -864.0,
+      "pos_y": 196.0,
+      "width": 1435.8131872754027,
+      "height": 68.15412811298572,
+      "ports_visible": false,
+      "full_text": ""
+    },
+    {
+      "node_id": 0,
+      "uuid": "690976f3edb1493e81edc2c86cd126f7",
+      "type": "warm",
+      "title": "Like the others, we were created Perfect",
+      "pos_x": -864.0,
+      "pos_y": -414.0,
+      "width": 553.6134672993824,
+      "height": 63.588086211924406,
       "ports_visible": true,
+      "full_text": ""
+    },
+    {
+      "node_id": 1,
+      "uuid": "c75b70b3f2fd443c8b4806b1d27efa76",
+      "type": "about",
+      "title": "About",
+      "pos_x": 109.0,
+      "pos_y": -393.0,
+      "width": 200.0,
+      "height": 55.0,
+      "ports_visible": true
+    },
+    {
+      "node_id": 2,
+      "uuid": "58aa1273b65246b288fea9a94eddbe5e",
+      "type": "warm",
+      "title": "Effective People Think in Simple Patterns",
+      "pos_x": 173.9999999999999,
+      "pos_y": -241.00000000000003,
+      "width": 583.0286039037502,
+      "height": 72.66357271417806,
+      "ports_visible": true,
+      "full_text": ""
+    },
+    {
+      "node_id": 3,
+      "uuid": "0311ddf6d03042f581ec78ef1efa780f",
+      "type": "warm",
+      "title": "Legend has it that currently the entire thing is being circled by rivaling carpet cleaning companies",
+      "pos_x": -561.0,
+      "pos_y": 89.0,
+      "width": 1222.1843534853228,
+      "height": 68.60933455164958,
+      "ports_visible": false,
       "full_text": ""
     }
   ],
   "connections": [
     {
-      "start_node_uuid": "08df26e758844425b907474e79113967",
-      "end_node_uuid": "e8aa4bbc46074e3cb21c3718e1b243dd"
-    },
-    {
       "start_node_uuid": "690976f3edb1493e81edc2c86cd126f7",
       "end_node_uuid": "58aa1273b65246b288fea9a94eddbe5e"
+    },
+    {
+      "start_node_uuid": "08df26e758844425b907474e79113967",
+      "end_node_uuid": "e8aa4bbc46074e3cb21c3718e1b243dd"
     }
   ],
   "checksum": "3f552a40efa23ed1"
