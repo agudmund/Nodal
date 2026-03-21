@@ -7,7 +7,7 @@
 """
 
 from pathlib import Path
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene, QDialog
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QGridLayout, QWidget, QGraphicsView, QSlider, QComboBox, QGraphicsScene, QDialog, QInputDialog
 from PySide6.QtGui import QBrush, QColor, QPen, QPainter, QTransform, QIcon
 from PySide6.QtCore import Qt, QEvent, QTimer, QPropertyAnimation, QSequentialAnimationGroup, QParallelAnimationGroup, QEasingCurve, QSize, QPoint, QRect, QDateTime
 from graphics.Scene import NodeScene, enable_blur
@@ -21,6 +21,7 @@ from widgets.settings_dialog import SettingsDialog
 from widgets.demo_dialog import DemoDialog
 from widgets.cozy_dialog import WindowResizeHandle
 from widgets.extraWindow import ExtraDialog
+
 
 logger = setup_logger()
 
@@ -193,20 +194,22 @@ class NodeGraphicsView(QGraphicsView):
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        """
-        PURPOSE: Reset the cursor and state when the interaction ends.
-        ACCOUNTABILITY: We remove the _update_viewport_cache call. It has no 
-        claim to existing in a Ledger-based world.
-        """
+        if event.button() == Qt.MouseButton.MiddleButton:
+            self._last_pan_pos = None
+            self.setCursor(Qt.ArrowCursor)
+            # Explicitly clear any lingering grab state from the pan
+            self.viewport().update()
+            if self.scene() and self.scene().mouseGrabberItem():
+                self.scene().mouseGrabberItem().ungrabMouse()
+            event.accept()
+            return
+
         if self._alt_right_pressed:
             self._alt_right_pressed = False
             self._last_zoom_pos = None
             self.setCursor(Qt.ArrowCursor)
             event.accept()
-        
-        elif event.button() == Qt.MouseButton.MiddleButton:
-            self.setCursor(Qt.ArrowCursor)
-            event.accept()
+            return
 
         super().mouseReleaseEvent(event)
 
@@ -320,7 +323,47 @@ class NodalApp(QMainWindow):
             return btn
 
     def newCanvas(self):
-        print('new new')
+        """Creates a brand new session file and switches to it."""
+        from PySide6.QtWidgets import QInputDialog
+        
+        # 1. Get the name (Themed prompt or standard for now)
+        name, ok = QInputDialog.getText(
+            self, "✨ New Session", "Enter a name for your new canvas:",
+            text=f"Session_{QDateTime.currentDateTime().toString('MMdd_HHmm')}"
+        )
+
+        if not ok or not name.strip():
+            return
+
+        session_name = name.strip()
+        filepath = SessionManager.get_session_filename(session_name)
+
+        # 2. CREATE THE FILE FIRST
+        # This ensures that when load_session is called, the file actually exists
+        if not Path(filepath).exists():
+            initial_data = {"version": "1.0", "nodes": [], "connections": []}
+            SessionManager.save_session(filepath, initial_data)
+            logger.info(f"💾 Created new session file: {session_name}")
+
+        # 1. Block signals so adding/setting doesn't fire multiple times
+        self.project_selector.blockSignals(True)
+        
+        try:
+            if self.project_selector.findText(session_name) == -1:
+                self.project_selector.addItem(session_name)
+            self.project_selector.setCurrentText(session_name)
+        finally:
+            self.project_selector.blockSignals(False)
+
+        # 2. Manually trigger the load now that the UI is stable
+        # self.on_session_changed(self.project_selector.currentIndex())
+        # Stop recovery timer before the deferred session switch —
+        # prevents contamination of the new empty session file during the 50ms window
+        self.scene._recovery_timer.stop()
+        
+        self.view.clearFocus()
+        self.scene.clearSelection()
+        QTimer.singleShot(50, lambda: self.on_session_changed(self.project_selector.currentIndex()))
 
     def _setupCentralGrid(self):
         """The central area holding the actual nodal canvas"""
@@ -337,9 +380,6 @@ class NodalApp(QMainWindow):
         self.view_pan_y = 0.0
         self.view_zoom = 1.0
 
-        # This stylesheet isnt actually setting the border, leaving the code here as a memo
-        # The border gets applied per spacer
-        # self.view.setStyleSheet(f"""border: {Theme.windowBorderWidth}px solid {Theme.toolbarBorder.name()};""")
         self.grid_layout.addWidget(self.view, 1, 1)
 
         # Row 1, Col 2: Right spacer
@@ -565,7 +605,8 @@ class NodalApp(QMainWindow):
                 if index == 0:
                     self.load_session(last_session)
 
-    def load_session(self, session_name: str):
+    def load_session(self, session_name: str, skip_clear: bool = False):
+
         filepath = SessionManager.get_session_filename(session_name)
         data = SessionManager.get_session_data(filepath)
         if not data:
@@ -573,6 +614,7 @@ class NodalApp(QMainWindow):
 
         if data:
             node_count = len(data.get("nodes", []))
+            print ('node count %s' % node_count)
             conn_count = len(data.get("connections", []))
             logger.log(TRACE, f"[LOAD_SESSION] '{session_name}' — {node_count} nodes, {conn_count} connections")
 
@@ -581,7 +623,9 @@ class NodalApp(QMainWindow):
             self.view.setUpdatesEnabled(False)
             try:
                 logger.log(TRACE, f"[LOAD_SESSION] clear_nodes()")
-                self.scene.clear_nodes()
+                if not skip_clear:                    # ← guard the inner one too
+                    logger.log(TRACE, f"[LOAD_SESSION] clear_nodes()")
+                    self.scene.clear_nodes()
 
                 logger.log(TRACE, f"[LOAD_SESSION] rebuild_from_session()")
                 self.scene.rebuild_from_session(data)
@@ -600,22 +644,30 @@ class NodalApp(QMainWindow):
 
                 # Apply the Transformation — reset to identity first to avoid stacking zooms
                 self.view.resetTransform()
+                # Clear mouse tracking state before transforming viewport
+                # Prevents ungrab errors when the camera jumps from a previous session's position
+                self.view.viewport().setMouseTracking(False)
+                self.scene.clearSelection()
+                if self.scene.mouseGrabberItem():
+                    self.scene.mouseGrabberItem().ungrabMouse()
+                self.view.viewport().setMouseTracking(True)
+
+                # Apply the Transformation
+                self.view.resetTransform()
                 self.view.scale(self.view_zoom, self.view_zoom)
-
-                # Center the Camera
                 self.view.centerOn(self.view_pan_x, self.view_pan_y)
-
                 # Reset the 'First Interact' guard so the next pan is high-precision
                 self.view._first_interact_done = False
 
             finally:
                 self.scene.set_dirty(False)
-                logger.log(TRACE, f"[LOAD_SESSION] finally — setUpdatesEnabled(True), scheduling deferred repaint")
                 self.view.setUpdatesEnabled(True)
                 self.view.viewport().setUpdatesEnabled(True)
-                # Deferred repaint — lets Qt initialize all effect buffers (e.g. drop shadows)
-                # before the first paint, preventing node bodies from baking into the background.
-                QTimer.singleShot(0, self.view.viewport().update)
+                QTimer.singleShot(0, self.view.viewport().repaint)
+                # Defer recovery timer restart — give the scene a full frame to settle
+                # before arming the recovery writer. Prevents contamination of the new
+                # session with stale scene state from the previous session's purge.
+                QTimer.singleShot(500, self.scene._recovery_timer.start)
 
     def save_session(self, session_name: str):
         """Gathers characters and camera state; forces the warehouse to acknowledge spaces."""
@@ -662,27 +714,37 @@ class NodalApp(QMainWindow):
         return session_names
 
     def on_session_changed(self, index: int):
-        """Handle combobox selection change with auto-save for the outgoing session."""
         if index < 0: return
-        new_session_name = self.project_selector.currentText()
         
-        # 1. ACCOUNTABILITY: Check if the OLD session needs saving before we overwrite it
-        # We only do this if we actually had a previous session active
-        if hasattr(self, "_current_session") and self._current_session and self._current_session != new_session_name:
+        # Guard against recursive signals during setup
+        if getattr(self, "_is_switching", False): return
+        self._is_switching = True
+
+        try:
+            new_session_name = self.project_selector.currentText()
             
-            current_view = (self.view_pan_x, self.view_pan_y, self.view_zoom)
-            last_view = getattr(self, "_last_saved_viewport", (0.0, 0.0, 1.0))
-            
-            if self.scene.is_dirty() or current_view != last_view:
-                logger.info(f"🔄 Auto-saving outgoing session: '{self._current_session}'")
+            # 1. Accountability: Save old session
+            if hasattr(self, "_current_session") and self._current_session and self._current_session != new_session_name:
                 self.save_session(self._current_session)
 
-        # 2. Record the identity of the NEW session
-        Settings.set("session/last_loaded", new_session_name)
-        self._current_session = new_session_name
-        
-        # 3. Bring the new characters and camera onto the stage
-        self.load_session(new_session_name)
+            # Pause recovery timer during session switch to prevent
+            # contaminating the new session with outgoing session data
+            self.scene._recovery_timer.stop()
+
+            # 2. THE PURGE: Clear the stage and the registry
+            self.scene.purge_session_items()
+            self.scene.active_node_registry.clear()
+            self.scene._undo_stack.clear()
+
+            # 3. Identity
+            self._current_session = new_session_name
+            Settings.set("session/last_loaded", new_session_name)
+            
+            # 4. Rebuild (Now using the class-level registry)
+            self.load_session(new_session_name, skip_clear=True)
+            
+        finally:
+            self._is_switching = False
 
     def create_new_node(self):
         """Show the node type chooser popup centered over the canvas."""
@@ -691,7 +753,7 @@ class NodalApp(QMainWindow):
 
         chooser = QWidget(self, Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
         chooser.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        chooser.setFixedSize(560, 160)
+        chooser.setFixedSize(760, 160)
         chooser.setObjectName("nodeTypeChooser")
 
         # Glow effect for extra coziness
@@ -757,6 +819,11 @@ class NodalApp(QMainWindow):
                 from graphics.ImageNode import ImageNode
                 node = ImageNode(node_id=self.scene._next_node_id(), pos=center)
                 self.scene._register_node(node)
+            elif node_type == "health":
+                from graphics.HealthNode import HealthNode
+                node = HealthNode(node_id=self.scene._next_node_id(), pos=center)
+                self.scene._register_node(node)
+
             chooser.close()
 
         warm_btn = QPushButton("Warm 🌱")
@@ -773,6 +840,10 @@ class NodalApp(QMainWindow):
 
         image_btn = QPushButton("Image 🖼️")
         image_btn.clicked.connect(lambda: create_and_close("image"))
+        btn_layout.addWidget(image_btn)
+
+        image_btn = QPushButton("Health 🩺")
+        image_btn.clicked.connect(lambda: create_and_close("health"))
         btn_layout.addWidget(image_btn)
 
         layout.addLayout(btn_layout)
