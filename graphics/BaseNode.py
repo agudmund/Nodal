@@ -49,6 +49,12 @@ class BaseNode(QGraphicsRectItem):
         Right-clicks are counted within a 500ms window — two clicks within the window toggles ports.
         This accommodates Wacom pen ergonomics where right-click is a deliberate two-stage motion
         rather than a quick finger tap. The patience value is tunable via _right_click_patience.
+
+    Self-cleanup:
+        Each node is responsible for its own graceful exit via _prepare_for_removal().
+        This fires deterministically when the node leaves its scene, stopping animations,
+        severing wires, and clearing references so Python's GC can collect cleanly.
+        Sessions are independent graphs — no node should survive into a different session.
     """
 
     def __init__(self, node_id: int, title: str, pos: QPointF = QPointF(0, 0),
@@ -191,18 +197,23 @@ class BaseNode(QGraphicsRectItem):
         self._right_click_count = 0
 
     # ─────────────────────────────────────────────────────────────────────────
-    # POSITION TRACKING
+    # LIFECYCLE — scene departure and position tracking
     # ─────────────────────────────────────────────────────────────────────────
 
     def itemChange(self, change, value):
         """
-        Intercept position changes to batch connection redraws via throttle timer.
+        Traffic director for scene and position change events.
 
-        Sub-pixel movements (< 0.5px) are silently ignored to avoid flooding
-        the update pipeline with noise from Qt's internal scene bookkeeping.
-        A single-shot timer batches all movement during a drag into one
-        connection update burst at the end of the throttle window.
+        Scene departure → delegates to _prepare_for_removal().
+        Position change → batches connection redraws via throttle timer.
+
+        itemChange detects what changed and routes to the right handler.
+        It does not perform cleanup or business logic itself.
         """
+        if (change == QGraphicsRectItem.GraphicsItemChange.ItemSceneChange
+                and value is None):
+            self._prepare_for_removal()
+
         if change == QGraphicsRectItem.GraphicsItemChange.ItemPositionHasChanged:
             new_pos = self.scenePos()
             if self._last_scene_pos is not None:
@@ -217,7 +228,37 @@ class BaseNode(QGraphicsRectItem):
                 self._update_throttle_timer.setSingleShot(True)
                 self._update_throttle_timer.timeout.connect(self._execute_pending_update)
                 self._update_throttle_timer.start(Theme.nodeUpdateThrottle)
+
         return super().itemChange(change, value)
+
+    def _prepare_for_removal(self):
+        """
+        Graceful self-cleanup — called by itemChange when this node is leaving its scene.
+
+        Each node owns its exit. Stopping animations, severing wires, and clearing
+        the connection list here ensures Python's GC can collect this node cleanly
+        without waiting for an external purge call.
+
+        Sessions are independent graphs — no node should hold references that
+        survive into a different session. Stale cross-session references are a
+        correctness issue, not just a memory issue.
+
+        Called before Qt removes the node from the scene, so all scene and
+        item APIs are still valid at this point.
+        """
+        if hasattr(self, 'behaviour') and self.behaviour:
+            self.behaviour.pulse_anim.stop()
+            # Do NOT set self.behaviour = None here — doing so during scene removal
+            # triggers NodeBehaviour cleanup which fires pulse_anim.finished signal
+            # re-entrantly into a partially torn down node causing a C++ segfault.
+        if hasattr(self, '_right_click_timer'):
+            self._right_click_timer.stop()
+        for conn in list(self.connections):
+            if conn.scene():
+                conn.scene().removeItem(conn)
+            conn.start_node = None
+            conn.end_node   = None
+        self.connections.clear()
 
     def _execute_pending_update(self):
         """
@@ -343,6 +384,9 @@ class BaseNode(QGraphicsRectItem):
         they never reach Qt's default handling which would interfere with the
         patience window accumulation.
         """
+        if not self.scene():
+            return
+
         if event.button() == Qt.RightButton:
             self._increment_right_click()
             event.accept()
@@ -477,6 +521,9 @@ class BaseNode(QGraphicsRectItem):
         is handled entirely off the event loop by NodeBehaviour so the
         hover handler itself stays as lightweight as possible.
         """
+        if self.behaviour is None:
+            super().hoverEnterEvent(event)
+            return
         self.current_pen = self.hover_pen
         self.setPen(self.current_pen)
         self.update()
@@ -491,6 +538,10 @@ class BaseNode(QGraphicsRectItem):
         no explicit call needed here since the finished signal wired at
         NodeBehaviour init handles the settle-back.
         """
+        if self.behaviour is None:
+            super().hoverLeaveEvent(event)
+            return
+
         self.current_pen = self.normal_pen
         self.setPen(self.current_pen)
         self.update()
@@ -692,6 +743,7 @@ class BaseNode(QGraphicsRectItem):
         from .ImageNode import ImageNode
         from .AboutNode import AboutNode
         from .BezierNode import BezierNode
+        from .HealthNode import HealthNode
 
         node_type = data.get("type", "node")
 
@@ -703,6 +755,8 @@ class BaseNode(QGraphicsRectItem):
             return ImageNode.from_dict(data)
         elif node_type == "bezier":
             return BezierNode.from_dict(data)
+        elif node_type == "health":
+            return HealthNode.from_dict(data)
         else:
             return BaseNode._create_from_dict(data)
 

@@ -17,7 +17,10 @@ from utils.motivational_messages import motivationalMessages
 from .BaseNode import BaseNode
 from .WarmNode import WarmNode
 from .BezierNode import BezierNode
+from .HealthNode import HealthNode
 from utils.logger import setup_logger, TRACE
+
+from PySide6.QtWidgets import QGraphicsTextItem
 
 logger = setup_logger()
 
@@ -75,6 +78,7 @@ class NodeScene(QGraphicsScene):
         self._dirty = False
         self._undo_stack = []   # Each entry: list of (node_dict, [conn_dicts]) for one delete action
         self._undo_max = 30     # Cap memory use — oldest actions fall off the back
+        self.active_node_registry = {} # The global ledger for the current session
 
         # Recovery: debounced write so rapid dirty events collapse into one disk hit
         from utils.settings import Settings
@@ -201,41 +205,88 @@ class NodeScene(QGraphicsScene):
         }
 
     def rebuild_from_session(self, data: dict):
-        """Reconstruct scene nodes and connections from session data.
-        Clears existing nodes and rebuilds graph from serialized state.
-
-        Args:
-            data: Dictionary with 'nodes' and 'connections' lists from session
         """
+        Reconstruct scene nodes and connections from session data.
+
+        Two-pass rebuild:
+        Pass 1 — create all nodes and register them by UUID in active_node_registry.
+        Pass 2 — reconnect wires using the registry so UUIDs resolve correctly.
+
+        Registry is cleared before rebuild so stale UUIDs from previous sessions
+        cannot cause wires to connect to wrong nodes. Sessions are independent graphs.
+
+        Uses addItem() directly rather than _register_node() — _register_node calls
+        set_dirty(True) which is wrong during a load. The session is not dirty just
+        because we restored it.
+        """
+        logger.log(TRACE, f"[REBUILD] ═══ REBUILD START ═══")
+        logger.log(TRACE, f"[REBUILD] clearing active_node_registry (had {len(self.active_node_registry)} entries)")
+        self.active_node_registry.clear()
+
+        nodes_data = data.get("nodes", [])
+        conns_data = data.get("connections", [])
+        logger.log(TRACE, f"[REBUILD] session data: {len(nodes_data)} nodes, {len(conns_data)} connections")
+
+        # ── PASS 1: Create nodes ──────────────────────────────────────────────
+        logger.log(TRACE, f"[REBUILD] pass 1 — creating nodes")
+        for i, node_data in enumerate(nodes_data):
+            node_type = node_data.get("type", "unknown")
+            node_title = node_data.get("title", "untitled")
+            node_uuid = node_data.get("uuid", "no-uuid")[:8]
+            logger.log(TRACE, f"[REBUILD] pass 1 [{i}] — type={node_type} title='{node_title}' uuid={node_uuid}")
+            try:
+                new_node = BaseNode.from_dict(node_data)
+                new_node.setZValue(10)
+                self.addItem(new_node)
+                self.active_node_registry[new_node.uuid] = new_node
+                logger.log(TRACE, f"[REBUILD] pass 1 [{i}] — added to scene and registry ✅")
+            except Exception as e:
+                logger.error(
+                    f"[REBUILD] pass 1 [{i}] — FAILED to create node type={node_type} title='{node_title}': "
+                    f"{type(e).__name__}: {e}",
+                    exc_info=True
+                )
+
+        logger.log(TRACE, f"[REBUILD] pass 1 complete — {len(self.active_node_registry)} nodes in registry")
+
+        # ── PASS 2: Reconnect wires ───────────────────────────────────────────
+        logger.log(TRACE, f"[REBUILD] pass 2 — reconnecting wires")
         from graphics.Connection import Connection
-
-        # NOTE: load_session already calls clear_nodes() before invoking this method.
-        # Do not call it again here — a double clear fires invalidate()+viewport.update()
-        # mid-rebuild while nodes are being added, causing ghost renders.
-        node_map = {}  # UUID → node, used for reconnecting wires in second pass
-
-        # 1. First Pass: Create all Nodes
-        for node_data in data.get("nodes", []):
-            new_node = BaseNode.from_dict(node_data)
-            new_node.setZValue(10)
-            self.addItem(new_node)
-            effect_name = type(new_node.graphicsEffect()).__name__ if new_node.graphicsEffect() else "None"
-            logger.log(
-                TRACE,
-                f"[REBUILD] node id={new_node.node_id} type={new_node.node_type} "
-                f"z={new_node.zValue()} pos=({new_node.pos().x():.1f},{new_node.pos().y():.1f}) "
-                f"size=({new_node.rect().width():.0f}x{new_node.rect().height():.0f}) "
-                f"effect={effect_name} _paint_debug_count={new_node._paint_debug_count}"
+        wires_connected = 0
+        wires_skipped = 0
+        for i, conn_data in enumerate(conns_data):
+            start_uuid = conn_data.get("start_node_uuid")
+            end_uuid   = conn_data.get("end_node_uuid")
+            start = self.active_node_registry.get(start_uuid)
+            end   = self.active_node_registry.get(end_uuid)
+            logger.log(TRACE,
+                f"[REBUILD] pass 2 [{i}] — "
+                f"start={start_uuid[:8] if start_uuid else 'None'} found={start is not None} | "
+                f"end={end_uuid[:8] if end_uuid else 'None'} found={end is not None}"
             )
-            node_map[new_node.uuid] = new_node
+            if start and end:
+                try:
+                    new_conn = Connection(start, end)
+                    self.addItem(new_conn)
+                    wires_connected += 1
+                    logger.log(TRACE, f"[REBUILD] pass 2 [{i}] — wire connected ✅")
+                except Exception as e:
+                    logger.error(
+                        f"[REBUILD] pass 2 [{i}] — FAILED to create connection: {type(e).__name__}: {e}",
+                        exc_info=True
+                    )
+                    wires_skipped += 1
+            else:
+                wires_skipped += 1
+                logger.warning(
+                    f"[REBUILD] pass 2 [{i}] — skipped wire: "
+                    f"start {'missing' if not start else 'ok'} | end {'missing' if not end else 'ok'}"
+                )
 
-        # 2. Second Pass: Re-plug the Nerves
-        for conn_data in data.get("connections", []):
-            start_node = node_map.get(conn_data.get("start_node_uuid"))
-            end_node = node_map.get(conn_data.get("end_node_uuid"))
-            if start_node and end_node:
-                new_conn = Connection(start_node, end_node)
-                self.addItem(new_conn)
+        logger.log(TRACE,
+            f"[REBUILD] pass 2 complete — {wires_connected} wires connected, {wires_skipped} skipped"
+        )
+        logger.log(TRACE, f"[REBUILD] ═══ REBUILD COMPLETE ═══")
 
     # ─────────────────────────────────────────────────────────────────────────
     # NODE CREATION HELPERS
@@ -290,6 +341,10 @@ class NodeScene(QGraphicsScene):
             title=title,
             pos=QPointF(x, y)
         )
+        return self._register_node(node)
+
+    def add_health_node(self, x: float, y: float) -> 'HealthNode':
+        node = HealthNode(node_id=self._next_node_id(), pos=QPointF(x, y))
         return self._register_node(node)
 
     def add_node(self, x: float, y: float, title: str = None) -> 'WarmNode':
@@ -358,6 +413,204 @@ class NodeScene(QGraphicsScene):
             for s in survivors:
                 logger.log(TRACE, f"[CLEAR_NODES] SURVIVOR: {type(s).__name__} parentItem={type(s.parentItem()).__name__ if s.parentItem() else None} scene={s.scene() is not None}")
         logger.log(TRACE, f"[CLEAR_NODES] scene cleared — {len(survivors)} survivors (expected 0)")
+
+    def purge_session_items(self):
+        """
+        Full session purge — removes all nodes, connections, and orphaned items.
+
+        Designed to be as clean as a fresh app launch. The only reason a session
+        switcher exists at all is to avoid restarting the app — everything else
+        should behave identically to a relaunch.
+
+        Step-by-step with TRACE logging at every gate so no failure is silent:
+
+        0. Undo stack clear — session undo history must not survive into a new session.
+        1. Mouse grab release — prevents ungrabMouse errors if a node was mid-drag.
+        2. Floating wire cleanup — orphaned temp_connections severed and removed.
+        3. Orphaned QGraphicsTextItem sweep — WarmNode child text items that survived
+           a previous purge as top-level orphans. These look like complete nodes but
+           have no BaseNode backing. Identified via the HealthNode click spy (type=QGraphicsTextItem,
+           identity=memory_address, no title, no uuid).
+        4. Gather all purgeable items — BaseNode, Connection, orphaned QGraphicsTextItem,
+           all top-level (parentItem is None), none of them the fog layer.
+        5. Pre-cleanup — stop animations and sever connection references while items
+           are still in the scene so Qt APIs are valid.
+        6. Batch removal — removeItem for each gathered item.
+        7. GC sweep — force Python to collect what we just severed rather than
+           waiting for its own schedule. Session switches are launch-equivalent.
+        8. Scene invalidation — flush any deferred repaints from removed items.
+        9. Dirty reset and visual refresh.
+        """
+        from .BaseNode import BaseNode
+        from .Connection import Connection
+        from PySide6.QtWidgets import QGraphicsTextItem
+        import gc as _gc
+
+        logger.log(TRACE, f"[PURGE] ═══ SESSION PURGE START ═══")
+        logger.log(TRACE, f"[PURGE] scene item count before purge: {len(self.items())}")
+
+        # ── STEP 0: Clear undo stack ──────────────────────────────────────────
+        # Session undo history must never bleed into a different session.
+        logger.log(TRACE, f"[PURGE] step 0 — clearing undo stack ({len(self._undo_stack)} entries)")
+        self._undo_stack.clear()
+        logger.log(TRACE, f"[PURGE] step 0 — undo stack cleared")
+
+        # ── STEP 1: Release mouse grab ────────────────────────────────────────
+        # If a node is mid-drag when the scene is cleared, Qt throws:
+        # "QGraphicsItem::ungrabMouse: cannot ungrab mouse without scene"
+        grabber = self.mouseGrabberItem()
+        active_wires = [i for i in self.items() if isinstance(i, BaseNode) and getattr(i, 'temp_connection', None)]
+        logger.log(TRACE,
+            f"[PURGE] step 1 — mouseGrabber={type(grabber).__name__ if grabber else 'None'} | "
+            f"active_wires={len(active_wires)} | total_items={len(self.items())}"
+        )
+        if grabber:
+            logger.log(TRACE,
+                f"[PURGE] step 1 — grabber detail: type={type(grabber).__name__} "
+                f"scene={grabber.scene() is not None} "
+                f"parentItem={type(grabber.parentItem()).__name__ if grabber.parentItem() else 'None'}"
+            )
+            try:
+                grabber.ungrabMouse()
+                logger.log(TRACE, f"[PURGE] step 1 — ungrabMouse() called on grabber")
+            except Exception as e:
+                logger.warning(f"[PURGE] step 1 — ungrabMouse() raised {type(e).__name__}: {e}")
+
+        # ── STEP 2: Floating wire cleanup ─────────────────────────────────────
+        # Wires in progress that were never completed would be orphaned by the purge.
+        logger.log(TRACE, f"[PURGE] step 2 — scanning for floating temp_connections")
+        float_count = 0
+        for item in list(self.items()):
+            if isinstance(item, BaseNode) and getattr(item, 'temp_connection', None):
+                logger.log(TRACE, f"[PURGE] step 2 — removing floating temp_connection from node '{getattr(item, 'title', '?')}'")
+                try:
+                    self.removeItem(item.temp_connection)
+                    item.temp_connection = None
+                    float_count += 1
+                except Exception as e:
+                    logger.warning(f"[PURGE] step 2 — temp_connection removal raised {type(e).__name__}: {e}")
+        logger.log(TRACE, f"[PURGE] step 2 — removed {float_count} floating temp_connections")
+
+        # ── STEP 3: Orphaned QGraphicsTextItem sweep ──────────────────────────
+        # WarmNode children (emoji, title, body text) that got unparented before
+        # their parent was removed float as top-level items. They look like complete
+        # nodes visually but have no BaseNode backing — identified by the HealthNode
+        # click spy returning type=QGraphicsTextItem with a memory address instead
+        # of a title or uuid.
+        logger.log(TRACE, f"[PURGE] step 3 — scanning for orphaned QGraphicsTextItem survivors")
+        orphaned_text = [
+            i for i in self.items()
+            if isinstance(i, QGraphicsTextItem)
+            and i.parentItem() is None
+            and i is not self.fog_layer
+        ]
+        if orphaned_text:
+            logger.warning(
+                f"[PURGE] step 3 — {len(orphaned_text)} orphaned QGraphicsTextItem(s) found. "
+                f"These are detached WarmNode children (zombie limbs). Removing."
+            )
+            for item in orphaned_text:
+                try:
+                    logger.log(TRACE, f"[PURGE] step 3 — removing orphaned text item id={str(id(item))[:8]}")
+                    self.removeItem(item)
+                except Exception as e:
+                    logger.warning(f"[PURGE] step 3 — orphaned text removal raised {type(e).__name__}: {e}")
+        else:
+            logger.log(TRACE, f"[PURGE] step 3 — no orphaned QGraphicsTextItems found ✅")
+
+        # ── STEP 4: Gather all purgeable items ───────────────────────────────
+        logger.log(TRACE, f"[PURGE] step 4 — gathering purgeable items")
+        items_to_purge = [
+            i for i in self.items()
+            if isinstance(i, (BaseNode, Connection, QGraphicsTextItem))
+            and i.parentItem() is None
+            and i is not self.fog_layer
+        ]
+        node_count = sum(1 for i in items_to_purge if isinstance(i, BaseNode))
+        conn_count = sum(1 for i in items_to_purge if isinstance(i, Connection))
+        text_count = sum(1 for i in items_to_purge if isinstance(i, QGraphicsTextItem))
+        logger.log(TRACE,
+            f"[PURGE] step 4 — gathered {len(items_to_purge)} items: "
+            f"{node_count} nodes, {conn_count} connections, {text_count} text items"
+        )
+
+        # ── STEP 5: Pre-cleanup ───────────────────────────────────────────────
+        # Stop animations and sever references while items are still in the scene
+        # so all Qt APIs are valid. Do NOT call setGraphicsEffect(None) here —
+        # doing so schedules a deferred repaint that fires after removal = ghost node.
+        logger.log(TRACE, f"[PURGE] step 5 — pre-cleanup: stopping animations and severing connections")
+        for item in items_to_purge:
+            try:
+                if isinstance(item, BaseNode):
+                    if hasattr(item, 'behaviour') and item.behaviour and hasattr(item.behaviour, 'pulse_anim'):
+                        item.behaviour.pulse_anim.stop()
+                        logger.log(TRACE, f"[PURGE] step 5 — stopped pulse_anim for node '{getattr(item, 'title', '?')}'")
+                    item.connections.clear()
+                elif isinstance(item, Connection):
+                    item.start_node = None
+                    item.end_node = None
+            except Exception as e:
+                logger.warning(f"[PURGE] step 5 — pre-cleanup raised {type(e).__name__}: {e} for item {type(item).__name__}")
+
+        # ── STEP 6: Batch removal ─────────────────────────────────────────────
+        logger.log(TRACE, f"[PURGE] step 6 — batch removal of {len(items_to_purge)} items")
+        removed_count = 0
+        skipped_count = 0
+        for item in items_to_purge:
+            try:
+                if item.scene():
+                    self.removeItem(item)
+                    removed_count += 1
+                else:
+                    skipped_count += 1
+                    logger.log(TRACE, f"[PURGE] step 6 — skipped item already without scene: {type(item).__name__}")
+            except Exception as e:
+                logger.warning(f"[PURGE] step 6 — removeItem raised {type(e).__name__}: {e} for {type(item).__name__}")
+        logger.log(TRACE, f"[PURGE] step 6 — removed {removed_count}, skipped {skipped_count}")
+
+        # ── STEP 7: GC sweep ──────────────────────────────────────────────────
+        # _prepare_for_removal in BaseNode severs all references on node exit.
+        # Force Python to collect them now rather than on its own schedule.
+        # Session switches are launch-equivalent — no stale objects should survive.
+        logger.log(TRACE, f"[PURGE] step 7 — forcing GC sweep")
+        try:
+            collected = _gc.collect()
+            logger.log(TRACE, f"[PURGE] step 7 — gc.collect() freed {collected} objects")
+        except Exception as e:
+            logger.warning(f"[PURGE] step 7 — gc.collect() raised {type(e).__name__}: {e}")
+
+        # ── STEP 8: Scene invalidation ────────────────────────────────────────
+        # Flush any deferred repaints queued on removed items before they fire
+        # as ghost paints onto the new session.
+        logger.log(TRACE, f"[PURGE] step 8 — invalidating scene cache")
+        try:
+            self.invalidate(self.sceneRect(), QGraphicsScene.AllLayers)
+            for view in self.views():
+                view.viewport().update()
+            logger.log(TRACE, f"[PURGE] step 8 — scene invalidated, {len(self.views())} viewport(s) updated")
+        except Exception as e:
+            logger.warning(f"[PURGE] step 8 — invalidation raised {type(e).__name__}: {e}")
+
+        # ── STEP 9: Dirty reset ───────────────────────────────────────────────
+        logger.log(TRACE, f"[PURGE] step 9 — resetting dirty state")
+        self.set_dirty(False)
+        self.update()
+
+        # ── POST-PURGE VERIFICATION ───────────────────────────────────────────
+        survivors = [i for i in self.items() if i is not self.fog_layer]
+        if survivors:
+            for s in survivors:
+                logger.warning(
+                    f"[PURGE] ⚠ SURVIVOR after purge: type={type(s).__name__} "
+                    f"parentItem={type(s.parentItem()).__name__ if s.parentItem() else 'None'} "
+                    f"scene={s.scene() is not None} "
+                    f"title={getattr(s, 'title', 'N/A')} "
+                    f"uuid={getattr(s, 'uuid', 'N/A')}"
+                )
+        else:
+            logger.log(TRACE, f"[PURGE] post-purge verification — scene clean ✅ (only fog layer remains)")
+
+        logger.log(TRACE, f"[PURGE] ═══ SESSION PURGE COMPLETE ═══")
 
     # ─────────────────────────────────────────────────────────────────────────
     # KEYBOARD — delete and undo
