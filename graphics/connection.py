@@ -31,6 +31,8 @@ class Connection(QGraphicsPathItem):
 
     def update_path(self, mouse_pos=None):
         """Update bezier path only if endpoints have moved significantly."""
+        if self.start_node is None:
+            return
         self.floating_point = mouse_pos
 
         # Start point — output port scene position
@@ -59,8 +61,16 @@ class Connection(QGraphicsPathItem):
         path = QPainterPath()
         path.moveTo(p1)
 
-        dx = abs(p2.x() - p1.x()) * 0.5  # Calculate 'Rubbery' Tension
-        dx = max(dx, 50)  # Ensure the wire stays 'Springy' even when ports are vertically aligned
+        horizontal_dist = p2.x() - p1.x()
+        vertical_dist   = abs(p2.y() - p1.y())
+
+        # Tension scales with both horizontal and vertical distance.
+        # When the wire doubles back (negative horizontal), we push the handles
+        # outward even further so it loops gracefully rather than kinking.
+        if horizontal_dist >= 0:
+            dx = max(horizontal_dist * 0.5, 270)
+        else:
+            dx = max(abs(horizontal_dist) * 0.5 + vertical_dist * 0.4, 270)
 
         ctrl1 = QPointF(p1.x() + dx, p1.y())
         ctrl2 = QPointF(p2.x() - dx, p2.y())
@@ -70,6 +80,8 @@ class Connection(QGraphicsPathItem):
         self.setPath(path)
 
     def paint(self, painter, option, widget):
+        if self.start_node is None:
+            return
         if not self.path(): return
 
         painter.setRenderHint(QPainter.Antialiasing)
