@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "node_id": 0,
+      "uuid": "989598c617d9492ea8b49d05a6e7042c",
+      "type": "warm",
+      "title": "Intentional",
+      "pos_x": 1265.9057730255063,
+      "pos_y": -1947.6487778736177,
+      "width": 211.0,
+      "height": 90.0,
+      "ports_visible": false,
+      "full_text": ""
+    }
+  ],
+  "connections": [],
+  "viewport": {
+    "center_x": 2014.7621045477706,
+    "center_y": -1655.0654447095462,
+    "scale": 0.7583502820321343
+  },
+  "checksum": "9ca8464568dfdc95"
+}

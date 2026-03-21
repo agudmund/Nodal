@@ -1,107 +1,11 @@
 {
   "version": "1.0",
-  "nodes": [
-    {
-      "node_id": 11,
-      "uuid": "bd140256fad74602bddb34d66df04e3b",
-      "type": "bezier",
-      "title": "Curve",
-      "pos_x": -1362.5562175375867,
-      "pos_y": -564.4668462429407,
-      "width": 1169.255184224872,
-      "height": 611.5198921312036,
-      "ports_visible": true,
-      "cp1_x": 0.8207870675795665,
-      "cp1_y": 0.8210240113665473,
-      "cp2_x": 0.7280608942708461,
-      "cp2_y": 0.662506053945331
-    },
-    {
-      "node_id": 10,
-      "uuid": "87d5c942d3cb474abdcf8952f5db5f10",
-      "type": "warm",
-      "title": "New Thought",
-      "pos_x": -82.12915278872228,
-      "pos_y": -285.9517720491632,
-      "width": 443.1714534675334,
-      "height": 355.5460999034914,
-      "ports_visible": false,
-      "full_text": "Bezier Curve Output\n\nCP1: (0.8208, 0.1790)\nCP2: (0.7281, 0.3375)\n\n# Ready to paste:\ncurve.addCubicBezierSegment(\n    QPointF(0.8208, 0.1790),\n    QPointF(0.7281, 0.3375),\n    QPointF(1.0, 1.0)\n)"
-    },
-    {
-      "node_id": 8,
-      "uuid": "efff66a082d442ac97d2fa2d3f03cfb6",
-      "type": "warm",
-      "title": "practical and pleasurable",
-      "pos_x": 360.9042251518922,
-      "pos_y": -735.6463342750177,
-      "width": 385.1576147719753,
-      "height": 68.12525588842237,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 7,
-      "uuid": "43a3f1c492b94daf9a35aee65586c9f0",
-      "type": "warm",
-      "title": "The app very much needs to be able to play the theme song",
-      "pos_x": 47.06120022341895,
-      "pos_y": -439.0268172905726,
-      "width": 1083.5720423947294,
-      "height": 81.25179031796046,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 6,
-      "uuid": "c64e7c4e3d6d421fadbdcdf97276f01d",
-      "type": "warm",
-      "title": "Areas For Improvement",
-      "pos_x": 820.871476924228,
-      "pos_y": -738.4016349484034,
-      "width": 349.7811249177266,
-      "height": 71.46706330534161,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 3,
-      "uuid": "53a032c9a46748a2a1a2d08052c5c216",
-      "type": "warm",
-      "title": "About",
-      "pos_x": -1615.04267318353,
-      "pos_y": -396.14254247897895,
-      "width": 183.5785926945524,
-      "height": 61.89136391084134,
-      "ports_visible": false,
-      "full_text": ""
-    },
-    {
-      "node_id": 4,
-      "uuid": "60a78f2bc7574de1a655c19a7f7b70d0",
-      "type": "warm",
-      "title": "The spellchecker doesnt have an option to add new words to dictionary",
-      "pos_x": -47.01756569471263,
-      "pos_y": -553.4472024334217,
-      "width": 1264.7531681482883,
-      "height": 73.39701153773404,
-      "ports_visible": false,
-      "full_text": ""
-    }
-  ],
-  "connections": [
-    {
-      "start_node_uuid": "53a032c9a46748a2a1a2d08052c5c216",
-      "end_node_uuid": "bd140256fad74602bddb34d66df04e3b"
-    },
-    {
-      "start_node_uuid": "bd140256fad74602bddb34d66df04e3b",
-      "end_node_uuid": "87d5c942d3cb474abdcf8952f5db5f10"
-    }
-  ],
+  "nodes": [],
+  "connections": [],
   "viewport": {
-    "center_x": -260.7654769888796,
-    "center_y": -451.2242084607665,
-    "scale": 0.6891458773693476
-  }
+    "center_x": 0.0,
+    "center_y": 0.0,
+    "scale": 1.0
+  },
+  "checksum": "5e0db943542b33d1"
 }

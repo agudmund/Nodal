@@ -107,5 +107,10 @@
       "end_node_uuid": "58aa1273b65246b288fea9a94eddbe5e"
     }
   ],
-  "checksum": "3f552a40efa23ed1"
+  "viewport": {
+    "center_x": 0.0,
+    "center_y": 0.0,
+    "scale": 1.0
+  },
+  "checksum": "c95c50bcad1610a0"
 }
