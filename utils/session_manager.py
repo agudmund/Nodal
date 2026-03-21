@@ -8,7 +8,7 @@
 
 import os
 import sys
-import json
+import hashlib, json
 from pathlib import Path
 from typing import List, Optional
 
@@ -24,6 +24,12 @@ from utils.logger import setup_logger
 import uuid as uuid_module
 
 logger = setup_logger()
+
+def _session_checksum(data: dict) -> str:
+    uuids = sorted(n.get("uuid","") for n in data.get("nodes", []))
+    vp = data.get("viewport", {})
+    payload = json.dumps({"uuids": uuids, "viewport": vp}, sort_keys=True)
+    return hashlib.sha256(payload.encode()).hexdigest()[:16]
 
 def _get_sessions_dir() -> Path:
     """
@@ -113,6 +119,7 @@ class SessionManager:
 
             # 3-slot rollover before writing — matches build.py / logger.py rotation pattern
             _rotate_session(filepath)
+            data["checksum"] = _session_checksum(data)
 
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
@@ -122,12 +129,102 @@ class SessionManager:
         
 
     @staticmethod
-    def get_session_data(filepath: str):
-        session_data = None
+    def get_session_data(filepath: str) -> dict | None:
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                session_data = json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError) as e:
-            logger.error(f"⚠️ Could not read session file {filepath}: {e}")
+            with open(filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            # Sanitise structure
+            if not isinstance(data.get("nodes"), list):
+                data["nodes"] = []
+            if not isinstance(data.get("connections"), list):
+                data["connections"] = []
+            if not isinstance(data.get("viewport"), dict):
+                data["viewport"] = {}
+
+            stored = data.pop("checksum", None)
+            if stored != _session_checksum(data):
+                logger.warning(f"[SESSION] Checksum mismatch — '{Path(filepath).stem}' rejected at the gate")
+                return None
+
+            # Deduplicate nodes by UUID
+            seen_uuids = set()
+            clean_nodes = []
+            for node in data["nodes"]:
+                uuid = node.get("uuid")
+                if uuid and uuid not in seen_uuids:
+                    seen_uuids.add(uuid)
+                    clean_nodes.append(node)
+                elif uuid:
+                    logger.warning(f"[SESSION] Duplicate UUID removed on load: {uuid[:8]}")
+            data["nodes"] = clean_nodes
+
+            # Validate and log any anomalies
+            return SessionManager.validate_session_data(data, filepath)
+
+        except Exception as e:
+            logger.warning(f"[SESSION] Failed to load {filepath}: {e}")
             return None
-        return session_data
+
+    @staticmethod
+    def validate_session_data(data: dict, filepath: str) -> dict:
+        """
+        Validate and report session data anomalies without rejecting the session.
+        Logs warnings for anything suspicious so patterns can be identified.
+        Sanitises only the minimum needed to prevent crashes — never silently drops data.
+        """
+        from utils.logger import setup_logger
+        logger = setup_logger()
+        name = Path(filepath).stem
+
+        issues = []
+
+        # Structure checks
+        if not isinstance(data.get("nodes"), list):
+            issues.append("nodes key missing or not a list")
+            data["nodes"] = []
+        if not isinstance(data.get("connections"), list):
+            issues.append("connections key missing or not a list")
+            data["connections"] = []
+        if not isinstance(data.get("viewport"), dict):
+            issues.append("viewport key missing or not a dict")
+            data["viewport"] = {}
+
+        # Node integrity checks
+        seen_uuids = set()
+        for i, node in enumerate(data["nodes"]):
+            uuid = node.get("uuid")
+            node_type = node.get("type", "unknown")
+            title = node.get("title", "untitled")
+
+            if not uuid:
+                issues.append(f"node[{i}] '{title}' ({node_type}) has no uuid")
+            elif uuid in seen_uuids:
+                issues.append(f"node[{i}] '{title}' ({node_type}) has duplicate uuid: {uuid[:8]}")
+            else:
+                seen_uuids.add(uuid)
+
+            for field in ("pos_x", "pos_y", "width", "height"):
+                val = node.get(field)
+                if val is None:
+                    issues.append(f"node[{i}] '{title}' missing field: {field}")
+                elif not isinstance(val, (int, float)):
+                    issues.append(f"node[{i}] '{title}' field {field} is not numeric: {val!r}")
+
+        # Connection integrity checks
+        for i, conn in enumerate(data["connections"]):
+            start = conn.get("start_node_uuid")
+            end = conn.get("end_node_uuid")
+            if start and start not in seen_uuids:
+                issues.append(f"connection[{i}] start_node_uuid {start[:8]} not found in nodes")
+            if end and end not in seen_uuids:
+                issues.append(f"connection[{i}] end_node_uuid {end[:8]} not found in nodes")
+
+        if issues:
+            logger.warning(f"[SESSION VALIDATOR] '{name}' — {len(issues)} issue(s) found:")
+            for issue in issues:
+                logger.warning(f"  ⚠ {issue}")
+        else:
+            logger.debug(f"[SESSION VALIDATOR] '{name}' — clean ✅")
+
+        return data
