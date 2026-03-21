@@ -2,6 +2,18 @@
   "version": "1.0",
   "nodes": [
     {
+      "node_id": 8,
+      "uuid": "f81ff903589a48de8dac05f244a29ed3",
+      "type": "warm",
+      "title": "All Glory",
+      "pos_x": 1024.0,
+      "pos_y": -352.0,
+      "width": 189.0,
+      "height": 90.0,
+      "ports_visible": true,
+      "full_text": ""
+    },
+    {
       "node_id": 3,
       "uuid": "0311ddf6d03042f581ec78ef1efa780f",
       "type": "warm",
@@ -18,8 +30,8 @@
       "uuid": "58aa1273b65246b288fea9a94eddbe5e",
       "type": "warm",
       "title": "Effective People Think in Simple Patterns",
-      "pos_x": 173.9999999999999,
-      "pos_y": -241.00000000000003,
+      "pos_x": -259.99999999999994,
+      "pos_y": -308.0,
       "width": 583.0286039037502,
       "height": 72.66357271417806,
       "ports_visible": true,
@@ -97,15 +109,6 @@
       "full_text": ""
     }
   ],
-  "connections": [
-    {
-      "start_node_uuid": "08df26e758844425b907474e79113967",
-      "end_node_uuid": "e8aa4bbc46074e3cb21c3718e1b243dd"
-    },
-    {
-      "start_node_uuid": "690976f3edb1493e81edc2c86cd126f7",
-      "end_node_uuid": "58aa1273b65246b288fea9a94eddbe5e"
-    }
-  ],
-  "checksum": "3f552a40efa23ed1"
+  "connections": [],
+  "checksum": "ff1dbdcfc8177f72"
 }

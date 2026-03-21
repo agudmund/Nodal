@@ -57,24 +57,36 @@ class Connection(QGraphicsPathItem):
         self._last_p1 = p1
         self._last_p2 = p2
 
-        # Build the bezier path
         path = QPainterPath()
         path.moveTo(p1)
 
         horizontal_dist = p2.x() - p1.x()
         vertical_dist   = abs(p2.y() - p1.y())
+        dist            = ((p2.x()-p1.x())**2 + (p2.y()-p1.y())**2) ** 0.5
 
-        # Tension scales with both horizontal and vertical distance.
-        # When the wire doubles back (negative horizontal), we push the handles
-        # outward even further so it loops gracefully rather than kinking.
-        if horizontal_dist >= 0:
-            dx = max(horizontal_dist * 0.5, 270)
-        else:
-            dx = max(abs(horizontal_dist) * 0.5 + vertical_dist * 0.4, 270)
+        # Blend zone — within this many pixels of zero, interpolate between modes
+        blend_zone = 100.0
+        t = max(0.0, min(1.0, (blend_zone - horizontal_dist) / (blend_zone * 2)))
+        # t=0 means fully forward, t=1 means fully backward
 
-        ctrl1 = QPointF(p1.x() + dx, p1.y())
-        ctrl2 = QPointF(p2.x() - dx, p2.y())
+        # Forward control points
+        dx_fwd = max(horizontal_dist * 0.5, 80)
+        fwd_c1 = QPointF(p1.x() + dx_fwd, p1.y())
+        fwd_c2 = QPointF(p2.x() - dx_fwd, p2.y())
 
+        # Backward control points (single cubic approximation of the two-segment path)
+        clearance = min(max(abs(horizontal_dist) * 0.3, 80), 120)
+        tilt = clearance * 0.5
+        mid_x = max(p1.x(), p2.x()) + clearance
+        bwd_c1 = QPointF(p1.x() + clearance * 1.2, p1.y())
+        bwd_c2 = QPointF(p2.x() + clearance * 1.2, p2.y() - tilt * 0.5)
+
+        # Blend
+        def lerp_pt(a, b, t):
+            return QPointF(a.x() + (b.x()-a.x())*t, a.y() + (b.y()-a.y())*t)
+
+        ctrl1 = lerp_pt(fwd_c1, bwd_c1, t)
+        ctrl2 = lerp_pt(fwd_c2, bwd_c2, t)
         path.cubicTo(ctrl1, ctrl2, p2)
         self._cached_path = path
         self.setPath(path)

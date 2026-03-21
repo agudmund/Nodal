@@ -301,6 +301,28 @@ class WarmNode(BaseNode):
             self._editor = None
 
     # -------------------------------------------------------------------------
+    # TEARDOWN
+    # -------------------------------------------------------------------------
+
+    def _prepare_for_removal(self):
+        """
+        WarmNode-specific teardown — clear child items and timers before
+        handing off to BaseNode. Subclass cleans its own children first so
+        BaseNode's scene purge never encounters a live child item reference.
+
+        Order is deliberate: WarmNode nullifies its own QGraphicsTextItem
+        children here, then super() severs connections and clears the node
+        from the session graph. Reversing the order would leave emoji_item,
+        title_item, and text_item dangling as orphaned children during purge.
+        """
+        self._resize_throttle_timer.stop()
+        self._close_editor()
+        self.emoji_item = None
+        self.title_item = None
+        self.text_item  = None
+        super()._prepare_for_removal()
+
+    # -------------------------------------------------------------------------
     # RESIZE — throttled for performance
     # -------------------------------------------------------------------------
 
