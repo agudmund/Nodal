@@ -231,7 +231,6 @@ class NodalApp(QMainWindow):
         self._first_show = True             # Flag to trigger fade in on first show
         self.anim = None                    # Store fade in animation
 
-        # Hides the default Windows frame
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setMinimumSize(500, 300)
