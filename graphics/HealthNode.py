@@ -9,13 +9,78 @@
 import gc
 import time
 from PySide6.QtWidgets import QGraphicsTextItem
-from PySide6.QtCore import Qt, QPointF, QTimer
+from PySide6.QtCore import Qt, QPointF, QTimer, QObject, QEvent
 from PySide6.QtGui import QFont, QColor, QPen
 from .BaseNode import BaseNode
 from .Theme import Theme
 from utils.logger import setup_logger, TRACE
 
 logger = setup_logger()
+
+
+class _SceneClickFilter(QObject):
+    """
+    Qt event filter that intercepts mouse press events on the scene viewport
+    to report what item was clicked, updating the HealthNode's diagnostic display.
+
+    Replaces the previous monkey-patch approach entirely.
+
+    Why an event filter instead of monkey-patching mousePressEvent:
+        Monkey-patching requires storing and restoring function references,
+        which creates a timing-dependent system — uninstall must happen before
+        the next install, original references must be preserved across session
+        switches, and any race between timer callbacks and session teardown
+        causes silent C++ crashes. Qt's event filter system has none of these
+        properties: installEventFilter and removeEventFilter are both
+        deterministic and idempotent, no references are stored or restored,
+        and calling removeEventFilter on a filter that was never installed
+        (or was already removed) is a safe no-op.
+
+    Design:
+        - Installed on the viewport (view.viewport()), not the scene or view.
+          The viewport receives raw input events before Qt's scene machinery
+          translates them to scene coordinates.
+        - Returns False unconditionally — never consumes events.
+          This filter is read-only. The event always continues to its destination.
+        - Holds a direct reference to the HealthNode for writing click readings.
+          This is safe because the filter is owned by the HealthNode and removed
+          before the HealthNode is destroyed.
+    """
+
+    def __init__(self, health_node: 'HealthNode'):
+        super().__init__()
+        self._health = health_node
+
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
+        if event.type() == QEvent.Type.MouseButtonPress:
+            try:
+                scene = self._health.scene()
+                if scene and scene.views():
+                    view = scene.views()[0]
+                    scene_pos = view.mapToScene(event.pos())
+                    items_at_pos = scene.items(scene_pos)
+                    if items_at_pos:
+                        top_item = items_at_pos[0]
+                        self._health._last_clicked_type = type(top_item).__name__
+                        self._health._last_clicked_item = (
+                            getattr(top_item, 'title', None)
+                            or getattr(top_item, 'uuid', None)
+                            or str(id(top_item))[:8]
+                        )
+                        logger.debug(
+                            f"[HEALTH] click detected — "
+                            f"type={self._health._last_clicked_type} "
+                            f"identity='{self._health._last_clicked_item}' "
+                            f"pos=({scene_pos.x():.1f},{scene_pos.y():.1f})"
+                        )
+                    else:
+                        self._health._last_clicked_type = "— empty —"
+                        self._health._last_clicked_item = "—"
+                        logger.debug(f"[HEALTH] click detected — no items at position")
+            except Exception as e:
+                logger.warning(f"[HEALTH FILTER] eventFilter raised {type(e).__name__}: {e}")
+
+        return False  # Never consume — always pass the event through
 
 
 class HealthNode(BaseNode):
@@ -32,33 +97,22 @@ class HealthNode(BaseNode):
     Poll interval is tunable via POLL_INTERVAL_MS. The node marks itself
     non-dirty on poll so the health readout never triggers a session save.
 
-    Click spy:
-        Monkey-patches the scene's mousePressEvent on arrival to intercept
-        and report what class and identity the top-most item under each click
-        carries. Useful for identifying phantom or orphaned scene items that
-        survive purge. The original handler is stored on self and fully restored
-        on departure — no stacking, no leaking closures.
+    Click detection:
+        Uses a Qt event filter (_SceneClickFilter) installed on the scene's
+        viewport to intercept mouse press events and report the top-most item
+        under each click. Useful for identifying phantom or orphaned scene items
+        that survive purge.
 
-        Critical design rules:
-        1. _original_scene_handler is always called unconditionally inside the spy —
-           never inside a conditional block. Events must never be silently dropped.
-        2. The spy closure captures health_ref (a local alias for self) not self
-           directly. health_ref is used for all spy reads. self is only used
-           at install/uninstall time when we know it is valid.
-        3. _original_scene_handler is stored on self at install time and restored
-           at uninstall time. This prevents spy stacking across session switches —
-           each new HealthNode restores the scene to the genuine original before
-           the next spy is installed.
+        The event filter is installed synchronously when the node enters the
+        scene and removed synchronously when it leaves — no timers, no stored
+        function references, no race conditions. installEventFilter and
+        removeEventFilter are both deterministic and idempotent.
 
     Silent error surface areas — all explicitly guarded and logged:
         - _poll_gc: gc.get_objects() RuntimeError during list mutation.
         - _poll_gc: scene() returning None mid-poll.
         - _poll_gc: scene.items() raising during heavy load.
-        - _install_click_spy: scene None when deferred QTimer fires.
-        - _install_click_spy: double-install guard via _spy_installed flag.
-        - _click_spy: scene None at click time (node being removed).
-        - _click_spy: original handler raising unexpectedly.
-        - _uninstall_click_spy: scene None at departure.
+        - _SceneClickFilter.eventFilter: any exception during item inspection.
         - itemChange: super() always called — skipping breaks Qt's item state machine.
         - paint_content: all fields initialised to safe defaults in __init__.
     """
@@ -107,14 +161,12 @@ class HealthNode(BaseNode):
         self._last_gc_time  = 0.0    # Wall time (seconds) of the last GC census call
         self._poll_count    = 0      # Running count of successful polls since birth
 
-        # ── Click spy readings ────────────────────────────────────────────────
-        # Updated by _install_click_spy's scene monkey-patch on every mouse press.
+        # ── Click filter readings ─────────────────────────────────────────────
+        # Updated by _SceneClickFilter.eventFilter on every mouse press.
         # Defaults to em dash so the paint rows always have something to display.
-        self._last_clicked_type      = "—"    # Class name of top-most item under click
-        self._last_clicked_item      = "—"    # Title or UUID fragment of that item
-        self._spy_installed          = False   # Guard — prevents double-patching
-        self._spy_install_timer      = None  # holds the pending QTimer so we can cancel it
-        self._original_scene_handler = None   # Stored original — restored on departure
+        self._last_clicked_type = "—"   # Class name of top-most item under click
+        self._last_clicked_item = "—"   # Title or UUID fragment of that item
+        self._click_filter      = None  # _SceneClickFilter instance — None when not installed
 
         # ── Poll timer ────────────────────────────────────────────────────────
         # Non-singleShot repeating timer — fires every POLL_INTERVAL_MS until
@@ -140,9 +192,9 @@ class HealthNode(BaseNode):
         """
         Run a GC census and update all live readings.
 
-        Collects generation 0 garbage before counting — gen 0 is fast and
-        catches most short-lived cycles. Generations 1 and 2 are left to Python's
-        automatic schedule to avoid stalling the paint loop.
+        Full collection across all three generations — deleted nodes are promoted
+        to gen 1/2 quickly, so a gen-0-only sweep would leave them alive and
+        inflate the living count after every delete.
 
         Scene node count is read from self.scene().items() separately from the
         GC count so we can compare live RAM objects against scene-visible objects.
@@ -162,9 +214,9 @@ class HealthNode(BaseNode):
 
         try:
             # ── STEP 1: GC collect ────────────────────────────────────────────
-            logger.log(TRACE, f"[HEALTH] poll #{self._poll_count} — calling gc.collect(0)")
-            collected = gc.collect(0)
-            logger.debug(f"[HEALTH] poll #{self._poll_count} — gc.collect(0) freed {collected} objects")
+            logger.log(TRACE, f"[HEALTH] poll #{self._poll_count} — calling gc.collect()")
+            collected = gc.collect()
+            logger.debug(f"[HEALTH] poll #{self._poll_count} — gc.collect() freed {collected} objects")
 
             # ── STEP 2: Count living BaseNode instances ───────────────────────
             # Import inside the method to avoid circular import at module load time.
@@ -179,9 +231,6 @@ class HealthNode(BaseNode):
                 self._living_nodes = len(living_nodes)
                 logger.log(TRACE, f"[HEALTH] poll #{self._poll_count} — found {self._living_nodes} living BaseNode instances")
             except RuntimeError as e:
-                # gc.get_objects() can raise RuntimeError if the object list changes
-                # during iteration — this is rare but real under heavy load.
-                # Preserve the last known value rather than zeroing it out.
                 logger.warning(
                     f"[HEALTH] poll #{self._poll_count} — gc.get_objects() raised RuntimeError: {e} "
                     f"— preserving last known living_nodes={self._living_nodes}"
@@ -224,8 +273,6 @@ class HealthNode(BaseNode):
                 )
 
         except Exception as e:
-            # Outer catch — something unexpected happened outside our specific guards.
-            # Log loudly with full type info so it doesn't silently corrupt the readout.
             logger.error(
                 f"[HEALTH] poll #{self._poll_count} — UNEXPECTED error in _poll_gc: "
                 f"{type(e).__name__}: {e}",
@@ -237,7 +284,6 @@ class HealthNode(BaseNode):
         logger.log(TRACE, f"[HEALTH] poll #{self._poll_count} — calling self.update()")
         self.update()
 
-        # Do not mark dirty — health polling is observational, not a user change.
         if self.scene():
             logger.log(TRACE, f"[HEALTH] poll #{self._poll_count} — clearing dirty flag after update")
             self.scene().set_dirty(False)
@@ -245,151 +291,40 @@ class HealthNode(BaseNode):
         logger.log(TRACE, f"[HEALTH] poll #{self._poll_count} complete")
 
     # ─────────────────────────────────────────────────────────────────────────
-    # CLICK SPY
+    # CLICK FILTER
     # ─────────────────────────────────────────────────────────────────────────
 
-    def _schedule_spy_install(self):
-        """Cancel any pending install and schedule a fresh one."""
-        if self._spy_install_timer is not None:
-            self._spy_install_timer.stop()
-            self._spy_install_timer = None
-        timer = QTimer()
-        timer.setSingleShot(True)
-        timer.timeout.connect(self._install_click_spy)
-        timer.start(250)  # 250ms — enough for load_session transforms to settle
-        self._spy_install_timer = timer
-        logger.log(TRACE, f"[HEALTH] spy install scheduled in 250ms")
-
-    def _install_click_spy(self):
+    def _install_click_filter(self):
         """
-        Monkey-patch the scene's mousePressEvent to intercept and report
-        the top-most item under every mouse click.
+        Install the event filter on the scene's viewport.
 
-        CRITICAL — original handler call rules:
-            The original handler MUST be called unconditionally at the end of
-            the spy, outside any if-block. Silent event dropping is the root
-            cause of the previous recursion crash. If the spy swallows events,
-            Qt's internal state machine gets confused and eventually explodes.
-
-        CRITICAL — no spy stacking:
-            _original_scene_handler is stored on self at install time.
-            _uninstall_click_spy restores it on departure.
-            If uninstall runs correctly, the next session's HealthNode installs
-            its spy on top of the genuine original, not a previous spy.
-            _spy_installed flag prevents double-install within one session.
+        Called synchronously on ItemSceneHasChanged (node fully entered scene)
+        — no timer, no deferred callback. The viewport is valid at this point.
+        Idempotent — safe to call if the filter is already installed.
         """
-        logger.log(TRACE, f"[HEALTH] _install_click_spy called — scene={self.scene() is not None} spy_installed={self._spy_installed}")
-
-        if not self.scene():
-            logger.warning(
-                f"[HEALTH] _install_click_spy — scene() is None. "
-                f"Deferred QTimer fired after node was already removed from scene. Aborting."
-            )
+        if self._click_filter is not None:
             return
-
-        if self._spy_installed:
-            logger.debug(f"[HEALTH] click spy already installed — skipping reinstall to prevent stacking")
+        if not self.scene() or not self.scene().views():
+            logger.warning(f"[HEALTH] _install_click_filter — no scene or views, skipping")
             return
+        self._click_filter = _SceneClickFilter(self)
+        self.scene().views()[0].viewport().installEventFilter(self._click_filter)
+        logger.debug(f"[HEALTH] click filter installed on viewport")
 
-        # Store the genuine original before patching
-        self._original_scene_handler = self.scene().mousePressEvent
-        logger.log(TRACE, f"[HEALTH] original mousePressEvent stored: {type(self._original_scene_handler).__name__}")
-
-        # Capture health_ref as a local — not self — to avoid the closure holding
-        # a strong reference that would prevent GC collection of the HealthNode.
-        health_ref = self
-        original_ref = self._original_scene_handler  # local alias for the closure
-
-        def _click_spy(event):
-            """
-            Intercept mouse press, read the top item, update HealthNode readings.
-
-            The original handler is called UNCONDITIONALLY at the end.
-            This is non-negotiable — event dropping causes Qt state machine corruption
-            which manifests as silent recursion crashes that are impossible to trace.
-            """
-            logger.log(TRACE, f"[HEALTH SPY] mouse press intercepted at ({event.scenePos().x():.1f},{event.scenePos().y():.1f})")
-
-            # Read-only inspection — never consume the event
-            try:
-                if health_ref.scene():
-                    items_at_pos = health_ref.scene().items(event.scenePos())
-                    logger.log(TRACE, f"[HEALTH SPY] {len(items_at_pos)} items at click position")
-                    if items_at_pos:
-                        top_item = items_at_pos[0]
-                        health_ref._last_clicked_type = type(top_item).__name__
-                        health_ref._last_clicked_item = (
-                            getattr(top_item, 'title', None)
-                            or getattr(top_item, 'uuid', None)
-                            or str(id(top_item))[:8]
-                        )
-                        logger.debug(
-                            f"[HEALTH] click detected — "
-                            f"type={health_ref._last_clicked_type} "
-                            f"identity='{health_ref._last_clicked_item}' "
-                            f"pos=({event.scenePos().x():.1f},{event.scenePos().y():.1f})"
-                        )
-                    else:
-                        health_ref._last_clicked_type = "— empty —"
-                        health_ref._last_clicked_item = "—"
-                        logger.debug(f"[HEALTH] click detected — no items at position")
-                else:
-                    logger.log(TRACE, f"[HEALTH SPY] scene() is None at click time — node being removed, skipping inspection")
-
-            except Exception as e:
-                logger.warning(
-                    f"[HEALTH SPY] inspection raised {type(e).__name__}: {e} "
-                    f"— original handler will still be called"
-                )
-
-            # ── UNCONDITIONAL original handler call ───────────────────────────
-            # This line is outside every if/except block intentionally.
-            # The original handler fires regardless of what happened above.
-            # Commenting this out = silent event dropping = recursion crash.
-            logger.log(TRACE, f"[HEALTH SPY] delegating to original handler")
-            try:
-                original_ref(event)
-            except Exception as e:
-                logger.error(
-                    f"[HEALTH SPY] original handler raised {type(e).__name__}: {e}",
-                    exc_info=True
-                )
-
-        self.scene().mousePressEvent = _click_spy
-        self._spy_installed = True
-        logger.debug(f"[HEALTH] click spy installed on scene — all mouse presses will be reported")
-
-    def _uninstall_click_spy(self):
+    def _uninstall_click_filter(self):
         """
-        Restore the scene's original mousePressEvent.
+        Remove the event filter from the scene's viewport.
 
-        Called on scene departure to leave the scene completely clean.
-        This prevents spy stacking — each new HealthNode installs its spy
-        on the genuine original, not a previous spy's closure.
-
-        If the scene is already None at uninstall time (race condition during
-        rapid session switching), we log the situation and clear our flags anyway.
-        The scene will be rebuilt from scratch on the next session load.
+        Called synchronously on departure while the scene is still valid.
+        Also called from purge_session_items step 5 before batch removal.
+        Idempotent — safe to call if nothing is installed.
         """
-        logger.log(TRACE, f"[HEALTH] _uninstall_click_spy called — spy_installed={self._spy_installed} scene={self.scene() is not None}")
-
-        if not self._spy_installed:
-            logger.log(TRACE, f"[HEALTH] click spy was not installed — nothing to uninstall")
+        if self._click_filter is None:
             return
-
-        if self.scene() and self._original_scene_handler is not None:
-            self.scene().mousePressEvent = self._original_scene_handler
-            logger.debug(f"[HEALTH] original mousePressEvent restored on scene — spy stack clean")
-        else:
-            logger.warning(
-                f"[HEALTH] _uninstall_click_spy — could not restore original handler. "
-                f"scene={self.scene() is not None} original_stored={self._original_scene_handler is not None}. "
-                f"Scene will be rebuilt fresh on next session load regardless."
-            )
-
-        self._spy_installed = False
-        self._original_scene_handler = None
-        logger.log(TRACE, f"[HEALTH] click spy uninstall complete")
+        if self.scene() and self.scene().views():
+            self.scene().views()[0].viewport().removeEventFilter(self._click_filter)
+        self._click_filter = None
+        logger.debug(f"[HEALTH] click filter uninstalled from viewport")
 
     # ─────────────────────────────────────────────────────────────────────────
     # PAINT
@@ -410,9 +345,9 @@ class HealthNode(BaseNode):
             GC time         [N.Nms]     — Wall time of last census
             Poll #          [N]         — Total polls since birth
             ── dotted divider ──
-            ── footer ── "polling every Ns  ·  spy active/inactive"
+            ── footer ── "polling every Ns  ·  filter active/inactive"
 
-        All values read from instance state set by _poll_gc and _click_spy.
+        All values read from instance state set by _poll_gc and _SceneClickFilter.
         No GC operations happen during paint — paint is read-only.
         """
         r      = self.rect()
@@ -453,13 +388,13 @@ class HealthNode(BaseNode):
         delta_str   = f"+{delta}" if delta > 0 else str(delta)
 
         rows = [
-            ("Living nodes",  str(self._living_nodes),           node_color),
-            ("Scene nodes",   str(self._scene_nodes),            node_color),
-            ("RAM delta",     delta_str,                          delta_color),
-            ("Last click",    self._last_clicked_type,            Theme.textPrimary),
-            ("  └ identity",  self._last_clicked_item,            self.COLOR_LABEL),
-            ("GC time",       f"{self._last_gc_time * 1000:.1f}ms", Theme.textPrimary),
-            ("Poll #",        str(self._poll_count),              self.COLOR_LABEL),
+            ("Living nodes",  str(self._living_nodes),              node_color),
+            ("Scene nodes",   str(self._scene_nodes),               node_color),
+            ("RAM delta",     delta_str,                             delta_color),
+            ("Last click",    self._last_clicked_type,               Theme.textPrimary),
+            ("  └ identity",  self._last_clicked_item,               self.COLOR_LABEL),
+            ("GC time",       f"{self._last_gc_time * 1000:.1f}ms",  Theme.textPrimary),
+            ("Poll #",        str(self._poll_count),                 self.COLOR_LABEL),
         ]
 
         for label, value, value_color in rows:
@@ -483,10 +418,10 @@ class HealthNode(BaseNode):
         painter.setFont(tiny_font)
         painter.setPen(self.COLOR_LABEL)
         interval_s = self.POLL_INTERVAL_MS / 1000
-        spy_status = "spy ✅" if self._spy_installed else "spy ⬜"
+        filter_status = "filter ✅" if self._click_filter is not None else "filter ⬜"
         painter.drawText(int(x), int(y), int(w), line_h,
                          Qt.AlignCenter,
-                         f"every {interval_s:.0f}s  ·  {spy_status}")
+                         f"every {interval_s:.0f}s  ·  {filter_status}")
 
     # ─────────────────────────────────────────────────────────────────────────
     # LIFECYCLE
@@ -496,15 +431,14 @@ class HealthNode(BaseNode):
         """
         Traffic director for HealthNode scene transitions.
 
-        Arrival (ItemSceneChange, value is not None):
-            Defers click spy installation by 100ms so the scene has fully
-            settled before we patch its mousePressEvent. Installing immediately
-            on arrival risks patching before the scene finishes its own setup.
+        Arrival (ItemSceneHasChanged, value is not None):
+            Installs the click filter synchronously — no timer, no deferred
+            callback. The viewport is valid at ItemSceneHasChanged time.
 
         Departure (ItemSceneChange, value is None):
-            Stops the poll timer immediately — there is no scene to read from
-            and no canvas to paint to. Also uninstalls the click spy to restore
-            the scene's original mousePressEvent cleanly.
+            Stops the poll timer and uninstalls the click filter immediately,
+            while the scene is still valid. BaseNode._prepare_for_removal fires
+            via super() and handles connection cleanup.
 
         Always delegates to super() — BaseNode.itemChange handles _prepare_for_removal
         on departure. Skipping super() here would break the session independence
@@ -512,34 +446,31 @@ class HealthNode(BaseNode):
         """
         # Guard — itemChange can fire during super().__init__() before our
         # own __init__ has run. Check for our attributes before using them.
-        if not hasattr(self, '_spy_installed'):
+        if not hasattr(self, '_click_filter'):
             return super().itemChange(change, value)
 
         logger.log(
             TRACE,
             f"[HEALTH] itemChange — change={change} value={'scene' if value is not None else 'None'} "
-            f"spy={self._spy_installed} timer_active={self._poll_timer.isActive()}"
+            f"filter={'installed' if self._click_filter else 'none'} timer_active={self._poll_timer.isActive()}"
         )
 
         if change == self.GraphicsItemChange.ItemSceneChange:
-
-            if self._spy_install_timer is not None:
-                self._spy_install_timer.stop()
-                self._spy_install_timer = None
-                logger.log(TRACE, f"[HEALTH] cancelled pending spy install on departure")
-            if value is not None:
-                # Arriving in a scene — install click spy after scene settles
-                logger.debug(f"[HEALTH] entering scene — scheduling click spy install in 100ms")
-                self._schedule_spy_install()
-            else:
-                # Departing scene — stop timer and uninstall spy immediately
+            if value is None:
+                # Departing — clean up while scene is still valid
                 logger.debug(
-                    f"[HEALTH] leaving scene — stopping poll timer and uninstalling spy "
+                    f"[HEALTH] leaving scene — stopping poll timer and uninstalling filter "
                     f"after {self._poll_count} polls"
                 )
                 self._poll_timer.stop()
-                self._uninstall_click_spy()
+                self._uninstall_click_filter()
                 logger.debug(f"[HEALTH] departure cleanup complete")
+
+        elif change == self.GraphicsItemChange.ItemSceneHasChanged:
+            if value is not None:
+                # Fully arrived — scene and viewport are now ready
+                logger.debug(f"[HEALTH] entered scene — installing click filter")
+                self._install_click_filter()
 
         result = super().itemChange(change, value)
         logger.log(TRACE, f"[HEALTH] itemChange — super() returned, delegating result")
@@ -553,7 +484,7 @@ class HealthNode(BaseNode):
         """
         Health state is always live — only structural identity is serialized.
 
-        Readings (_living_nodes, _scene_nodes, _last_gc_time, click spy state)
+        Readings (_living_nodes, _scene_nodes, _last_gc_time, click filter state)
         are deliberately excluded. The node restarts as a fresh monitor on every
         load, which is the correct behaviour — stale health readings from a
         previous session have no meaning in a new one.

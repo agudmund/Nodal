@@ -416,10 +416,18 @@ class NodeScene(QGraphicsScene):
         return self._register_node(node)
 
     def add_health_node(self, x: float, y: float) -> 'HealthNode':
-        """Create and add a HealthNode to the scene."""
+        """Create and add a HealthNode to the scene.
+        Only one HealthNode per session is permitted — the spy system is not
+        designed for multiple instances and stacking two spies causes a crash
+        on session switch. If one already exists, return it instead.
+        """
+        existing = next((i for i in self.items() if isinstance(i, HealthNode)), None)
+        if existing:
+            logger.warning("[SCENE] add_health_node — HealthNode already exists in scene, returning existing instance")
+            return existing
         node = HealthNode(node_id=self._next_node_id(), pos=QPointF(x, y))
         return self._register_node(node)
-
+        
     def add_image_node(self, x: float, y: float, path: str = None) -> 'ImageNode':
         """
         Create and add an ImageNode to the scene.
@@ -549,6 +557,14 @@ class NodeScene(QGraphicsScene):
         self._undo_stack.clear()
         logger.log(TRACE, f"[PURGE] step 0 — undo stack cleared")
 
+        # ── STEP 0b: Clear active node registry ───────────────────────────────
+        # The registry holds strong references to every node in the session.
+        # Clearing it before batch removal and the GC sweep ensures the registry
+        # is not holding removed nodes alive when gc.collect() runs in step 7.
+        logger.log(TRACE, f"[PURGE] step 0b — clearing active_node_registry ({len(self.active_node_registry)} entries)")
+        self.active_node_registry.clear()
+        logger.log(TRACE, f"[PURGE] step 0b — registry cleared")
+
         # ── STEP 1: Release mouse grab ────────────────────────────────────────
         # If a node is mid-drag when the scene is cleared, Qt throws:
         # "QGraphicsItem::ungrabMouse: cannot ungrab mouse without scene"
@@ -629,16 +645,32 @@ class NodeScene(QGraphicsScene):
         )
 
         # ── STEP 5: Pre-cleanup ───────────────────────────────────────────────
-        # Stop animations and sever references while items are still in the scene
-        # so all Qt APIs are valid. Do NOT call setGraphicsEffect(None) here —
-        # doing so schedules a deferred repaint that fires after removal = ghost node.
-        logger.log(TRACE, f"[PURGE] step 5 — pre-cleanup: stopping animations and severing connections")
+        # Sever Qt signal connections, stop animations, and clear references while
+        # items are still in the scene so all Qt APIs are valid.
+        #
+        # HealthNodes are handled first — their click filter must be removed from
+        # the viewport before the node leaves the scene, while scene() is still valid.
+        # Do NOT call setGraphicsEffect(None) here — doing so schedules a deferred
+        # repaint that fires after removal = ghost node.
+        logger.log(TRACE, f"[PURGE] step 5 — pre-cleanup: severing signals, stopping animations, clearing connections")
+
+        # HealthNode filter uninstall pass — must run before any removeItem calls
+        from .HealthNode import HealthNode as _HealthNode
+        for item in items_to_purge:
+            if isinstance(item, _HealthNode):
+                try:
+                    item._poll_timer.stop()
+                    item._uninstall_click_filter()
+                    logger.log(TRACE, f"[PURGE] step 5 — HealthNode filter uninstalled for '{getattr(item, 'title', '?')}'")
+                except Exception as e:
+                    logger.warning(f"[PURGE] step 5 — HealthNode cleanup raised {type(e).__name__}: {e}")
+
         for item in items_to_purge:
             try:
                 if isinstance(item, BaseNode):
-                    if hasattr(item, 'behaviour') and item.behaviour and hasattr(item.behaviour, 'pulse_anim'):
-                        item.behaviour.pulse_anim.stop()
-                        logger.log(TRACE, f"[PURGE] step 5 — stopped pulse_anim for node '{getattr(item, 'title', '?')}'")
+                    if hasattr(item, 'behaviour') and item.behaviour:
+                        item.behaviour.disconnect_all()
+                        logger.log(TRACE, f"[PURGE] step 5 — disconnected behaviour signals for node '{getattr(item, 'title', '?')}'")
                     item.connections.clear()
                 elif isinstance(item, Connection):
                     item.start_node = None
@@ -661,6 +693,11 @@ class NodeScene(QGraphicsScene):
             except Exception as e:
                 logger.warning(f"[PURGE] step 6 — removeItem raised {type(e).__name__}: {e} for {type(item).__name__}")
         logger.log(TRACE, f"[PURGE] step 6 — removed {removed_count}, skipped {skipped_count}")
+
+        # ── STEP 6b: Release the purge list ───────────────────────────────────
+        # items_to_purge holds strong references to every item just removed.
+        # Deleting it before the GC sweep lets gc.collect() actually collect them.
+        del items_to_purge
 
         # ── STEP 7: GC sweep ──────────────────────────────────────────────────
         # _prepare_for_removal in BaseNode severs all references on node exit.
@@ -744,6 +781,7 @@ class NodeScene(QGraphicsScene):
                             if endpoint and endpoint is not node and conn in endpoint.connections:
                                 endpoint.connections.remove(conn)
                     node.connections.clear()
+                    self.active_node_registry.pop(node.uuid, None)
                     if node.scene():
                         self.removeItem(node)
                     snapshot.append((node_dict, conn_dicts))
@@ -773,6 +811,7 @@ class NodeScene(QGraphicsScene):
             node = BaseNode.from_dict(node_dict)
             node.setZValue(10)
             self.addItem(node)
+            self.active_node_registry[node.uuid] = node
             restored[node.uuid] = node
 
         uuid_map.update(restored)

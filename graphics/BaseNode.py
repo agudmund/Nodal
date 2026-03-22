@@ -198,10 +198,12 @@ class BaseNode(QGraphicsRectItem):
         item APIs are still valid at this point.
         """
         if hasattr(self, 'behaviour') and self.behaviour:
-            self.behaviour.pulse_anim.stop()
+            self.behaviour.disconnect_all()
             # Do NOT set self.behaviour = None here — doing so during scene removal
             # triggers NodeBehaviour cleanup which fires pulse_anim.finished signal
             # re-entrantly into a partially torn down node causing a C++ segfault.
+            # disconnect_all() severs the C++ signal connections instead, allowing
+            # Python's GC to collect the behaviour → node cycle after removal.
         for conn in list(self.connections):
             if conn.scene():
                 conn.scene().removeItem(conn)

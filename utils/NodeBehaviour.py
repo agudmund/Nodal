@@ -69,3 +69,32 @@ class NodeBehaviour:
         if self.pulse_anim.direction() == QVariantAnimation.Forward:
             self.pulse_anim.setDirection(QVariantAnimation.Backward)
             self.pulse_anim.start()
+
+    def disconnect_all(self):
+        """
+        Sever all Qt signal connections and stop the animation.
+
+        Called by BaseNode._prepare_for_removal before the node leaves its scene.
+        Qt's C++ side holds its own references to signal connection targets —
+        these are invisible to Python's GC. Without explicit disconnection,
+        the valueChanged → node.setScale and finished → _reverse_pulse connections
+        keep both the node wrapper and this NodeBehaviour alive indefinitely,
+        preventing collection even after the node is removed from the scene.
+
+        RuntimeError is caught and ignored on each disconnect — PySide6 raises it
+        if a signal is already disconnected, which can happen during a fast purge
+        or if the animation was never started.
+
+        Do NOT call this from __del__ or any destructor path — by that point the
+        C++ object may already be invalid and the disconnect call will segfault.
+        Call it only while the node is still in the scene and all Qt APIs are valid.
+        """
+        try:
+            self.pulse_anim.valueChanged.disconnect(self._node.setScale)
+        except RuntimeError:
+            pass
+        try:
+            self.pulse_anim.finished.disconnect(self._reverse_pulse)
+        except RuntimeError:
+            pass
+        self.pulse_anim.stop()

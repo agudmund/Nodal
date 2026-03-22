@@ -15,5 +15,10 @@
     }
   ],
   "connections": [],
-  "checksum": "32d7e807800a75d1"
+  "viewport": {
+    "center_x": 0.0,
+    "center_y": 0.0,
+    "scale": 1.0
+  },
+  "checksum": "4f8d0b5461d7d52b"
 }
