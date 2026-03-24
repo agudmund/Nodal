@@ -2,17 +2,6 @@
   "version": "1.0",
   "nodes": [
     {
-      "node_id": 1,
-      "uuid": "06fb40efac50444184ef43141383c671",
-      "type": "health",
-      "title": "Health",
-      "pos_x": -119.00000000000006,
-      "pos_y": -77.00000000000001,
-      "width": 260.0,
-      "height": 230.0,
-      "ports_visible": false
-    },
-    {
       "node_id": 0,
       "uuid": "cf4b96a578314c26ba5b7fa89ae9ed03",
       "type": "warm",
@@ -23,6 +12,17 @@
       "height": 90.0,
       "ports_visible": false,
       "full_text": ""
+    },
+    {
+      "node_id": 1,
+      "uuid": "06fb40efac50444184ef43141383c671",
+      "type": "health",
+      "title": "Health",
+      "pos_x": 403.99999999999994,
+      "pos_y": -236.0,
+      "width": 260.0,
+      "height": 230.0,
+      "ports_visible": false
     }
   ],
   "connections": [],
