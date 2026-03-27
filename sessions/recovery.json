@@ -2,18 +2,29 @@
   "version": "1.0",
   "nodes": [
     {
+      "node_id": 1,
+      "uuid": "06fb40efac50444184ef43141383c671",
+      "type": "health",
+      "title": "Health",
+      "pos_x": 403.99999999999994,
+      "pos_y": -236.0,
+      "width": 260.0,
+      "height": 230.0,
+      "ports_visible": false
+    },
+    {
       "node_id": 0,
-      "uuid": "0fc4c02c4aa7460aacf4a5c0deff7530",
+      "uuid": "cf4b96a578314c26ba5b7fa89ae9ed03",
       "type": "warm",
-      "title": "Clay",
-      "pos_x": 413.0,
-      "pos_y": -373.0,
-      "width": 345.2224690716084,
-      "height": 167.65862378685728,
+      "title": "Bloom",
+      "pos_x": -623.0,
+      "pos_y": -38.0,
+      "width": 145.0,
+      "height": 90.0,
       "ports_visible": false,
       "full_text": ""
     }
   ],
   "connections": [],
-  "checksum": "32d7e807800a75d1"
+  "checksum": "fdfa2cf110255008"
 }
