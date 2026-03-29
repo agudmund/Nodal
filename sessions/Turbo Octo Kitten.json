@@ -23,13 +23,24 @@
       "width": 260.0,
       "height": 230.0,
       "ports_visible": false
+    },
+    {
+      "node_id": 2,
+      "uuid": "7108b32505094048aa7cca6dcf63f295",
+      "type": "about",
+      "title": "About",
+      "pos_x": -891.0000000000001,
+      "pos_y": -145.0,
+      "width": 120.0,
+      "height": 50.0,
+      "ports_visible": false
     }
   ],
   "connections": [],
   "viewport": {
-    "center_x": 0.0,
-    "center_y": 0.0,
+    "center_x": -382.0,
+    "center_y": 3.0,
     "scale": 1.0
   },
-  "checksum": "0e5c6120e5c1879a"
+  "checksum": "81b9a22797e1ca33"
 }
