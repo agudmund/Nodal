@@ -151,7 +151,7 @@
     <Content Include="Documents\Performance Optimization Implementation.md" />
     <Content Include="Documents\Performance Optimization Summary.md" />
     <Content Include="Documents\Performance Regression Fix.md" />
-    <Content Include="requirements.txt" />
+    <Content Include="requirements.in" />
     <Content Include="sessions\ActionPlan.json" />
     <Content Include="update_pyproj.ps1" />
     <Content Include="utils\Docstring Compliance Report.md" />
