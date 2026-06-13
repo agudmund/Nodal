@@ -1,6 +1,6 @@
-# Nodal - Node-based UI Application requirements.in
-# A minor UI for enjoying
-# Built using a single shared braincell by Yours Truly and various Intelligences
+# -Nodal - requirements.in pip dependency set
+# -The last of the nodal package list remembered being first, and smiled warmly at every list that came after, For Enjoying
+# -Built using a single shared braincell by Yours Truly and various Intelligences
 # Production and Development Dependencies
 
 # Requires Python 3.10+
