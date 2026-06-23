@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "display_name": "Nodal",
+  "description": "",
+  "description_signature": null,
+  "nodes": [],
+  "connections": [],
+  "viewport": {
+    "camera_x": 5439.926398738138,
+    "camera_y": 2872.9312527606417,
+    "camera_zoom": 0.1255164040745812
+  },
+  "ui_migrations": [],
+  "last_browse_dirs": {},
+  "checksum": "2e21497786069615"
+}
